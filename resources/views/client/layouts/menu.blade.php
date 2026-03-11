@@ -1,3 +1,6 @@
+<div class="bg-black text-white text-center py-3 sm:hidden">
+    <p class="text-base font-bold">Hotline: <a href="https://zalo.me/{{$system_info->phone}}" target="_blank">{{$system_info->phone}}</a> (Zalo)</p>
+</div>
 <div class="bg-white">
 	<header class="relative bg-white">
 		<nav aria-label="Top" class="mx-auto w-full px-2 md:px-6">
