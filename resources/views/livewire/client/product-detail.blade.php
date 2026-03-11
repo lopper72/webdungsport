@@ -21,6 +21,9 @@
                             <span class="text-sm md:text-md font-bold text-gray-700 dark:text-gray-300 uppercase">Giá:</span>
                             @if(Auth::check())
                                 <span class="text-sm md:text-md text-green-500">{{number_format($product->retail_price)}} VNĐ</span>
+                                @if (($product->is_sales ?? 0) == 1)
+                                    <span class="bg-red-600 rounded-md text-white text-xs md:text-sm font-bold ml-2 px-2 py-1">SALE</span>
+                                @endif
                             @else
                                 <span class="text-red-500 text-sm md:text-md">Đăng nhập để xem giá</span>
                             @endif
@@ -85,11 +88,16 @@
                                         @endphp
                                         @foreach ($product_sizes as $size)
                                             @php
-                                                $total_quantity += $size->productAvailable($product_id, $product_detail_id_selected, $size->id, $warehouse_id_selected)
+                                                $total_of_size = $size->productAvailable($product_id, $product_detail_id_selected, $size->id, $warehouse_id_selected);
+                                                $total_quantity += $total_of_size;
                                             @endphp
                                             <td class="px-2 md:px-4 py-2 text-center">
                                                 @if(Auth::check())
-                                                    {{$size->productAvailable($product_id, $product_detail_id_selected, $size->id, $warehouse_id_selected)}}
+                                                    @if ($total_of_size == 0)
+                                                        <span class="bg-gray-600 rounded-md text-white text-xs ml-2 px-2 py-1">Đặt hàng</span>
+                                                    @else
+                                                        {{$total_of_size}}
+                                                    @endif
                                                 @else
                                                     -
                                                 @endif
@@ -107,6 +115,7 @@
                             </table>
                         </div>
                     </div>
+                    {{--
                     <div class="pt-2 mb-2 md:mb-4 text-center text-sm md:text-md">
                         @if(count($product_warehouses) > 0 && $available_quantity > 0)
                             @if(Auth::check())
@@ -123,6 +132,7 @@
                             <span class="text-red-500 font-bold">HẾT HÀNG !</span>
                         @endif
                     </div>
+                    --}}
                     <div class="pb-2">
                         <span class="text-sm md:text-md font-bold text-gray-700 dark:text-gray-300 uppercase">Mô tả sản phẩm</span>
                         <div class="text-xs md:text-sm">
