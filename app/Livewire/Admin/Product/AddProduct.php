@@ -32,6 +32,7 @@ class AddProduct extends Component
     public $brands;
     public $categories;
     public $is_active = '1';
+    public $is_sales = '0';
 
     public function mount($brands, $categories)
     {
@@ -124,6 +125,7 @@ class AddProduct extends Component
         $product->slug = Str::of($this->product_name)->slug('-');
         $product->uom = $this->product_uom;
         $product->is_active =  $this->is_active;
+        $product->is_sales =  $this->is_sales;
         $product->save();
        
         foreach($this->product_size_list as $size){

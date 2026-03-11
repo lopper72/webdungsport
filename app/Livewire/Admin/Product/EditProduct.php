@@ -36,6 +36,7 @@ class EditProduct extends Component
     public $brands;
     public $categories;
     public $is_active = '1';
+    public $is_sales = '0';
 
     public function mount($id, $brands, $categories)
     {
@@ -54,6 +55,10 @@ class EditProduct extends Component
         $this->is_active = $product->is_active;
         if(is_null($this->is_active)){
             $this->is_active = '1';
+        }
+        $this->is_sales = $product->is_sales;
+        if(is_null($this->is_sales)){
+            $this->is_sales = '0';
         }
     }
 
@@ -149,6 +154,7 @@ class EditProduct extends Component
         $product->slug = Str::of($this->product_name)->slug('-');
         $product->uom = $this->product_uom;
         $product->is_active = $this->is_active;
+        $product->is_sales = $this->is_sales;
         $product->save();
 
         foreach($this->product_size_list_deleted as $size){
