@@ -91,6 +91,13 @@
                                         <input type="checkbox" @checked(old('active', $is_active)) class="cursor-pointer w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" wire:model="is_active" name="is_active" id="is_active" value="{{$is_active}}">
                                     </div>
                                 </div>
+                                <div class="col-span-1 sm:col-span-4">
+                                    <label for="is_sales" class="block text-sm font-medium leading-6 text-gray-900">Đang giảm giá/ Không giảm giá</label>
+                                    <div class="mt-2">
+                                        
+                                        <input type="checkbox" @checked(old('sales', $is_sales)) class="cursor-pointer w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" wire:model="is_sales" name="is_sales" id="is_sales" value="{{$is_sales}}">
+                                    </div>
+                                </div>
                                 <div class="col-span-1 sm:col-span-8">
                                     <div class="flex justify-between items-center bg-slate-400 text-slate-950 px-3 py-1.5 mb-2">
                                         <label for="product_size" class="block text-sm font-medium leading-6 text-gray-900">Size</label>
