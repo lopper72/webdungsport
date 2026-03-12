@@ -1,10 +1,10 @@
 <footer class="bg-white text-black border-t border-gray-200">
-    <div class="relative overflow-hidden pb-8">
-        <div class="mx-auto max-w-7xl px-6 lg:px-8">
+    <div class="relative overflow-hidden py-8">
+        <div class="mx-auto max-w-7xl px-2 md:px-6">
             <div class="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none">
-                <dl class="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-3 lg:pt-3">
+                <dl class="grid grid-cols-1 gap-x-8 gap-y-3 lg:grid-cols-3">
                     <div class="flex flex-col items-start">
-                        <dt class="mt-4 font-semibold text-black text-lg">Thông tin liên hệ</dt>
+                        <dt class="font-semibold text-black text-lg">Thông tin liên hệ</dt>
                         <div class="flex items-center gap-x-2 mt-2 text-red-500 font-bold text-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
@@ -47,18 +47,15 @@
                         </div>
                     </div>
                     <div class="flex flex-col items-start">
-                        <dt class="mt-4 font-semibold text-black text-lg">Hỗ trợ khách hàng</dt>
+                        <dt class="font-semibold text-black text-lg">Hỗ trợ khách hàng</dt>
                     </div>
                     <div class="flex flex-col items-start">
-                        <dt class="mt-4 font-semibold text-black text-lg">Kết nối với Dũng Trần Sport</dt>
+                        <dt class="font-semibold text-black text-lg">Kết nối với Dũng Trần Sport</dt>
                         <a href="https://zalo.me/{{$system_info->phone}}" target="_blank" class="flex items-center gap-x-2 mt-2 text-sm"><img class="h-8 w-8 rounded-full" src="{{ asset('library/images/zalo.svg') }}" alt="Zalo"> Zalo</a>
                         <a href="javascript:void(0);" class="flex items-center gap-x-2 mt-2 text-sm"><img class="h-8 w-8 rounded-full" src="{{ asset('library/images/facebook.svg') }}" alt="Facebook"> Facebook</a>
                     </div>
                 </dl>
             </div>
-        </div>
-        <div class="absolute left-1/2 top-0 -z-10 -translate-x-1/2 blur-3xl xl:-top-6" aria-hidden="true">
-            <div class="aspect-[1155/678] w-[72.1875rem] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30" style="clip-path: polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)"></div>
         </div>
     </div>
 </footer>

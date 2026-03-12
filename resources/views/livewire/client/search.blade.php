@@ -1,4 +1,4 @@
-<div class="flex lg:relative w-full lg:w-96" x-data="{ isOpenSearch: false }">
+<div class="flex lg:relative w-full lg:w-96 h-8" x-data="{ isOpenSearch: false }">
     <input wire:model='input_search' wire:keydown='search' type="text" name="input_search" placeholder="Tìm kiếm sản phẩm" autocomplete="" class="block border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 w-full">
     @if ($product_search != "")
         <div class="absolute w-full lg:w-96 left-0 top-full z-50 max-h-56 shadow-inner bg-gray-200 overflow-auto">
@@ -7,7 +7,7 @@
             @endif
             @foreach ($product_search as $item)
                 <a href="{{route('product-detail', ['id' => $item->id, 'slug' => $item->slug])}}">
-                    <div class="flex justify-start p-2 border-b border-gray-300 hover:bg-gray-100">
+                    <div class="flex justify-start px-2 py-3 border-b border-gray-300 hover:bg-gray-100">
                         <div class="w-10 h-10 mr-2">
                             @if (count($item->productDetails) > 0 && $item->productDetails[0] && $item->productDetails[0]->image)
                                 @php
