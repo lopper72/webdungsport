@@ -5,9 +5,9 @@
             <p class="whitespace-nowrap mx-auto text-xs md:text-sm">Không có sản phẩm nào.</p>
         @endif
         @foreach ($products as $product)
-            <div class="w-1/2 lg:w-1/3 xl:w-1/4 px-1 md:px-6 py-2 md:py-4 flex flex-col">
+            <div class="w-1/2 lg:w-1/3 xl:w-1/4 p-2 md:p-4">
                 <a href="{{route('product-detail', ['id' => $product->id, 'slug' => $product->slug])}}">
-                    <div class="w-full h-52 md:h-64">
+                    <div class="w-full aspect-w-1 aspect-h-1 overflow-hidden">
                         @if (count($product->productDetails) > 0 && $product->productDetails[0] && $product->productDetails[0]->image)
                             @php
                                 $imageThumbnailCheck = json_decode($product->productDetails[0]->image);   
@@ -18,11 +18,9 @@
                             <img src="{{ asset('library/images/image-not-found.jpg') }}" alt="Không có hình ảnh sản phẩm" class="hover:grow hover:shadow-lg  w-full h-full object-cover">
                         @endif
                     </div>
-                    <div class="pt-3 flex items-center justify-between" title="{{$product->name}}">
-                        <p class="text-gray-900 font-medium text-xs md:text-sm uppercase truncate">
-                            {{ $product->name ? $product->name : '-'}}
-                        </p>
-                    </div>
+                    <p class="pt-3 text-gray-900 font-medium text-xs md:text-sm uppercase truncate" title="{{$product->name}}">
+                        {{ $product->name ? $product->name : '-'}}
+                    </p>
                     <p class="pt-1 text-gray-900 font-medium text-xs uppercase">{{$product->code}}</p>
                     <p class="text-gray-900 font-medium">
                         @if(Auth::check())
