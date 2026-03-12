@@ -153,6 +153,7 @@
                                         Nhãn hàng
                                     </a>
                                 </li>
+                               
                                 <li @if (in_array("TMDTSP", explode(',', $list_active_modules)) && in_array("TMDTSP", explode(',', $list_active_user))) @else style='display:none' @endif>
                                     <a  class="group relative flex items-center gap-2 rounded-md px-2 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
                                         href="{{route('admin.products')}}"
@@ -217,11 +218,24 @@
                                         Quản lý công nợ
                                     </a>
                                 </li>
+                                 <li @if (in_array("TMDTTT", explode(',', $list_active_modules)) && in_array("TMDTTT", explode(',', $list_active_user))) @else style='display:none' @endif>
+                                    <a  class="group relative flex items-center gap-2 rounded-md px-2 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
+                                        href="{{route('admin.sliders')}}"
+                                        :class="page === 'sliders' && '!text-white'">
+                                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                            <path d="M12 4l-8 4l8 4l8 -4l-8 -4"></path>
+                                            <path d="M4 12l8 4l8 -4"></path>
+                                            <path d="M4 18l8 4l8 -4"></path>
+                                        </svg>
+                                        Thanh Trượt
+                                    </a>
+                                </li>
                             </ul>
                         </div>
                     </li>
 
-                    <li @if(auth()->user()->is_super_admin != 1) style='display:none' @endif>
+                    <li @if (in_array("CDTM", explode(',', $list_active_modules)) && in_array("CDTM", explode(',', $list_active_user))) @else style='display:none' @endif>
                         <a
                             class="group relative flex items-center gap-2 rounded-sm py-1 px-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
                             href="#"

@@ -1,7 +1,7 @@
 <div class="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
     <div class="px-4 py-6 md:px-6 xl:px-7.5">
         <div class="flex justify-between items-center">
-            <h4 class="text-xl font-bold text-black dark:text-white inline">DANH SÁCH SLIDE</h4>
+            <h4 class="text-xl font-bold text-black dark:text-white inline">DANH SÁCH THANH TRƯỢT</h4>
             <a href="{{route('admin.sliders.add')}}" class="inline-flex items-center px-4 py-2 bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-600 active:bg-blue-700 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
                 Thêm mới
             </a>
@@ -25,7 +25,9 @@
                         </svg>
                     </th>
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-12 text-center">STT</th>
+                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-20 text-center"></th>
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Tiêu đề</th>
+                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Sắp xếp</th>
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Mô tả</th>
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-36 text-center">Hành Động</th>
                 </tr>
@@ -42,7 +44,15 @@
                             <input type="checkbox" name="cbx_delete_slide" class="cursor-pointer w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" wire:model="selected_index.{{$index}}" value="{{$slide->id}}">
                         </td>
                         <td class="px-2 py-2 whitespace-nowrap text-center">{{ $slides->perPage() * ($slides->currentPage() - 1) + $loop->iteration }}</td>
+                        <td class="px-2 py-2 whitespace-nowrap text-center">
+                            @if ($slide->image)
+                                <img src="{{ asset('storage/images/slides/' . $slide->image) }}" alt="Brand Logo" class="w-15 h-15 shadow-md">
+                            @else
+                                <img src="{{ asset('library/images/image-not-found.jpg') }}" alt="Brand Logo" class="w-15 h-15 shadow-md">
+                            @endif
+                        </td>
                         <td class="px-2 py-2 whitespace-nowrap">{{$slide->title}}</td>
+                        <td class="px-2 py-2 whitespace-nowrap">{{$slide->sort_order}}</td>
                         <td class="px-2 py-2 whitespace-nowrap" title="{{$slide->description}}">
                             @if (strlen($slide->description) > 50)
                                 {{ substr($slide->description, 0, 50) }}...
@@ -97,12 +107,10 @@
                 }
             }
             if (countChecked == 0) {
-                const popupWarning = document.querySelector('[data-modal-target="popup-warning"]');
-                popupWarning.click();
+                const popupWarning = document.querySelector('[data-modal-target="popup-warning"]');                popupWarning.click();
                 parseInfoWarning('Bạn chưa chọn slide nào để xóa');
             } else {
-                const popupDeleteMultiple = document.querySelector('[data-modal-target="popup-delete-multiple-item"]');
-                popupDeleteMultiple.click();
+                const popupDeleteMultiple = document.querySelector('[data-modal-target="popup-delete-multiple-item"]');                popupDeleteMultiple.click();
                 parseInfoDeleteMultiple('deleteListCheckbox()');
             }
         }
@@ -110,8 +118,7 @@
     @script
         <script>
             $wire.on('error', (data) => {
-                const popupWarning = document.querySelector('[data-modal-target="popup-warning"]');
-                setTimeout(() => {
+                const popupWarning = document.querySelector('[data-modal-target="popup-warning"]');                setTimeout(() => {
                     popupWarning.click();
                     parseInfoWarning(data[0].error);
                 }, 500);

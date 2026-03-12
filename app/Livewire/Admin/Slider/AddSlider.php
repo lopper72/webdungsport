@@ -14,10 +14,16 @@ class AddSlider extends Component
     public $existedPhoto;
     public $title;
     public $description;
-    public $italic_text;
-    public $button_text;
     public $link;
+    public $sort_order = 0;
     public $status = 1;
+
+    public function mount()
+    {
+        // Set default sort order to count + 1
+        $countOrder = Slide::count();
+        $this->sort_order = $countOrder + 1;
+    }
 
     public function store()
     {
@@ -37,8 +43,6 @@ class AddSlider extends Component
         $slider = new Slide();
         $slider->title = $this->title;
         $slider->description = $this->description;
-        $slider->italic_text = $this->italic_text;
-        $slider->button_text = $this->button_text;
         $slider->link = $this->link;
         $slider->image = $imageName;
         if($this->status == false){
@@ -48,6 +52,41 @@ class AddSlider extends Component
         }
         $slider->is_active = $this->status;
         $slider->save();
+
+        // Always reorganize all sliders based on the input order
+        // Get all sliders ordered by sort_order
+        $sliders = Slide::orderBy('sort_order')->get();
+        
+        // Insert new slider at specified position
+        $inserted = false;
+        $updatedSliders = collect();
+        $orderCounter = 1;
+        
+        foreach ($sliders as $sliderItem) {
+            if (!$inserted && $orderCounter == $this->sort_order) {
+                // Insert new slider here
+                $slider->sort_order = $orderCounter;
+                $updatedSliders->push($slider);
+                $inserted = true;
+                $orderCounter++;
+            }
+            
+            // Update other slider's order
+            $sliderItem->sort_order = $orderCounter;
+            $updatedSliders->push($sliderItem);
+            $orderCounter++;
+        }
+        
+        // If not inserted yet (new order is last), insert at the end
+        if (!$inserted) {
+            $slider->sort_order = $orderCounter;
+            $updatedSliders->push($slider);
+        }
+        
+        // Save all updated sliders
+        foreach ($updatedSliders as $updatedSlider) {
+            $updatedSlider->save();
+        }
         return redirect()->route('admin.sliders');
     }
 

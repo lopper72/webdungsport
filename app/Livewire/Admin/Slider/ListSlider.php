@@ -46,7 +46,7 @@ class ListSlider extends Component
 
     public function render()
     {
-        $slides = Slide::paginate(10);
+        $slides = Slide::orderBy('sort_order')->paginate(10);
         $this->list_slide = collect($slides->items());
         return view('livewire.admin.slider.list-slider', compact('slides'));
     }
