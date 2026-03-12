@@ -58,15 +58,6 @@
                                     </div>
                                 </div>
                                 <div class="col-span-1 sm:col-span-4">
-                                    <label for="product_retail_price" class="block text-sm font-medium leading-6 text-gray-900">Giá bản lẻ (VND) <span class="text-red-700">*</span></label>
-                                    <div class="mt-2">
-                                        <input wire:model="product_retail_price" type="text" name="product_retail_price" id="product_retail_price" autocomplete="product_retail_price" class="text-right block w-full rounded-md border-0 px-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                                    </div>
-                                    @error('product_retail_price')
-                                        <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-span-1 sm:col-span-4">
                                     <label for="product_wholesale_price" class="block text-sm font-medium leading-6 text-gray-900">Giá bản sỉ (VND) <span class="text-red-700">*</span></label>
                                     <div class="mt-2">
                                         <input wire:model="product_wholesale_price" type="text" name="product_wholesale_price" id="product_wholesale_price" autocomplete="product_wholesale_price" class="text-right block w-full rounded-md border-0 px-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
@@ -84,18 +75,33 @@
                                         <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
                                     @enderror
                                 </div>
+                                <div class="col-span-1 sm:col-span-8">
+                                    <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-8">
+                                        <div class="col-span-1 sm:col-span-2 md:col-span-4">
+                                            <label for="is_sales" class="block text-sm font-medium leading-6 text-gray-900">Đang giảm giá/ Không giảm giá</label>
+                                            <div class="mt-2">
+                                                <input type="checkbox" wire:model="is_sales" wire:click="toggleSales" @checked(old('active', $is_sales)) class="cursor-pointer w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" name="is_sales" id="is_sales" value="{{$is_sales}}">
+                                        
+                                            </div>
+                                        </div>
+                                       
+                                            <div class="col-span-1 sm:col-span-2 md:col-span-4" id="sales_price_container"  @if($is_sales == '0') style="display:none" @endif>
+                                                <label for="product_sales_price" class="block text-sm font-medium leading-6 text-gray-900">Nhập giá sales</label>
+                                                <div class="mt-2">
+                                                    <input wire:model="product_sales_price" type="text" name="product_sales_price" id="product_sales_price" autocomplete="product_sales_price" class="text-right block w-full rounded-md border-0 px-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                                                </div>
+                                                @error('product_sales_price')
+                                                    <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                       
+                                    </div>
+                                </div>
                                 <div class="col-span-1 sm:col-span-4">
                                     <label for="is_active" class="block text-sm font-medium leading-6 text-gray-900">Hoạt động/ Không hoạt động</label>
                                     <div class="mt-2">
                                         
                                         <input type="checkbox" @checked(old('active', $is_active)) class="cursor-pointer w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" wire:model="is_active" name="is_active" id="is_active" value="{{$is_active}}">
-                                    </div>
-                                </div>
-                                <div class="col-span-1 sm:col-span-4">
-                                    <label for="is_sales" class="block text-sm font-medium leading-6 text-gray-900">Đang giảm giá/ Không giảm giá</label>
-                                    <div class="mt-2">
-                                        
-                                        <input type="checkbox" @checked(old('sales', $is_sales)) class="cursor-pointer w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" wire:model="is_sales" name="is_sales" id="is_sales" value="{{$is_sales}}">
                                     </div>
                                 </div>
                                 <div class="col-span-1 sm:col-span-8">
@@ -233,6 +239,27 @@
     </form>
 </div>
 <script>
+    // JavaScript for checkbox functionality and currency formatting
+    document.addEventListener('DOMContentLoaded', function() {
+        const isSalesCheckbox = document.getElementById('is_sales');
+        const salesPriceContainer = document.getElementById('sales_price_container');
+        const salesPriceInput = document.getElementById('product_sales_price');
+        const wholesalePriceInput = document.getElementById('product_wholesale_price');
+
+        // Show/hide sales price field based on checkbox
+        function toggleSalesPriceField() {
+            if (isSalesCheckbox.checked) {
+                salesPriceContainer.style.display = 'block';
+                salesPriceInput.required = true;
+            } else {
+                salesPriceContainer.style.display = 'none';
+                salesPriceInput.required = false;
+                salesPriceInput.value = '';
+            }
+        }
+
+    });
+
     ClassicEditor
         .create( document.querySelector( '#product_description' ),{
             ckfinder: {

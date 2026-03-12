@@ -17,7 +17,6 @@ class AddProduct extends Component
     public $product_name;
     public $category_id;
     public $brand_id;
-    public $product_retail_price = 0;
     public $product_wholesale_price = 0;
     public $product_description;
     public $product_uom = 'Cái';
@@ -33,6 +32,7 @@ class AddProduct extends Component
     public $categories;
     public $is_active = '1';
     public $is_sales = '0';
+    public $product_sales_price = 0;
 
     public function mount($brands, $categories)
     {
@@ -87,11 +87,23 @@ class AddProduct extends Component
         $this->product_detail_image_list[$index] = array_values($this->product_detail_image_list[$index]);
     }
 
+    public function updatedIsSales()
+    {
+        // Reset sales price when checkbox is unchecked
+        if ($this->is_sales != '1') {
+            $this->product_sales_price = 0;
+        }
+    }
+    public function toggleSales()
+    {
+        // Toggle the sales state
+        //$this->is_sales = $this->is_sales == '1' ? '0' : '1';
+    }
+
     public function storeProduct(){
         $this->validate([
             'product_code' => 'required|unique:products,code',
             'product_name' => 'required|unique:products,name',
-            'product_retail_price' => 'required|numeric',
             'product_wholesale_price' => 'required|numeric',
             'product_uom' => 'required',
         ], [
@@ -99,12 +111,20 @@ class AddProduct extends Component
             'product_code.unique' => 'Mã sản phẩm đã tồn tại.',
             'product_name.required' => 'Tên sản phẩm là bắt buộc.',
             'product_name.unique' => 'Tên sản phẩm đã tồn tại.',
-            'product_retail_price.required' => 'Giá bán lẻ là bắt buộc.',
-            'product_retail_price.numeric' => 'Giá bán lẻ phải là số.',
             'product_wholesale_price.required' => 'Giá bán sỉ là bắt buộc.',
             'product_wholesale_price.numeric' => 'Giá bán sỉ phải là số.',
             'product_uom.required' => 'Đơn vị tính là bắt buộc.'
         ]);
+
+        if ($this->is_sales == '1') {
+            $this->validate([
+                'product_sales_price' => 'required|numeric|max:' . $this->product_wholesale_price,
+            ], [
+                'product_sales_price.required' => 'Giá sales là bắt buộc khi đang giảm giá.',
+                'product_sales_price.numeric' => 'Giá sales phải là số.',
+                'product_sales_price.max' => 'Giá sales phải nhỏ hơn hoặc bằng giá bán sỉ.'
+            ]);
+        }
 
         for($i = 0; $i < $this->product_detail_number; $i++){
             $this->validate([
@@ -119,8 +139,9 @@ class AddProduct extends Component
         $product->name = $this->product_name;
         $product->category_id = $this->category_id;
         $product->brand_id = $this->brand_id;
-        $product->retail_price = $this->product_retail_price;
+        $product->retail_price = $this->product_wholesale_price; // Set retail_price to wholesale_price
         $product->wholesale_price = $this->product_wholesale_price;
+        $product->sales_price = $this->is_sales == '1' ? $this->product_sales_price : null;
         $product->description = $this->product_description;
         $product->slug = Str::of($this->product_name)->slug('-');
         $product->uom = $this->product_uom;
@@ -141,8 +162,9 @@ class AddProduct extends Component
                 $this->product_detail_list[$i]->short_description = $this->product_detail_short_description[$i];
             }
             $this->product_detail_list[$i]->product_id = $product->id;
-            $this->product_detail_list[$i]->retail_price = $product->retail_price;
+            $this->product_detail_list[$i]->retail_price = $product->wholesale_price;
             $this->product_detail_list[$i]->wholesale_price = $product->wholesale_price;
+            // Remove sales_price assignment since it doesn't exist in product_detail table
 
             if(array_key_exists($i, $this->product_detail_image_list)){
                 $image_list = $this->product_detail_image_list[$i];
