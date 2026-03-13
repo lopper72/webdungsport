@@ -23,12 +23,11 @@
     </div>
     <div class='relative w-full lg:w-4/5'>
         <div class="my-slider">
-            <div class="item-slider">
-                <img src="{{ asset('library/images/slider.jpg') }}" alt="slider" class="w-full h-full object-cover">
-            </div>
-            <div class="item-slider">
-                <img src="{{ asset('library/images/slider.jpg') }}" alt="slider" class="w-full h-full object-cover">
-            </div>
+            @foreach($slides as $slide)
+                <div class="item-slider">
+                    <img src="{{ asset('storage/images/slides/' . $slide->image) }}" alt="{{$slide->title}}" class="w-full h-[450px] object-cover">
+                </div>
+            @endforeach
         </div>
     </div>
 </div>
