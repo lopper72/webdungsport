@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use App\Models\Brand;
+use App\Models\Slide;
 
 class IndexController extends Controller
 {
@@ -22,6 +23,7 @@ class IndexController extends Controller
         $new_products = Product::where('is_active', '=', '1')->orWhereNull('is_active')->orderBy('id', 'desc')->limit(8)->get();
         $best_seller_products = OrderDetail::select('product_id', DB::raw('SUM(quantity) as total_quantity'))->groupBy('product_id')->orderBy('total_quantity', 'desc')->limit(8)->get();
         $brands = Brand::orderBy('id', 'desc')->limit(8)->get();
-        return view('client.index', ['new_products' => $new_products, 'best_seller_products' => $best_seller_products, 'brands' => $brands]);
+        $slides = Slide::orderBy('sort_order')->limit(8)->get();
+        return view('client.index', ['new_products' => $new_products, 'best_seller_products' => $best_seller_products, 'brands' => $brands, 'slides' => $slides]);
     }
 }
