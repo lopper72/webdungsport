@@ -21,12 +21,12 @@
                             {{date('d-m-Y', strtotime($order_date))}}
                         </div>
                     </div>
-                    <div class="col-span-4 sm:col-span-1">
+                    <!-- <div class="col-span-4 sm:col-span-1">
                         <label class="block text-sm font-medium leading-6 text-gray-900">Hình thức thanh toán <span class="text-red-700">*</span></label>
                         <div class="mt-2">
                             {{$payment_method_name}}
                         </div>
-                    </div>
+                    </div> -->
                     <div class="col-span-4 sm:col-span-1">
                         <label class="block text-sm font-medium leading-6 text-gray-900">Trạng thái thanh toán <span class="text-red-700">*</span></label>
                         <div class="mt-2">
@@ -48,36 +48,36 @@
                             {{$order_note}}
                         </div>
                     </div>
-                    <div class="col-span-4 sm:col-span-1">
+                    <!-- <div class="col-span-4 sm:col-span-1">
                         <label for="order_phone" class="block text-sm font-medium leading-6 text-gray-900">Số điện thoại người nhận hàng <span class="text-red-700">*</span></label>
                         <div class="mt-2">
                             {{$order_phone}}
                         </div>
-                    </div>
-                    <div class="col-span-4 sm:col-span-1">
+                    </div> -->
+                    <!-- <div class="col-span-4 sm:col-span-1">
                         <label for="order_email" class="block text-sm font-medium leading-6 text-gray-900">Email người nhận hàng <span class="text-red-700">*</span></label>
                         <div class="mt-2">
                             {{$order_email}}
                         </div>
-                    </div>
-                    <div class="col-span-4 sm:col-span-2">
+                    </div> -->
+                    <!-- <div class="col-span-4 sm:col-span-2">
                         <label for="order_address" class="block text-sm font-medium leading-6 text-gray-900">Địa chỉ nhận hàng <span class="text-red-700">*</span> <i>(Số nhà, tên đường, phường/xã)</i></label>
                         <div class="mt-2">
                             {{$order_address}}
                         </div>
-                    </div>
-                    <div class="col-span-4 sm:col-span-1">
+                    </div> -->
+                    <!-- <div class="col-span-4 sm:col-span-1">
                         <label for="order_state" class="block text-sm font-medium leading-6 text-gray-900">Quận/Huyện <span class="text-red-700">*</span></label>
                         <div class="mt-2">
                             {{$order_state}}
                         </div>
-                    </div>
-                    <div class="col-span-4 sm:col-span-1">
+                    </div> -->
+                    <!-- <div class="col-span-4 sm:col-span-1">
                         <label for="order_city" class="block text-sm font-medium leading-6 text-gray-900">Tỉnh/Thành Phố <span class="text-red-700">*</span></label>
                         <div class="mt-2">
                             {{$order_city}}
                         </div>
-                    </div>
+                    </div> -->
                 </div>
                 <div class="mt-6">
                     <div class="flex justify-between items-center">
@@ -92,7 +92,7 @@
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider text-left">Sản phẩm</th>
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-left">Mẫu</th>
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-24 text-left">Size</th>
-                                <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-48 text-left">Kho</th>
+                                <!-- <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-48 text-left">Kho</th> -->
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-32 text-right">Số lượng</th>
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-32 text-right">Đơn giá</th>
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-32 text-right">Thành tiền</th>
@@ -117,9 +117,9 @@
                                     <td class="px-2 py-2 whitespace-nowrap text-left">
                                         {{$order_detail['product_size']['size']}}
                                     </td>
-                                    <td class="px-2 py-2 whitespace-nowrap text-left">
+                                    <!-- <td class="px-2 py-2 whitespace-nowrap text-left">
                                         {{$order_detail['warehouse']['name']}}
-                                    </td>
+                                    </td> -->
                                     <td class="px-2 py-2 whitespace-nowrap text-right">
                                         {{$order_detail['quantity']}}
                                     </td>
@@ -178,7 +178,7 @@
                             <input wire:model="total_amount" type="hidden" name="total_amount" id="total_amount">
                         </td>
                     </tr>
-                    <tr>
+                    <tr style ="display:none">
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
                         <td scope="col" class="px-2 py-2 text-xs sm:text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Nợ Cũ</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">

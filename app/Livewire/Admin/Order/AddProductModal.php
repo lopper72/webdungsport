@@ -27,7 +27,7 @@ class AddProductModal extends ModalComponent
     public $product_unit_price = 0;
     public $product_total_amount = 0;
     public $note = '';
-    public $warehouse_id;
+    public $warehouse_id = 1;
     public $order_product;
     public $classRef;
 
@@ -65,7 +65,7 @@ class AddProductModal extends ModalComponent
                 'product_id' => 'required',
                 'product_detail_id' => 'required',
                 'product_size_id' => 'required',
-                'warehouse_id' => 'required',
+                // 'warehouse_id' => 'required',
                 'product_quantity' => 'required|numeric|min:1',
                 'product_unit_price' => 'required|numeric|min:0',
                 'product_total_amount' => 'required|numeric|min:0',
@@ -74,7 +74,7 @@ class AddProductModal extends ModalComponent
                 'product_id.required' => 'Trường sản phẩm là bắt buộc.',
                 'product_detail_id.required' => 'Trường chi tiết sản phẩm là bắt buộc.',
                 'product_size_id.required' => 'Trường kích thước là bắt buộc.',
-                'warehouse_id.required' => 'Trường kho hàng là bắt buộc.',
+                // 'warehouse_id.required' => 'Trường kho hàng là bắt buộc.',
                 'product_quantity.required' => 'Trường số lượng là bắt buộc.',
                 'product_quantity.numeric' => 'Trường số lượng phải là số.',
                 'product_quantity.min' => 'Trường số lượng phải lớn hơn 0.',
@@ -99,8 +99,8 @@ class AddProductModal extends ModalComponent
         $this->order_product->product_detail_name = $this->order_product->product_detail->title;
         $this->order_product->size_id = $this->product_size_id;
         $this->order_product->size_name = $this->order_product->product_size->size;
-        $this->order_product->warehouse_id = $this->warehouse_id;
-        $this->order_product->warehouse_name = $this->order_product->warehouse->name;
+        $this->order_product->warehouse_id = 1;
+        $this->order_product->warehouse_name = "TK";
         $this->order_product->quantity = $this->product_quantity;
         $this->order_product->unit_price = $this->product_unit_price;
         $this->order_product->total_amount = $this->product_total_amount;

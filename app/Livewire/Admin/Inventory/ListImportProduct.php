@@ -53,7 +53,13 @@ class ListImportProduct extends Component
         }
         $product->delete();
     }
-
+    public function handleDetele($id)
+    {
+        // This method is required by the shared delete confirmation modal
+        // but the AddImportProduct component doesn't need actual delete functionality
+        // since it's used for adding new import products, not deleting existing ones
+        return;
+    }
     public function updateImportProduct($id,$code){
         ImportProductDetail::where('import_product_id', $id)
             ->update([

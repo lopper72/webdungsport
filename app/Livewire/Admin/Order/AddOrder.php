@@ -16,7 +16,7 @@ class AddOrder extends Component
     public $order;
     public $order_details = [];
     public $order_code;
-    public $payment_method_id = '';
+    public $payment_method_id = '1';
     public $payment_status = '';
     public $customer_id = '';
     public $order_date = '';
@@ -145,10 +145,10 @@ class AddOrder extends Component
             'order_date' => 'required',
             'order_status' => 'required',
             'order_code' => 'required',
-            'order_phone' => 'required',
-            'order_address' => 'required',
-            'order_state' => 'required',
-            'order_city' => 'required'
+            // 'order_phone' => 'required',
+            // 'order_address' => 'required',
+            // 'order_state' => 'required',
+            // 'order_city' => 'required'
         ], [
             'customer_id.required' => 'Trường khách hàng là bắt buộc.',
             'payment_method_id.required' => 'Trường phương thức thanh toán là bắt buộc.',
@@ -156,10 +156,10 @@ class AddOrder extends Component
             'order_date.required' => 'Trường ngày đặt hàng là bắt buộc.',
             'order_status.required' => 'Trường trạng thái đơn hàng là bắt buộc.',
             'order_code.required' => 'Trường mã đơn hàng là bắt buộc.',
-            'order_phone.required' => 'Trường số điện thoại đơn hàng là bắt buộc.',
-            'order_address.required' => 'Trường địa chỉ đơn hàng là bắt buộc.',
-            'order_state.required' => 'Trường tỉnh/thành phố đơn hàng là bắt buộc.',
-            'order_city.required' => 'Trường quận/huyện đơn hàng là bắt buộc.'
+            // 'order_phone.required' => 'Trường số điện thoại đơn hàng là bắt buộc.',
+            // 'order_address.required' => 'Trường địa chỉ đơn hàng là bắt buộc.',
+            // 'order_state.required' => 'Trường tỉnh/thành phố đơn hàng là bắt buộc.',
+            // 'order_city.required' => 'Trường quận/huyện đơn hàng là bắt buộc.'
         ]);
     }
 

@@ -36,20 +36,6 @@
                         @enderror
                     </div>
                     <div class="col-span-4 sm:col-span-1">
-                        <label class="block text-sm font-medium leading-6 text-gray-900">Hình thức thanh toán <span class="text-red-700">*</span></label>
-                        <div class="mt-2">
-                            <select wire:model="payment_method_id" id="payment_method" name="payment_method" class="convert-to-dropdown block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                                <option value="">-</option>
-                                @foreach($payment_methods as $payment_method)
-                                    <option value="{{$payment_method->id}}">{{$payment_method->name}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        @error('payment_method_id')
-                            <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div class="col-span-4 sm:col-span-1">
                         <label class="block text-sm font-medium leading-6 text-gray-900">Trạng thái thanh toán <span class="text-red-700">*</span></label>
                         <div class="mt-2">
                             <select wire:model="payment_status" id="payment_status" name="payment_status" class="convert-to-dropdown block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
@@ -67,51 +53,6 @@
                         <div class="mt-2">
                             <textarea wire:model="order_note" name="order_note" id="order_note" rows="3" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"></textarea>
                         </div>
-                    </div>
-                    <div class="col-span-4 sm:col-span-1">
-                        <label for="order_phone" class="block text-sm font-medium leading-6 text-gray-900">Số điện thoại người nhận hàng <span class="text-red-700">*</span></label>
-                        <div class="mt-2">
-                            <input wire:model="order_phone" type="text" name="order_phone" id="order_phone" autocomplete="order_phone" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                        </div>
-                        @error('order_phone')
-                            <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div class="col-span-4 sm:col-span-1">
-                        <label for="order_phone" class="block text-sm font-medium leading-6 text-gray-900">Email người nhận hàng <span class="text-red-700">*</span></label>
-                        <div class="mt-2">
-                            <input wire:model="order_email" type="text" name="order_email" id="order_email" autocomplete="order_email" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                        </div>
-                        @error('order_phone')
-                            <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div class="col-span-4 sm:col-span-2">
-                        <label for="order_address" class="block text-sm font-medium leading-6 text-gray-900">Địa chỉ nhận hàng <span class="text-red-700">*</span> <i>(Số nhà, tên đường, phường/xã)</i></label>
-                        <div class="mt-2">
-                            <textarea wire:model="order_address" name="order_address" id="order_address" rows="3" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"></textarea>
-                        </div>
-                        @error('order_address')
-                            <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div class="col-span-4 sm:col-span-1">
-                        <label for="order_state" class="block text-sm font-medium leading-6 text-gray-900">Quận/Huyện <span class="text-red-700">*</span></label>
-                        <div class="mt-2">
-                            <input wire:model="order_state" type="text" name="order_state" id="order_state" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                        </div>
-                        @error('order_state')
-                            <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div class="col-span-4 sm:col-span-1">
-                        <label for="order_city" class="block text-sm font-medium leading-6 text-gray-900">Tỉnh/Thành Phố <span class="text-red-700">*</span></label>
-                        <div class="mt-2">
-                            <input wire:model="order_city" type="text" name="order_city" id="order_city" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                        </div>
-                        @error('order_city')
-                            <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
-                        @enderror
                     </div>
                 </div>
                 <div class="mt-6">
@@ -131,7 +72,7 @@
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider text-left">Sản phẩm</th>
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-left">Mẫu</th>
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-24 text-left">Size</th>
-                                <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-48 text-left">Kho</th>
+                                <!-- <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-48 text-left">Kho</th> -->
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-32 text-right">Số lượng</th>
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-32 text-right">Đơn giá</th>
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-32 text-right">Thành tiền</th>
@@ -156,9 +97,9 @@
                                     <td class="px-2 py-2 whitespace-nowrap text-left">
                                         {{$order_detail['product_size']['size']}}
                                     </td>
-                                    <td class="px-2 py-2 whitespace-nowrap text-left">
+                                    <!-- <td class="px-2 py-2 whitespace-nowrap text-left">
                                         {{$order_detail['warehouse']['name']}}
-                                    </td>
+                                    </td> -->
                                     <td class="px-2 py-2 whitespace-nowrap text-right">
                                         {{$order_detail['quantity']}}
                                     </td>

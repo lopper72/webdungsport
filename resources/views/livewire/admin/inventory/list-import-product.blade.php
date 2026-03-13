@@ -34,7 +34,7 @@
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-20 text-center">STT</th>
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-52 text-left">Mã nhập hàng</th>
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Tiêu đề</th>
-                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-64 text-left">Kho hàng</th>
+                    <!-- <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-64 text-left">Kho hàng</th> -->
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-center">Hành Động</th>
                 </tr>
             </thead>
@@ -54,7 +54,7 @@
                     <td class="px-2 py-2 whitespace-nowrap text-center">{{$import_products->perPage() * ($import_products->currentPage() - 1) + $loop->iteration }}</td>
                     <td class="px-2 py-2 whitespace-nowrap">{{$import_product->code}}</td>
                     <td class="px-2 py-2 whitespace-nowrap">{{$import_product->name}}</td>
-                    <td class="px-2 py-2 whitespace-nowrap">{{$import_product->warehouse->name}}</td>
+                    <!-- <td class="px-2 py-2 whitespace-nowrap">{{$import_product->warehouse->name}}</td> -->
                     <td class="px-2 py-2 whitespace-nowrap text-center flex justify-center">
                         <a href="{{route('admin.import-product.edit', $import_product->id)}}" class="inline-flex items-center mr-2 text-indigo-600 hover:text-indigo-900">
                             <svg class="icon" data-bs-toggle="tooltip" data-bs-title="View" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

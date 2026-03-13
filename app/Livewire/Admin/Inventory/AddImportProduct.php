@@ -15,7 +15,7 @@ class AddImportProduct extends Component
 {
     public $import_product_code = "";
     public $import_product_name = "";
-    public $warehouse_id = "";
+    public $warehouse_id = "1";
     public $product_id = [];
     public $product_detail_id = [];
     public $size_id = [];
@@ -79,12 +79,12 @@ class AddImportProduct extends Component
         $this->validate([
             'import_product_code' => 'required|unique:import_product,code',
             'import_product_name' => 'required',
-            'warehouse_id' => 'required',
+            // 'warehouse_id' => 'required',
         ], [
             'import_product_code.required' => 'Vui lòng nhập mã nhập hàng.',
             'import_product_code.unique' => 'Mã nhập hàng đã tồn tại.',
             'import_product_name.required' => 'Vui lòng nhập tiêu đề.',
-            'warehouse_id.required' => 'Vui lòng chọn kho hàng.',
+            // 'warehouse_id.required' => 'Vui lòng chọn kho hàng.',
         ]);
 
         if ($this->import_product_detail_count == 0) {
@@ -124,7 +124,7 @@ class AddImportProduct extends Component
         $import_product = new ImportProduct();
         $import_product->code = $this->import_product_code;
         $import_product->name = $this->import_product_name;
-        $import_product->warehouse_id = $this->warehouse_id;
+        $import_product->warehouse_id = 1;
         $import_product->save();
         
         if ($this->import_product_detail_count > 0) {
@@ -141,6 +141,14 @@ class AddImportProduct extends Component
             }
         }
         return redirect()->route('admin.import-product');
+    }
+
+    public function handleDetele($id)
+    {
+        // This method is required by the shared delete confirmation modal
+        // but the AddImportProduct component doesn't need actual delete functionality
+        // since it's used for adding new import products, not deleting existing ones
+        return;
     }
 
     public function render()

@@ -45,17 +45,7 @@
                     </select>
                 </div>
             </div>
-            <div class="col-span-1">
-                <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Kho</label>
-                <div class="mt-2">
-                    <select id="warehouse_id" wire:model="warehouse_id" name="warehouse_id" class="convert-to-dropdown block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                        <option value="">-</option>
-                        @foreach($warehouses as $warehouse)
-                            <option value="{{$warehouse["id"]}}">{{$warehouse["name"]}}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
+      
             <div class="col-span-1">
                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Số lượng</label>
                 <div class="mt-2">
