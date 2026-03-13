@@ -72,7 +72,7 @@
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider text-left">Sản phẩm</th>
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-left">Mẫu</th>
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-24 text-left">Size</th>
-                                <!-- <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-48 text-left">Kho</th> -->
+                               
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-32 text-right">Số lượng</th>
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-32 text-right">Đơn giá</th>
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-32 text-right">Thành tiền</th>
@@ -97,9 +97,7 @@
                                     <td class="px-2 py-2 whitespace-nowrap text-left">
                                         {{$order_detail['product_size']['size']}}
                                     </td>
-                                    <!-- <td class="px-2 py-2 whitespace-nowrap text-left">
-                                        {{$order_detail['warehouse']['name']}}
-                                    </td> -->
+                                
                                     <td class="px-2 py-2 whitespace-nowrap text-right">
                                         {{$order_detail['quantity']}}
                                     </td>
@@ -192,7 +190,7 @@
         <div class="mt-6 flex items-center justify-end gap-x-6">
             <a href="{{route('admin.orders')}}" class="text-sm font-semibold leading-6 text-gray-900">Hủy</a>
             @if($order_status == 'draft')
-                <button type="button" wire:click="draftOrder" class="inline-flex items-center px-4 py-2 bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white tracking-widest hover:bg-blue-600 active:bg-blue-700 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">Lưu nháp</button>
+                <button type="button" style="display:none" wire:click="draftOrder" class="inline-flex items-center px-4 py-2 bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white tracking-widest hover:bg-blue-600 active:bg-blue-700 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">Lưu nháp</button>
                 <button type="button" wire:click="createOrder" class="inline-flex items-center px-4 py-2 bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white tracking-widest hover:bg-blue-600 active:bg-blue-700 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">Tạo đơn</button>
             @else
                 <button type="button" wire:click="updateOrder" class="inline-flex items-center px-4 py-2 bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white tracking-widest hover:bg-blue-600 active:bg-blue-700 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">Cập nhật đơn</button>
