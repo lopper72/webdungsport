@@ -50,48 +50,30 @@ class AddSlider extends Component
         }else{
             $this->status = 1;
         }
+        $slider->sort_order = $this->sort_order;
         $slider->is_active = $this->status;
         $slider->save();
-
-        // Always reorganize all sliders based on the input order
-        // Get all sliders ordered by sort_order
-        $sliders = Slide::orderBy('sort_order')->get();
-        
-        // Insert new slider at specified position
-        $inserted = false;
-        $updatedSliders = collect();
-        $orderCounter = 1;
-        
-        foreach ($sliders as $sliderItem) {
-            if (!$inserted && $orderCounter == $this->sort_order) {
-                // Insert new slider here
-                $slider->sort_order = $orderCounter;
-                $updatedSliders->push($slider);
-                $inserted = true;
-                $orderCounter++;
-            }
-            
-            // Update other slider's order
-            $sliderItem->sort_order = $orderCounter;
-            $updatedSliders->push($sliderItem);
-            $orderCounter++;
-        }
-        
-        // If not inserted yet (new order is last), insert at the end
-        if (!$inserted) {
-            $slider->sort_order = $orderCounter;
-            $updatedSliders->push($slider);
-        }
-        
-        // Save all updated sliders
-        foreach ($updatedSliders as $updatedSlider) {
-            $updatedSlider->save();
-        }
+        // re-oder
+        $this->reorderSlides();
         return redirect()->route('admin.sliders');
     }
 
     public function render()
     {
         return view('livewire.admin.slider.add-slider');
+    }
+
+    private function reorderSlides()
+    {
+        // Get all slides ordered by sort_order
+        $slides = Slide::orderBy('sort_order')->get();
+        
+        // Reorder starting from 1
+        $newOrder = 1;
+        foreach ($slides as $slide) {
+            $slide->sort_order = $newOrder;
+            $slide->save();
+            $newOrder++;
+        }
     }
 }

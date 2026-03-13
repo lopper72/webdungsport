@@ -39,47 +39,7 @@ class EditSlider extends Component
         }
 
         $slider = Slide::find($this->id);
-        $newSortOrder = $this->sort_order;
-        
-        // Always reorganize all sliders based on the input order
-        // Get all sliders ordered by sort_order
-        $sliders = Slide::orderBy('sort_order')->get();
-        
-        // Remove current slider from the list temporarily
-        $currentSlider = $sliders->where('id', $this->id)->first();
-        $sliders = $sliders->reject('id', $this->id);
-        
-        // Insert current slider at new position
-        $inserted = false;
-        $updatedSliders = collect();
-        $orderCounter = 1;
-        
-        foreach ($sliders as $sliderItem) {
-            if (!$inserted && $orderCounter == $newSortOrder) {
-                // Insert current slider here
-                $currentSlider->sort_order = $orderCounter;
-                $updatedSliders->push($currentSlider);
-                $inserted = true;
-                $orderCounter++;
-            }
-            
-            // Update other slider's order
-            $sliderItem->sort_order = $orderCounter;
-            $updatedSliders->push($sliderItem);
-            $orderCounter++;
-        }
-        
-        // If not inserted yet (new order is last), insert at the end
-        if (!$inserted) {
-            $currentSlider->sort_order = $orderCounter;
-            $updatedSliders->push($currentSlider);
-        }
-        
-        // Save all updated sliders
-        foreach ($updatedSliders as $updatedSlider) {
-            $updatedSlider->save();
-        }
-        
+          
         // Update current slider with new data
         $slider->title = $this->title;
         $slider->description = $this->description;
@@ -95,6 +55,10 @@ class EditSlider extends Component
         $slider->sort_order = $this->sort_order;
         $slider->is_active = $this->status;
         $slider->save();
+        
+        // re-oder
+        $this->reorderSlides();
+      
         return redirect()->route('admin.sliders');
     }
 
@@ -115,5 +79,19 @@ class EditSlider extends Component
         }
         $this->status = $slide->is_active;
         return view('livewire.admin.slider.edit-slider');
+    }
+
+    private function reorderSlides()
+    {
+        // Get all slides ordered by sort_order
+        $slides = Slide::orderBy('sort_order')->get();
+        
+        // Reorder starting from 1
+        $newOrder = 1;
+        foreach ($slides as $slide) {
+            $slide->sort_order = $newOrder;
+            $slide->save();
+            $newOrder++;
+        }
     }
 }
