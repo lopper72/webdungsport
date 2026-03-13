@@ -28,12 +28,12 @@ class AddSlider extends Component
     public function store()
     {
         $this->validate([
-            'photo' => 'required|image|max:1024', // 1MB Max
+            'photo' => 'required|image|max:3072', // 1MB Max
             'title' => 'required',
         ], [
             'photo.image' => 'File không phải là ảnh.',
             'title.required' => 'Vui lòng nhập tiêu đề.',
-            'photo.max' => 'Ảnh không được lớn hơn 1MB.',
+            'photo.max' => 'Ảnh không được lớn hơn 3MB.',
             'photo.required' => 'Vui lòng chọn ảnh.'
         ]);
         

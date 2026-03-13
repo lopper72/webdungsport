@@ -28,10 +28,10 @@ class EditSlider extends Component
 
         if ($this->photo) {
             $this->validate([
-                'photo' => 'image|max:1024', // 1MB Max
+                'photo' => 'image|max:3072', // 1MB Max
             ], [
                 'photo.image' => 'File không phải là ảnh.',
-                'photo.max' => 'Ảnh không được lớn hơn 1MB.'
+                'photo.max' => 'Ảnh không được lớn hơn 3MB.'
             ]);
             
             $imageName = time() . uniqid() . '.' . $this->photo->extension();

@@ -64,7 +64,7 @@
                                         <input id="file-upload" name="file-upload" wire:model="photo" type="file" class="sr-only">
                                     </label>
                                 </div>
-                                <p class="text-xs leading-5 text-gray-600">PNG, JPG, GIF nhỏ hơn hoặc bằng 1MB</p>
+                                <p class="text-xs leading-5 text-gray-600">PNG, JPG, GIF nhỏ hơn hoặc bằng 3MB(1920x1080)</p>
                                 @error('photo')
                                     <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
                                 @enderror
