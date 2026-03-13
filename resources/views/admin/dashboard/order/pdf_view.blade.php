@@ -55,7 +55,7 @@
 <body>
 
     <div class="invoice-header">
-        <span class="text-header">Gia Tiền Sport</span><br>
+        <span class="text-header">Dũng Trần Sport</span><br>
         <span>{{$title}}</span><br>
         <span>{{$address}}</span><br>
         <span>Hostline: {{$hotline}}</span><br>
@@ -107,7 +107,7 @@
                 <td>Thành tiền:</td>
                 <td>{{number_format($total_price - $discount, 0, ',', '.')}}</td>
             </tr>
-            <tr>
+            <tr style="display:none">
                 <td>Nợ cũ:</td>
                 <td>{{number_format($totalUnpaid_user, 0, ',', '.')}}</td>
             </tr>
