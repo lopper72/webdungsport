@@ -42,7 +42,8 @@ use App\Http\Controllers\Admin\ContactController as AdminContactController;
 use App\Http\Controllers\Client\BrandController as ClientBrandController;
 use App\Http\Controllers\Admin\ArapController;
 use App\Http\Controllers\PDFController;
-
+use App\Http\Controllers\Client\ProductNewController;
+use App\Http\Controllers\Client\ProductBestSellerController;
 
 
 Route::group(['middleware' => [AdminAuth::class]], function () {
@@ -171,3 +172,5 @@ Route::get('/spotlight/search', [SpotlightController::class, 'search'])->name('s
 
 Route::get('/nhan-hang/{slug}', [ClientBrandController::class, 'index'])->name('brand');
 
+Route::get('/san-pham-moi', [ProductNewController::class, 'index'])->name('product_new');
+Route::get('/san-pham-ban-chay', [ProductBestSellerController::class, 'index'])->name('product_best_seller');

@@ -2,9 +2,13 @@
     <div class="flex flex-col items-center justify-center px-6 py-6 mx-auto md:h-screen lg:py-0">
         <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
             <div class="p-6 space-y-4 md:space-y-4 sm:p-8">
-                <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-                    Đăng Nhập
-                </h1>
+                 <a href="{{ route('index') }}" class="pb-4 flex justify-center">
+                    @if ($system_info->logo)
+                        <img src="{{ asset('storage/images/systems/' . $system_info->logo) }}"class="h-16 w-auto">
+                    @else
+                        <img src="{{ asset('library/images/image-not-found.jpg') }}" class="h-16 w-auto">
+                    @endif
+                </a>
                 <form class="space-y-4 md:space-y-6" wire:submit="handleLogin">
                     <div>
                         <label for="email_username" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email hoặc tên đăng nhập</label>

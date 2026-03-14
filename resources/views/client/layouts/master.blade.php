@@ -99,6 +99,7 @@
         <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
 	</head>
 	<body class="bg-gray-300 font-sans leading-normal text-base tracking-normal flex flex-col min-h-screen">
+        <div id="menuBackdrop" class="fixed inset-0 bg-black/70 z-30 hidden lg:hidden"></div>
         @include('client.layouts.menu')
         <div class="w-full mx-auto max-w-full md:max-w-7xl md:px-4 lg:px-8 flex flex-col flex-1">
             <main class="flex-1 bg-white">
@@ -153,6 +154,27 @@
                 arrows: true,
                 autoplaySpeed: 3000
             });
+
+            const showMenuBtn = document.getElementById('showMenu')
+            const closeMenuBtn = document.getElementById('closeMenu')
+            const menuMobi = document.getElementById('menuMobi')
+            const menuBackdrop = document.getElementById('menuBackdrop')
+
+            const openMenu = () => {
+                menuMobi?.classList.remove('-translate-x-full')
+                menuBackdrop?.classList.remove('hidden')
+                document.body.style.overflow = 'hidden'
+            }
+
+            const closeMenu = () => {
+                menuMobi?.classList.add('-translate-x-full')
+                menuBackdrop?.classList.add('hidden')
+                document.body.style.overflow = ''
+            }
+
+            showMenuBtn?.addEventListener('click', openMenu)
+            closeMenuBtn?.addEventListener('click', closeMenu)
+            menuBackdrop?.addEventListener('click', closeMenu)
         });
     </script>
 </html>

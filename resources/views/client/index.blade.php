@@ -16,7 +16,7 @@
                     </span>
                     <h2 class="font-bold">SẢN PHẨM MỚI</h2>
                 </div>
-                <a href="" class="flex flex-wrap items-center justify-end hover:text-gray-300">
+                <a href="{{ route('product_new') }}" class="flex flex-wrap items-center justify-end hover:text-gray-300">
                     <span>Xem tất cả</span>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5" />
@@ -65,7 +65,7 @@
                         </span>
                         <h2 class="font-bold">SẢN PHẨM BÁN CHẠY</h2>
                     </div>
-                    <a href="" class="flex flex-wrap items-center justify-end hover:text-gray-300">
+                    <a href="{{ route('product_best_seller') }}" class="flex flex-wrap items-center justify-end hover:text-gray-300">
                         <span>Xem tất cả</span>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5" />

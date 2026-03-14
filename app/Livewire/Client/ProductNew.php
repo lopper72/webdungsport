@@ -4,22 +4,20 @@ namespace App\Livewire\Client;
 
 use Livewire\Component;
 use App\Models\Product;
-use App\Models\Category;
 use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
 use App\Models\ProductDetail;
 use App\Models\ProductSize;
 use Illuminate\Support\Facades\Request;
 
-class Collection extends Component
+class ProductNew extends Component
 {
     use WithPagination, WithoutUrlPagination; 
     public $slug;
 
     public function render()
     {
-        $category = Category::where('slug', '=', $this->slug )->first();
-        $products = Product::where('category_id', '=', $category->id)->paginate(12);
-        return view('livewire.client.collection', ['products' => $products,'category'=>$category]);
+        $products = Product::where('is_active', '=', '1')->orWhereNull('is_active')->orderBy('id', 'desc')->paginate(12);
+        return view('livewire.client.product-new', ['products' => $products]);
     }
 }

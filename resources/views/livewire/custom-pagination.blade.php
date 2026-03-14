@@ -1,18 +1,6 @@
 @if ($paginator->hasPages())
-    <div class="flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
-        <div class="flex flex-col sm:flex-row sm:flex-1 sm:items-center sm:justify-between">
-            <div>
-                <p class="text-sm text-gray-700">
-                    Đang hiển thị
-                    <span class="font-medium">{{ $paginator->firstItem() }}</span>
-                    tới
-                    <span class="font-medium">{{ $paginator->lastItem() }}</span>
-                    của
-                    <span class="font-medium">{{ $paginator->total() }}</span>
-                    kết quả
-                </p>
-            </div>
-    
+    <div class="flex flex-col sm:flex-row items-center justify-center border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+        <div class="flex flex-col sm:flex-row sm:flex-1 sm:items-center sm:justify-center">
             <div>
                 <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
                     @if ($paginator->onFirstPage())
@@ -44,7 +32,7 @@
                         @if (is_array($element))
                             @foreach ($element as $page => $url)
                                 @if ($page == $paginator->currentPage())
-                                    <button class="relative z-10 inline-flex items-center bg-blue-500 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">{{ $page }}</button>
+                                    <button class="relative z-10 inline-flex items-center bg-red-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">{{ $page }}</button>
                                 @else
                                     <button wire:click="gotoPage({{ $page }})" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">{{ $page }}</button>
                                 @endif

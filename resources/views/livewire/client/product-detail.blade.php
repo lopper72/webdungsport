@@ -70,31 +70,28 @@
                     <div class="mb-2 md:mb-4">
                         <span class="text-sm md:text-md font-bold text-gray-700 dark:text-gray-300 uppercase">TỒN KHO</span>
                         <div class="flex items-center mt-2">
-                            <table class="table-auto w-full divide-y divide-gray-200 text-xs md:text-sm border">
+                            <table class="table w-auto divide-y divide-gray-200 text-sm border">
                                 <thead class="bg-gray-200">
                                     <tr>
-                                        <th class="px-2 md:px-4 py-2 font-medium text-left w-32">Size</th>
-                                        @foreach ($product_sizes as $size)
-                                            <th class="px-2 md:px-4 py-2 font-medium text-center">{{$size->size}}</th>
-                                        @endforeach
-                                        <th class="px-2 md:px-4 py-2 font-bold w-16 md:w-24">Tổng</th>
+                                        <th class="px-2 md:px-4 py-2 font-medium text-left">Size</th>
+                                        <th class="px-2 md:px-4 py-2 font-bold w-32">Tồn kho thực</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td class="px-2 md:px-4 py-2">Tồn kho thực</td>
-                                        @php
-                                            $total_quantity = 0
-                                        @endphp
-                                        @foreach ($product_sizes as $size)
+                                    @php
+                                        $total_quantity = 0;
+                                    @endphp
+                                    @foreach ($product_sizes as $size)
+                                        <tr>
+                                            <td class="px-2 md:px-4 pt-2">{{$size->size}}</td>
                                             @php
                                                 $total_of_size = $size->productAvailable($product_id, $product_detail_id_selected, $size->id, $warehouse_id_selected);
                                                 $total_quantity += $total_of_size;
                                             @endphp
-                                            <td class="px-2 md:px-4 py-2 text-center">
+                                            <td class="px-2 md:px-4 pt-2 text-center">
                                                 @if(Auth::check())
                                                     @if ($total_of_size == 0)
-                                                        <span class="bg-gray-600 rounded-md text-white text-xs ml-2 px-2 py-1">Đặt hàng</span>
+                                                        <span class="bg-gray-600 rounded-md text-white text-xs px-2 py-1">Đặt hàng</span>
                                                     @else
                                                         {{$total_of_size}}
                                                     @endif
@@ -102,7 +99,10 @@
                                                     -
                                                 @endif
                                             </td>
-                                        @endforeach
+                                        </tr>
+                                    @endforeach
+                                    <tr>
+                                        <td class="px-2 md:px-4 py-2">Tổng</td>
                                         <td class="px-2 md:px-4 py-2 font-bold text-center">
                                             @if(Auth::check())
                                                 {{$total_quantity}}
