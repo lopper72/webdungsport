@@ -155,26 +155,20 @@
                 autoplaySpeed: 3000
             });
 
-            const showMenuBtn = document.getElementById('showMenu')
-            const closeMenuBtn = document.getElementById('closeMenu')
-            const menuMobi = document.getElementById('menuMobi')
-            const menuBackdrop = document.getElementById('menuBackdrop')
-
             const openMenu = () => {
-                menuMobi?.classList.remove('-translate-x-full')
-                menuBackdrop?.classList.remove('hidden')
-                document.body.style.overflow = 'hidden'
+                $('#menuMobi').removeClass('-translate-x-full')
+                $('#menuBackdrop').removeClass('hidden')
+                $('body').css('overflow', 'hidden')
             }
 
             const closeMenu = () => {
-                menuMobi?.classList.add('-translate-x-full')
-                menuBackdrop?.classList.add('hidden')
-                document.body.style.overflow = ''
+                $('#menuMobi').addClass('-translate-x-full')
+                $('#menuBackdrop').addClass('hidden')
+                $('body').css('overflow', '')
             }
 
-            showMenuBtn?.addEventListener('click', openMenu)
-            closeMenuBtn?.addEventListener('click', closeMenu)
-            menuBackdrop?.addEventListener('click', closeMenu)
+            $('#showMenu').on('click', openMenu)
+            $('#closeMenu').on('click', closeMenu)
         });
     </script>
 </html>
