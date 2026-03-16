@@ -74,9 +74,6 @@
                 padding: 10px;
                 z-index: 99;
             }
-            .my-slider{
-                position: relative;
-            }
             .my-slider .slick-arrow{
                 position: absolute;
                 padding: 10px;
@@ -94,6 +91,28 @@
             }
             .my-slider .slick-next{
                 right: 15px;
+            }
+            .my-brand .slick-arrow{
+                position: absolute;
+                padding: 5px;
+                top: -25px;
+                transform: translateY(-50%);
+                text-align: center;
+                color: #f91919;
+                background-color: #fff;
+                z-index: 2;
+                cursor: pointer;
+            }
+            .my-brand .slick-prev{
+                right: 40px;
+            }
+            .my-brand .slick-next{
+                right: 10px;
+            }
+            @media (max-width: 767px) {
+                .my-brand .slick-arrow{
+                    top: -22px;
+                }
             }
         </style>
         <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
@@ -144,7 +163,7 @@
                 return false;
             });
 
-             $('.my-slider').slick({
+            $('.my-slider').slick({
                 slidesToShow: 1,
                 slidesToScroll: 1,
                 nextArrow:
@@ -157,19 +176,51 @@
             });
 
             const openMenu = () => {
-                $('#menuMobi').removeClass('-translate-x-full')
-                $('#menuBackdrop').removeClass('hidden')
-                $('body').css('overflow', 'hidden')
+                $('#menuMobi').removeClass('-translate-x-full');
+                $('#menuBackdrop').removeClass('hidden');
+                $('body').css('overflow', 'hidden');
             }
 
             const closeMenu = () => {
-                $('#menuMobi').addClass('-translate-x-full')
-                $('#menuBackdrop').addClass('hidden')
-                $('body').css('overflow', '')
+                $('#menuMobi').addClass('-translate-x-full');
+                $('#menuBackdrop').addClass('hidden');
+                $('body').css('overflow', '');
             }
 
-            $('#showMenu').on('click', openMenu)
-            $('#closeMenu').on('click', closeMenu)
+            $('#showMenu').on('click', openMenu);
+            $('#closeMenu').on('click', closeMenu);
+
+            $('.my-brand').slick({
+                slidesToShow: 8,
+                slidesToScroll: 1,
+                nextArrow:
+                    '<div class="slick-arrow slick-next"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-3"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg></div>',
+                prevArrow:
+                    '<div class="slick-arrow slick-prev"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-3"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg></div>',
+                autoplay: true,
+                arrows: true,
+                autoplaySpeed: 3000,
+                responsive: [
+                    {
+                    breakpoint: 1280,
+                        settings: {
+                            slidesToShow: 6
+                        }
+                    },
+                    {
+                    breakpoint: 1024,
+                        settings: {
+                            slidesToShow: 5
+                        }
+                    },
+                    {
+                    breakpoint: 768,
+                        settings: {
+                            slidesToShow: 4
+                        }
+                    }
+                ]
+            });
         });
     </script>
 </html>

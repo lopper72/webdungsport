@@ -6,7 +6,7 @@
     @include('client.slider')
     @include('client.layouts.brand')
     <section class="bg-white">
-        <div class="container mx-auto flex items-center flex-wrap pt-4">
+        <div class="flex items-center flex-wrap pt-4">
             <div class="w-full flex flex-wrap items-center justify-between px-2 md:px-4 py-3 bg-red-600 text-sm text-white">
                 <div class="flex flex-wrap items-center justify-start gap-2 md:text-lg">
                     <span>
