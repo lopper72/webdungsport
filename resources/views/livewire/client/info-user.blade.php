@@ -6,13 +6,13 @@
                 <div class="image overflow-hidden">
                     @if ($photo || $existedPhoto)
                         @if ($photo)
-                            <img src="{{ $photo->temporaryUrl() }}" alt="Photo Preview" class="w-full h-72 object-cover">
+                            <img src="{{ $photo->temporaryUrl() }}" alt="Photo Preview" class="w-full h-72 object-cover lazyload">
                         @else
-                            <img src="{{ asset('storage/' . $existedPhoto) }}" alt="Photo Preview" class="w-full h-72 object-cover">
+                            <img src="{{ asset('storage/' . $existedPhoto) }}" alt="Photo Preview" class="w-full h-72 object-cover lazyload">
                         @endif
                     @endif
                     @if (!$photo && !$existedPhoto)
-                        <img src="{{ asset('library/images/image-not-found.jpg') }}" alt="Ảnh đại diện" class="w-full h-72 object-cover">
+                        <img src="{{ asset('library/images/image-not-found.jpg') }}" alt="Ảnh đại diện" class="w-full h-72 object-cover lazyload">
                     @endif
                     <div class="mt-2 text-sm leading-6 text-gray-600">
                         <label for="file-upload" class="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500">Tải hình ảnh lên</span>

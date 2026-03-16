@@ -14,9 +14,9 @@
                                     $imageThumbnailCheck = json_decode($item->productDetails[0]->image);   
                                     $imageThumbnail = $imageThumbnailCheck ? $imageThumbnailCheck[0] : $item->productDetails[0]->image;
                                 @endphp
-                                <img class="w-full h-full object-cover" src="{{ asset('storage/images/products/' . $imageThumbnail) }}" alt="{{$item->name}}">
+                                <img class="w-full h-full object-cover lazyload" src="{{ asset('storage/images/products/' . $imageThumbnail) }}" alt="{{$item->name}}">
                             @else
-                                <img class="w-full h-full object-cover" src="{{ asset('library/images/image-not-found.jpg') }}" alt="Không có hình ảnh sản phẩm">
+                                <img class="w-full h-full object-cover lazyload" src="{{ asset('library/images/image-not-found.jpg') }}" alt="Không có hình ảnh sản phẩm">
                             @endif
                         </div>
                         <div class="w-full flex justify-between text-sm">

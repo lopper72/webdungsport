@@ -10,9 +10,9 @@
                                 $imageThumbnailCheck = json_decode($product->productDetails[0]->image);   
                                 $imageThumbnail = $imageThumbnailCheck ? $imageThumbnailCheck[0] : $product->productDetails[0]->image;
                             @endphp
-                            <img src="{{ asset('storage/images/products/' . $imageThumbnail) }}" alt="Hình ảnh sản phẩm" class="hover:grow hover:shadow-lg w-full h-full object-cover">
+                            <img src="{{ asset('storage/images/products/' . $imageThumbnail) }}" alt="Hình ảnh sản phẩm" class="hover:grow hover:shadow-lg w-full h-full object-cover lazyload">
                         @else
-                            <img src="{{ asset('library/images/image-not-found.jpg') }}" alt="Không có hình ảnh sản phẩm" class="hover:grow hover:shadow-lg  w-full h-full object-cover">
+                            <img src="{{ asset('library/images/image-not-found.jpg') }}" alt="Không có hình ảnh sản phẩm" class="hover:grow hover:shadow-lg  w-full h-full object-cover lazyload">
                         @endif
                     </div>
                     <p class="pt-3 text-gray-900 font-medium text-xs md:text-sm uppercase truncate" title="{{$product->name}}">
