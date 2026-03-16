@@ -9,19 +9,19 @@
             <h2 class="font-bold">NHÃN HÀNG</h2>
         </div>
     </div>
-    <div class="flex items-center flex-wrap bg-white">
+    <div class="my-brand py-4 md:py-6 px-2 md:px-4 relative">
         @foreach($brands as $brand)
-            <div class="w-1/4 pt-4 flex flex-col items-center">
-                <a href="{{route('brand',['slug'=>$brand->slug])}}" class="w-auto text-blue-400 lg:hover:text-red-400 text-center items-center">
-                    <div class="mb-2 w-15 h-15 mx-auto">
+            <div class="item-brand text-center">
+                <div class="mb-2 size-12 lg:size-16 mx-auto overflow-hidden">
+                    <a href="{{route('brand',['slug'=>$brand->slug])}}">
                         @if ($brand->logo)
-                            <img src="{{ asset('storage/images/brands/' . $brand->logo) }}" alt="Brand Logo" class="w-full h-full rounded-lg object-cover lazyload">
+                            <img src="{{ asset('storage/images/brands/' . $brand->logo) }}" alt="Brand Logo" class="w-full h-full object-cover lazyload">
                         @else
-                            <img src="{{ asset('library/images/image-not-found.jpg') }}" alt="Brand Logo" class="w-full h-full rounded-lg lazyload">
+                            <img src="{{ asset('library/images/image-not-found.jpg') }}" alt="Brand Logo" class="w-full h-full lazyload">
                         @endif
-                    </div>
-                    <p class="text-gray-900 font-medium text-xs md:text-sm uppercase">{{$brand->name}}</p>
-                </a>
+                    </a>
+                </div>
+                <p class="text-gray-900 font-medium text-xs md:text-sm uppercase"><a href="{{route('brand',['slug'=>$brand->slug])}}">{{$brand->name}}</a></p>
             </div>
         @endforeach
     </div>

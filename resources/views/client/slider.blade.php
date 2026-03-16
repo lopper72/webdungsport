@@ -22,7 +22,7 @@
         </div>
     </div>
     <div class='relative w-full lg:w-4/5'>
-        <div class="my-slider">
+        <div class="my-slider relative">
             @if (count($slides) == 0)
                 <div class="item-slider">
                     <img src="{{ asset('library/images/slider.jpg') }}" alt="Slide Image" class="w-full h-[250px] md:h-[450px] object-cover lazyload">
