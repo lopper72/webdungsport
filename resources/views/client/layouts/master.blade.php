@@ -97,6 +97,7 @@
             }
         </style>
         <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js" async></script>
 	</head>
 	<body class="bg-gray-300 font-sans leading-normal text-base tracking-normal flex flex-col min-h-screen">
         <div id="menuBackdrop" class="fixed inset-0 bg-black/70 z-30 hidden lg:hidden"></div>

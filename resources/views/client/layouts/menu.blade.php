@@ -12,9 +12,9 @@
             <a href="{{ route('index') }}">
                 <span class="sr-only">Your Company</span>
                 @if ($system_info->logo)
-                    <img src="{{ asset('storage/images/systems/' . $system_info->logo) }}"class="h-16 w-auto">
+                    <img src="{{ asset('storage/images/systems/' . $system_info->logo) }}"class="h-16 w-auto lazyload" alt="Logo">
                 @else
-                    <img src="{{ asset('library/images/image-not-found.jpg') }}" class="h-16 w-auto">
+                    <img src="{{ asset('library/images/image-not-found.jpg') }}" class="h-16 w-auto lazyload" alt="Logo">
                 @endif
             </a>
             <form action="{{ route('spotlight.search') }}" class="w-full order-4 mt-2 lg:order-3 lg:w-auto lg:mt-0">
@@ -35,9 +35,9 @@
                     <div class="relative" x-data="{ isOpenProfile: false }">
                         <button @click="isOpenProfile = !isOpenProfile" aria-expanded="false" type="button" class="flex items-center gap-2 text-white text-sm rounded-lg px-3 h-12 bg-red-600 hover:bg-red-700 transition-colors" id="user-menu">
                             @if(Auth::user()->avatar_user)
-                                <img class="h-8 w-8 rounded-full object-cover" src="{{ asset('storage/images/users/' . Auth::user()->avatar_user) }}" alt="{{Auth::user()->name}}">
+                                <img class="h-8 w-8 rounded-full object-cover lazyload" src="{{ asset('storage/images/users/' . Auth::user()->avatar_user) }}" alt="{{Auth::user()->name}}">
                             @else
-                                <img class="h-8 w-8 rounded-full" src="{{ asset('library/images/user/user-01.png') }}" alt="User Avatar">
+                                <img class="h-8 w-8 rounded-full lazyload" src="{{ asset('library/images/user/user-01.png') }}" alt="User Avatar">
                             @endif
                             <p class="text-center hidden md:block">
                                 {{substr(Auth::user()->name, 0, 10)}}
@@ -75,9 +75,9 @@
     <div class="pb-4 flex justify-center">
         <a href="{{ route('index') }}">
             @if ($system_info->logo)
-                <img src="{{ asset('storage/images/systems/' . $system_info->logo) }}"class="h-16 w-auto">
+                <img src="{{ asset('storage/images/systems/' . $system_info->logo) }}"class="h-16 w-auto lazyload" alt="Logo">
             @else
-                <img src="{{ asset('library/images/image-not-found.jpg') }}" class="h-16 w-auto">
+                <img src="{{ asset('library/images/image-not-found.jpg') }}" class="h-16 w-auto lazyload" alt="Logo">
             @endif
         </a>
     </div>
@@ -86,9 +86,9 @@
             <a href="{{route('collection',['slug'=>$category->slug])}}" class="flex items-center gap-2 p-2 text-gray-900 border-b">
                 <div class="size-8 rounded-full overflow-hidden">
                     @if ($category->image)
-                        <img src="{{ asset('storage/images/categories/' . $category->image) }}" alt="{{$category->name}}" class="w-full h-full object-cover">
+                        <img src="{{ asset('storage/images/categories/' . $category->image) }}" alt="{{$category->name}}" class="w-full h-full object-cover lazyload">
                     @else
-                        <img src="{{ asset('library/images/image-not-found.jpg') }}" alt="Category Logo" class="w-full h-full object-cover">
+                        <img src="{{ asset('library/images/image-not-found.jpg') }}" alt="Category Logo" class="w-full h-full object-cover lazyload">
                     @endif
                 </div>
                 <p class="text-xs uppercase">{{$category->name}}</p>

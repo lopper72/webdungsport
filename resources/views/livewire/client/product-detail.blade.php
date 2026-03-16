@@ -4,12 +4,12 @@
             <div class="flex flex-col md:flex-row -mx-4">
                 <div class="md:flex-1 px-4">
                     <div class="h-auto rounded-lg bg-gray-300 dark:bg-gray-700 mb-4">
-                        <img id="image-show-detail" class="w-auto h-auto object-cover" src="{{$product_detail_image_default}}" alt="Product Image">
+                        <img id="image-show-detail" class="w-auto h-auto object-cover lazyload" src="{{$product_detail_image_default}}" alt="Product Image">
                     </div>
                     <div class="flex items-center justify-center -mx-2 flex-wrap">
                         @foreach ($product_detail_images_selected as $index => $image)
                             <div class="px-1 sm:px-2 mb-4">
-                                <img onclick="switchImage(this)" class="image-detail w-12 h-12 sm:w-20 sm:h-20 object-cover rounded-sm bg-gray-300 dark:bg-gray-700 cursor-pointer border {{ $index == 0 ? 'border-blue-700 border-2' : 'border-gray-500 border-0' }}" src="{{ asset('storage/images/products/' . $image) }}" alt="Product Image">
+                                <img onclick="switchImage(this)" class="image-detail w-12 h-12 sm:w-20 sm:h-20 object-cover rounded-sm bg-gray-300 dark:bg-gray-700 cursor-pointer border lazyload {{ $index == 0 ? 'border-blue-700 border-2' : 'border-gray-500 border-0' }}" src="{{ asset('storage/images/products/' . $image) }}" alt="Product Image">
                             </div>
                         @endforeach
                     </div>
@@ -49,7 +49,7 @@
                                         $imageThumbnailCheck = json_decode($product_detail->image);   
                                         $imageThumbnail = $imageThumbnailCheck[0];
                                     @endphp
-                                    <img wire:click="updateProductDetail({{$product_detail->id}})" class="image-detail mr-2 w-12 h-12 object-cover rounded-sm bg-gray-300 dark:bg-gray-700 cursor-pointer border {{ $product_detail->id == $product_detail_id_selected ? 'border-blue-700 border-2' : 'border-gray-500 border-0' }}" src="{{ asset('storage/images/products/' . $imageThumbnail) }}" alt="Product Image">
+                                    <img wire:click="updateProductDetail({{$product_detail->id}})" class="image-detail mr-2 w-12 h-12 object-cover rounded-sm bg-gray-300 dark:bg-gray-700 cursor-pointer border lazyload {{ $product_detail->id == $product_detail_id_selected ? 'border-blue-700 border-2' : 'border-gray-500 border-0' }}" src="{{ asset('storage/images/products/' . $imageThumbnail) }}" alt="Product Image">
                                 @endif
                             @endforeach
                         </div>
@@ -70,11 +70,11 @@
                     <div class="mb-2 md:mb-4">
                         <span class="text-sm md:text-md font-bold text-gray-700 dark:text-gray-300 uppercase">TỒN KHO</span>
                         <div class="flex items-center mt-2">
-                            <table class="table w-auto divide-y divide-gray-200 text-sm border">
-                                <thead class="bg-gray-200">
+                            <table class="table w-auto text-sm bg-gray-100 text-gray-700 border-collapse border border-gray-400">
+                                <thead>
                                     <tr>
-                                        <th class="px-2 md:px-4 py-2 font-medium text-left">Size</th>
-                                        <th class="px-2 md:px-4 py-2 font-bold w-32">Tồn kho thực</th>
+                                        <th class="px-2 md:px-4 py-2 font-bold border border-gray-400 text-center">Size</th>
+                                        <th class="px-2 md:px-4 py-2 font-bold w-32 border border-gray-400">Tồn kho thực</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -83,12 +83,12 @@
                                     @endphp
                                     @foreach ($product_sizes as $size)
                                         <tr>
-                                            <td class="px-2 md:px-4 pt-2">{{$size->size}}</td>
+                                            <td class="px-2 md:px-4 py-1 border border-gray-400 text-center">{{$size->size}}</td>
                                             @php
                                                 $total_of_size = $size->productAvailable($product_id, $product_detail_id_selected, $size->id, $warehouse_id_selected);
                                                 $total_quantity += $total_of_size;
                                             @endphp
-                                            <td class="px-2 md:px-4 pt-2 text-center">
+                                            <td class="px-2 md:px-4 py-1 text-center border border-gray-400">
                                                 @if(Auth::check())
                                                     @if ($total_of_size == 0)
                                                         <span class="bg-gray-600 rounded-md text-white text-xs px-2 py-1">Đặt hàng</span>
@@ -102,8 +102,8 @@
                                         </tr>
                                     @endforeach
                                     <tr>
-                                        <td class="px-2 md:px-4 py-2">Tổng</td>
-                                        <td class="px-2 md:px-4 py-2 font-bold text-center">
+                                        <td class="px-2 md:px-4 py-2 border border-gray-400 text-center">Tổng</td>
+                                        <td class="px-2 md:px-4 py-2 font-bold text-center border border-gray-400">
                                             @if(Auth::check())
                                                 {{$total_quantity}}
                                             @else

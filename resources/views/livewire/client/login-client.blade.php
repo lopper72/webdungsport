@@ -4,9 +4,9 @@
             <div class="p-6 space-y-4 md:space-y-4 sm:p-8">
                  <a href="{{ route('index') }}" class="pb-4 flex justify-center">
                     @if ($system_info->logo)
-                        <img src="{{ asset('storage/images/systems/' . $system_info->logo) }}"class="h-16 w-auto">
+                        <img src="{{ asset('storage/images/systems/' . $system_info->logo) }}"class="h-16 w-auto lazyload" alt="logo">
                     @else
-                        <img src="{{ asset('library/images/image-not-found.jpg') }}" class="h-16 w-auto">
+                        <img src="{{ asset('library/images/image-not-found.jpg') }}" class="h-16 w-auto lazyload" alt="logo">
                     @endif
                 </a>
                 <form class="space-y-4 md:space-y-6" wire:submit="handleLogin">

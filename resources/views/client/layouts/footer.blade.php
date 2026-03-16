@@ -42,8 +42,8 @@
                     </div>
                     <div class="flex flex-col items-start">
                         <dt class="font-semibold text-black text-lg">Kết nối với Dũng Trần Sport</dt>
-                        <a href="https://zalo.me/0965518457" target="_blank" class="flex items-center gap-x-2 mt-2 text-sm hover:text-red-600"><img class="h-8 w-8 rounded-full" src="{{ asset('library/images/zalo.svg') }}" alt="Zalo"> Zalo</a>
-                        <a href="https://www.facebook.com/dungtransport123" target="_blank" class="flex items-center gap-x-2 mt-2 text-sm hover:text-red-600"><img class="h-8 w-8 rounded-full" src="{{ asset('library/images/facebook.svg') }}" alt="Facebook"> Facebook</a>
+                        <a href="https://zalo.me/0965518457" target="_blank" class="flex items-center gap-x-2 mt-2 text-sm hover:text-red-600"><img class="h-8 w-8 rounded-full lazyload" src="{{ asset('library/images/zalo.svg') }}" alt="Zalo"> Zalo</a>
+                        <a href="https://www.facebook.com/dungtransport123" target="_blank" class="flex items-center gap-x-2 mt-2 text-sm hover:text-red-600"><img class="h-8 w-8 rounded-full lazyload" src="{{ asset('library/images/facebook.svg') }}" alt="Facebook"> Facebook</a>
                     </div>
                 </dl>
             </div>
