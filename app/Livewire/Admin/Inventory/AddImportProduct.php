@@ -29,6 +29,27 @@ class AddImportProduct extends Component
         $this->import_product_detail_count++;
     }
 
+    public function removeImportProductDetail($index){
+        if($this->import_product_detail_count > 0){
+            // Remove item from arrays
+            array_splice($this->product_id, $index, 1);
+            array_splice($this->product_detail_id, $index, 1);
+            array_splice($this->size_id, $index, 1);
+            array_splice($this->import_product_detail_qnty, $index, 1);
+            array_splice($this->disabled_select_yn, $index, 1);
+            
+            // Remove from detail lists
+            if(isset($this->product_detail_list) && is_array($this->product_detail_list)){
+                array_splice($this->product_detail_list, $index, 1);
+            }
+            if(isset($this->product_size_list) && is_array($this->product_size_list)){
+                array_splice($this->product_size_list, $index, 1);
+            }
+            
+            $this->import_product_detail_count--;
+        }
+    }
+
     public function copyImportProductDetail($index){
         $this->import_product_detail_count++;
         if(isset($this->product_id[$index])){
