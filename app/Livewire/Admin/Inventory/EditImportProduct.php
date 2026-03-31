@@ -57,9 +57,15 @@ class EditImportProduct extends Component
         $new_index = $this->import_product_detail_count;
         $this->import_product_detail_count++;
         
-        // Chỉ khởi tạo size và số lượng là rỗng, giữ nguyên các giá trị khác
+        // Khởi tạo tất cả các trường là rỗng khi thêm mới
+        $this->product_id[$new_index] = "";
+        $this->product_detail_id[$new_index] = "";
         $this->size_id[$new_index] = "";
         $this->import_product_detail_qnty[$new_index] = "";
+        $this->disabled_select_yn[$new_index] = "n";
+        $this->import_product_detail_ids[$new_index] = null;
+        $this->product_detail_list[$new_index] = [];
+        $this->product_size_list[$new_index] = [];
     }
 
     public function removeImportProductDetail($index){
@@ -104,13 +110,15 @@ class EditImportProduct extends Component
             $secondSizeList = array_slice($this->product_size_list, $index+1);
             $this->product_size_list = array_merge($firstSizeList, [$this->product_size_list[$index]], $secondSizeList);
 
+            // Set size to empty when copying
             $firstSizeId = array_slice($this->size_id, 0, $index+1);
             $secondSizeId = array_slice($this->size_id, $index+1);
-            $this->size_id = array_merge($firstSizeId, [$this->size_id[$index]], $secondSizeId);
+            $this->size_id = array_merge($firstSizeId, [""], $secondSizeId);
 
+            // Set quantity to empty when copying
             $firstQnty = array_slice($this->import_product_detail_qnty, 0, $index+1);
             $secondQnty = array_slice($this->import_product_detail_qnty, $index+1);
-            $this->import_product_detail_qnty = array_merge($firstQnty, [$this->import_product_detail_qnty[$index]], $secondQnty);
+            $this->import_product_detail_qnty = array_merge($firstQnty, [""], $secondQnty);
 
             $firstDisabled = array_slice($this->disabled_select_yn, 0, $index+1);
             $secondDisabled = array_slice($this->disabled_select_yn, $index+1);
@@ -171,13 +179,13 @@ class EditImportProduct extends Component
         // Bước 1: Validate số lượng và sản phẩm cho từng dòng
         for ($i = 0; $i < $this->import_product_detail_count; $i++) {
             
-            // Validate số lượng thủ công
-            if (!isset($this->import_product_detail_qnty[$i]) || empty($this->import_product_detail_qnty[$i])) {
+            // Validate số lượng thủ công - cho phép số lượng bằng 0
+            if (!isset($this->import_product_detail_qnty[$i]) || $this->import_product_detail_qnty[$i] === '' || $this->import_product_detail_qnty[$i] === null) {
                 $validation_errors[] = 'Dòng '.($i+1).': Vui lòng nhập số lượng.';
             } elseif (!is_numeric($this->import_product_detail_qnty[$i])) {
                 $validation_errors[] = 'Dòng '.($i+1).': Số lượng phải là số.';
-            } elseif ($this->import_product_detail_qnty[$i] < 1) {
-                $validation_errors[] = 'Dòng '.($i+1).': Số lượng phải lớn hơn 0.';
+            } elseif ($this->import_product_detail_qnty[$i] < 0) {
+                $validation_errors[] = 'Dòng '.($i+1).': Số lượng không được nhỏ hơn 0.';
             }
             
 
@@ -200,8 +208,10 @@ class EditImportProduct extends Component
         // Bước 2: Tổng hợp số lượng nhập theo product/size TỪ TẤT CẢ IMPORT PRODUCTS
         $import_quantities_by_product = [];
         
-        // Lấy tất cả import product details từ database (trừ các item đã bị xóa)
-        $all_import_details = ImportProductDetail::whereNotIn('id', $this->deleted_detail_ids)->get();
+        // Lấy tất cả import product details từ database (trừ các item đã bị xóa và trừ transaction hiện tại)
+        $all_import_details = ImportProductDetail::whereNotIn('id', $this->deleted_detail_ids)
+            ->where('import_product_id', '!=', $this->id)
+            ->get();
         
         foreach ($all_import_details as $detail) {
             $key = $detail->product_id.'_'.$detail->product_detail_id.'_'.($detail->size_id ?? 'null');
@@ -217,14 +227,14 @@ class EditImportProduct extends Component
             $import_quantities_by_product[$key]['total_import_quantity'] += $detail->quantity;
         }
         
-        // Cộng thêm số lượng từ các item mới (chưa có trong database)
-        for ($i = $this->existing_detail_count; $i < $this->import_product_detail_count; $i++) {
+        // Cộng thêm số lượng từ transaction hiện tại (từ form)
+        for ($i = 0; $i < $this->import_product_detail_count; $i++) {
             $product_id = isset($this->product_id[$i]) ? $this->product_id[$i] : null;
             $product_detail_id = isset($this->product_detail_id[$i]) ? $this->product_detail_id[$i] : null;
             $size_id = isset($this->size_id[$i]) ? $this->size_id[$i] : null;
-            $quantity = isset($this->import_product_detail_qnty[$i]) ? $this->import_product_detail_qnty[$i] : 0;
+            $quantity = isset($this->import_product_detail_qnty[$i]) ? (int)$this->import_product_detail_qnty[$i] : 0;
 
-            if ($product_id && $product_detail_id && $quantity > 0) {
+            if ($product_id && $product_detail_id) {
                 $key = $product_id.'_'.$product_detail_id.'_'.($size_id ?? 'null');
                 if (!isset($import_quantities_by_product[$key])) {
                     $import_quantities_by_product[$key] = [

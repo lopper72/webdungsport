@@ -34,7 +34,7 @@
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Tên Khách Hàng</th>
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-56 text-left">Ngày Đặt Hàng</th>
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-64 text-center">Trạng thái thanh toán</th>
-                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-56 text-center">Trạng thái</th>
+                    {{-- <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-56 text-center">Trạng thái</th> --}}
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-56 text-right">Tổng tiền (VND)</th>
                     {{-- <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-36 text-center">Hành Động</th> --}}
                 </tr>
@@ -77,7 +77,7 @@
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Chưa thanh toán</span>
                             @endif
                         </td>
-                        <td class="px-2 py-2 whitespace-nowrap text-center">
+                        {{-- <td class="px-2 py-2 whitespace-nowrap text-center">
                             @if ($order->status == "pending")
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Chờ xác nhận</span>
                             @elseif ($order->status == "confirmed")
@@ -91,7 +91,7 @@
                             @elseif ($order->status == "completed")
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-gray-800">Hoàn thành</span>
                             @endif
-                        </td>
+                        </td> --}}
                         <td class="px-2 py-2 whitespace-nowrap text-right">
                             {{number_format($order->total_amount, 0, ',', '.')}}
                         </td>
