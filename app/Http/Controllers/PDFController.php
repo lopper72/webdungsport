@@ -44,9 +44,14 @@ class PDFController extends Controller
         date_default_timezone_set('Asia/Ho_Chi_Minh'); // Set the timezone to your local timezone
 
         $orderDate = $order->order_date; // Get the order date of the current order
-        $totalUnpaid_user = Order::where('user_id', '=', $order->user_id)->where('id', '<>', $orderId)->where('order_date', '<', now())->where('payment_status', '=', 'pending')->whereHas('orderStatus', function($query) {
-            $query->where('status', '!=', 'rejected')
-                  ->orWhereNull('status');
+    
+
+        $totalUnpaid_user = Order::where('user_id', '=', $order->user_id)
+        ->where('id', '<>', $order->order_id)
+        ->where('created_at', '<', $order->created_at)
+        ->where('payment_status', '=', 'pending')
+        ->whereDoesntHave('orderStatus', function($query) {
+            $query->where('status', '=', 'rejected');
         })->sum('total_amount');
       
         

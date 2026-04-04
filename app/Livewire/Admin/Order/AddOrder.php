@@ -258,29 +258,34 @@ class AddOrder extends Component
         $this->grandtotal_all = $this->total_amount + $this->grandtotal_notpay;
     }
 
-    protected function dispatchSuccessMessage($title, $message, $type)
-    {
-        $this->dispatch('successOrder', [
-            'title' => $title,
-            'message' => $message,
-            'type' => $type,
-            'timeout' => 3000
-        ]);
-    }
+protected function dispatchSuccessMessage($title, $message, $type)
+{
+    $this->dispatch('successOrder', [
+        'title' => $title,
+        'message' => $message,
+        'type' => $type,
+        'timeout' => 3000
+    ]);
+}
 
-    public function render()
-    {
-        $this->order_date = now()->format('Y-m-d');
-        $grandtotal_notpay = Order::where('user_id', $this->customer_id)
-            ->where('order_date', '<', now())
-            ->where('payment_status', '=', 'pending')
-            ->whereHas('orderStatus', function($query) {
-                $query->where('status', '!=', 'rejected')
-                      ->orWhereNull('status');
-            })->get();
-        $this->grandtotal_notpay = $grandtotal_notpay->sum('total_amount');
-        $this->grandtotal_all = $this->total_amount + $this->grandtotal_notpay;
-    
-        return view('livewire.admin.order.add-order');
-    }
+protected function recalculateGrandtotalNotpay()
+{
+    $grandtotal_notpay = Order::where('user_id', '=', $this->customer_id)
+        ->where('id', '<>', $this->order_id ?? 0)
+        ->where('created_at', '<',  $this->order->created_at ?? now())
+        ->where('payment_status', '=', 'pending')
+        ->whereDoesntHave('orderStatus', function($query) {
+            $query->where('status', '=', 'rejected');
+        })->get();
+    $this->grandtotal_notpay = $grandtotal_notpay->sum('total_amount');
+    $this->grandtotal_all = $this->total_amount + $this->grandtotal_notpay;
+}
+
+public function render()
+{
+    $this->order_date = now()->format('Y-m-d');
+    $this->recalculateGrandtotalNotpay();
+
+    return view('livewire.admin.order.add-order');
+}
 }

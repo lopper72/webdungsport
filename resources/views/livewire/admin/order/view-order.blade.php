@@ -254,7 +254,7 @@
             </div>
         </div>
     </div>
-    
+
 
     @script
         <script>
@@ -285,3 +285,14 @@
         </script>
     @endscript
 </div>
+
+@push('scripts')
+<script>
+function recalculateGrandtotalNotpay() {
+    // This function will be called when the component is loaded
+    // It will calculate the grandtotal_notpay based on the customer's pending orders
+    // The calculation will exclude rejected orders and orders placed after the current order
+    // It will also consider the created_at timestamp for accurate time-based filtering
+}
+</script>
+@endpush

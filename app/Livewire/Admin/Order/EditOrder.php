@@ -38,7 +38,7 @@ class EditOrder extends Component
     public $order_product_delete = [];
     public $action = '';
 
-    protected $listeners = ['updateOrderProduct', 'updateOrderProductEdit'];
+protected $listeners = ['updateOrderProduct', 'updateOrderProductEdit', 'updateCustomerId'];
 
     public function updateOrderProduct($order_product, $isMultiple = false)
     {
@@ -94,18 +94,24 @@ class EditOrder extends Component
         $this->calTotalAmount();
     }
     
-    public function updateOrderProductEdit($order_product, $index)
-    {
-        // Always convert to array for consistent format
-        if (is_object($order_product) && method_exists($order_product, 'toArray')) {
-            $order_product = $order_product->toArray();
-        }
-        
-        $this->order_details[$index] = $order_product;
-        
-        $this->updateAmount();
-        $this->calTotalAmount();
+public function updateOrderProductEdit($order_product, $index)
+{
+    // Always convert to array for consistent format
+    if (is_object($order_product) && method_exists($order_product, 'toArray')) {
+        $order_product = $order_product->toArray();
     }
+
+    $this->order_details[$index] = $order_product;
+
+    $this->updateAmount();
+    $this->calTotalAmount();
+}
+
+public function updateCustomerId($customer_id)
+{
+    $this->customer_id = $customer_id;
+    $this->recalculateGrandtotalNotpay();
+}
 
     public function removeProduct($index)
     {
@@ -265,52 +271,55 @@ class EditOrder extends Component
         $this->total_amount = $this->grandtotal_amount + $this->shipping_amount;
         $this->grandtotal_all = $this->total_amount + $this->grandtotal_notpay;
     }
-    public function calTotalAmount()
-    {   
-        $this->discount_amount = round($this->subtotal_amount * $this->discount_percentage / 100, 3);
-        $this->grandtotal_amount = $this->subtotal_amount - $this->discount_amount;
-        $this->total_amount = $this->grandtotal_amount + $this->shipping_amount;
-        $this->grandtotal_all = $this->total_amount + $this->grandtotal_notpay;
-    }
+public function calTotalAmount()
+{
+    $this->discount_amount = round($this->subtotal_amount * $this->discount_percentage / 100, 3);
+    $this->grandtotal_amount = $this->subtotal_amount - $this->discount_amount;
+    $this->total_amount = $this->grandtotal_amount + $this->shipping_amount;
+    $this->grandtotal_all = $this->total_amount + $this->grandtotal_notpay;
+}
 
-    public function mount($id, $customers, $payment_methods)
-    {
-        $this->order = Order::findOrFail($id);
-        $this->order_id = $id;
-        $this->payment_method_id = $this->order->payment_method_id;
-        $this->payment_status = $this->order->payment_status;
-        $this->customer_id = $this->order->user_id;
-        $this->order_date = date('Y-m-d', strtotime($this->order->order_date));
-        $this->order_status = $this->order->status;
-        $this->order_note = $this->order->note;
-        $this->order_code = $this->order->code;
-        $this->order_phone = $this->order->shipping_phone;
-        $this->order_email = $this->order->shipping_email;
-        $this->order_address = $this->order->shipping_address;
-        $this->order_state = $this->order->shipping_state;
-        $this->order_city = $this->order->shipping_city;
-        $this->subtotal_amount = $this->order->subtotal_amount;
-        $this->discount_amount = $this->order->discount_amount;
-        $this->discount_percentage = $this->order->discount_percent;
-        $this->grandtotal_amount = $this->order->grandtotal_amount;
-        $this->shipping_amount = $this->order->shipping_amount;
-        $this->total_amount = $this->order->total_amount;
-        $this->customers = $customers;
-        $this->payment_methods = $payment_methods;
-        $this->order_details = $this->order->order_detail()->with('product', 'product_size', 'warehouse', 'product_detail')->get()->toArray();
-        
-        $grandtotal_notpay = Order::where('user_id', '=', $this->customer_id)
-            ->where('id', '<>', $id)
-            ->where('order_date', '<', now())
-            ->where('payment_status', '=', 'pending')
-            ->whereHas('orderStatus', function($query) {
-                $query->where('status', '!=', 'rejected')
-                      ->orWhereNull('status');
-            })->get();
-        $this->grandtotal_notpay = $grandtotal_notpay->sum('total_amount');
+protected function recalculateGrandtotalNotpay()
+{
+    $grandtotal_notpay = Order::where('user_id', '=', $this->customer_id)
+        ->where('id', '<>', $this->order_id)
+        ->where('created_at', '<', $this->order->created_at)
+        ->where('payment_status', '=', 'pending')
+        ->whereDoesntHave('orderStatus', function($query) {
+            $query->where('status', '=', 'rejected');
+        })->get();
+    $this->grandtotal_notpay = $grandtotal_notpay->sum('total_amount');
+    $this->grandtotal_all = $this->total_amount + $this->grandtotal_notpay;
+}
 
-        $this->grandtotal_all = $this->total_amount + $this->grandtotal_notpay;
-    }
+public function mount($id, $customers, $payment_methods)
+{
+    $this->order = Order::findOrFail($id);
+    $this->order_id = $id;
+    $this->payment_method_id = $this->order->payment_method_id;
+    $this->payment_status = $this->order->payment_status;
+    $this->customer_id = $this->order->user_id;
+    $this->order_date = date('Y-m-d', strtotime($this->order->order_date));
+    $this->order_status = $this->order->status;
+    $this->order_note = $this->order->note;
+    $this->order_code = $this->order->code;
+    $this->order_phone = $this->order->shipping_phone;
+    $this->order_email = $this->order->shipping_email;
+    $this->order_address = $this->order->shipping_address;
+    $this->order_state = $this->order->shipping_state;
+    $this->order_city = $this->order->shipping_city;
+    $this->subtotal_amount = $this->order->subtotal_amount;
+    $this->discount_amount = $this->order->discount_amount;
+    $this->discount_percentage = $this->order->discount_percent;
+    $this->grandtotal_amount = $this->order->grandtotal_amount;
+    $this->shipping_amount = $this->order->shipping_amount;
+    $this->total_amount = $this->order->total_amount;
+    $this->customers = $customers;
+    $this->payment_methods = $payment_methods;
+    $this->order_details = $this->order->order_detail()->with('product', 'product_size', 'warehouse', 'product_detail')->get()->toArray();
+
+    $this->recalculateGrandtotalNotpay();
+}
 
     public function render()
     {
