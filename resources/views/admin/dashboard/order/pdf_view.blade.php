@@ -107,7 +107,7 @@
                 <td>Thành tiền:</td>
                 <td>{{number_format($total_price - $discount, 0, ',', '.')}}</td>
             </tr>
-            <tr style="display:none">
+            <tr>
                 <td>Nợ cũ:</td>
                 <td>{{number_format($totalUnpaid_user, 0, ',', '.')}}</td>
             </tr>

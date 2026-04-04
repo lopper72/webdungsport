@@ -36,7 +36,7 @@ class AddOrder extends Component
     public $grandtotal_all = 0;
     public $discount_percentage = 0;   
 
-    protected $listeners = ['updateOrderProduct'];
+    protected $listeners = ['updateOrderProduct', 'updateOrderProductEdit'];
 
     public function mount($customers, $payment_methods)
     {
@@ -45,23 +45,72 @@ class AddOrder extends Component
         $this->order_code = 'ODR' . time() . rand(100, 999) . rand(100, 999);
     }
 
-    public function updateOrderProduct($order_product, $index = null)
+    public function updateOrderProduct($order_product, $isMultiple = false)
     {
-        if ($index === null) {
-            $this->order_details[] = $order_product;
-            $index = count($this->order_details) - 1;
+        if ($isMultiple) {
+            foreach ($order_product as $item) {
+                // Validate stock before adding
+                $warehouse = Warehouse::find($this->warehouse_id ?? 1);
+                $stock = $warehouse->totalProductAvailable(
+                    $item['product_id'], 
+                    $item['product_detail_id'], 
+                    $item['size_id']
+                );
+                
+                // Calculate existing total for this product variant including current order
+                $existingTotal = 0;
+                foreach ($this->order_details as $existing) {
+                    if (is_string($existing)) {
+                        $existing = json_decode($existing, true);
+                    }
+                    
+                    $existingProductId = is_object($existing) ? ($existing->product_id ?? 0) : ($existing['product_id'] ?? 0);
+                    $existingDetailId = is_object($existing) ? ($existing->product_detail_id ?? 0) : ($existing['product_detail_id'] ?? 0);
+                    $existingSizeId = is_object($existing) ? ($existing->size_id ?? 0) : ($existing['size_id'] ?? 0);
+                    $existingQuantity = is_object($existing) ? ($existing->quantity ?? 0) : ($existing['quantity'] ?? 0);
+                    
+                    if ($existingProductId == $item['product_id'] 
+                        && $existingDetailId == $item['product_detail_id'] 
+                        && $existingSizeId == $item['size_id']) {
+                        $existingTotal += $existingQuantity;
+                    }
+                }
+                
+                // Calculate total requested including current item being added
+                $totalRequested = $existingTotal + $item['quantity'];
+                
+                if ($totalRequested > $stock) {
+                    $this->dispatch('successOrder', [
+                        'title' => 'Thất bại',
+                        'message' => "Số lượng size {$item['size_name']} vượt tồn kho. Đã có {$existingTotal} trong đơn, còn {$stock} trong kho.",
+                        'type' => 'error',
+                        'timeout' => 3000
+                    ]);
+                    return;
+                }
+                
+                $this->order_details[] = $item;
+            }
         } else {
-            $index = $index - 1;
-            $this->order_details[$index] = $order_product;
+            $this->order_details[] = $order_product;
         }
-        $this->updateAmount($index);
+        
+        $this->updateAmount();
+        $this->calTotalAmount();
+    }
+    
+    public function updateOrderProductEdit($order_product, $index)
+    {
+        $this->order_details[$index] = $order_product;
+        
+        $this->updateAmount();
         $this->calTotalAmount();
     }
 
     public function removeProduct($index)
     {
         unset($this->order_details[$index]);
-        $this->updateAmount($index-1);
+        $this->updateAmount();
         $this->calTotalAmount();
     }
 
@@ -110,22 +159,28 @@ class AddOrder extends Component
         ]);
 
         foreach ($this->order_details as $order_product) {
-            if(empty($order_product["id"])){
-                $order_detail = new OrderDetail();
+            if(is_object($order_product)) {
+                $order_detail = $order_product;
+                $order_detail->order_id = $order->id;
+                $order_detail->save();
             } else {
-                $order_detail = OrderDetail::find($order_product["id"]);
+                if(empty($order_product["id"])){
+                    $order_detail = new OrderDetail();
+                } else {
+                    $order_detail = OrderDetail::find($order_product["id"]);
+                }
+                $order_detail->fill([
+                    'order_id' => $order->id,
+                    'product_id' => $order_product["product_id"],
+                    'product_detail_id' => $order_product["product_detail_id"],
+                    'size_id' => $order_product["size_id"],
+                    'warehouse_id' => $order_product["warehouse_id"],
+                    'quantity' => $order_product["quantity"],
+                    'unit_price' => $order_product["unit_price"],
+                    'total_amount' => $order_product["total_amount"],
+                    'note' => $order_product["note"],
+                ])->save();
             }
-            $order_detail->fill([
-                'order_id' => $order->id,
-                'product_id' => $order_product["product_id"],
-                'product_detail_id' => $order_product["product_detail_id"],
-                'size_id' => $order_product["size_id"],
-                'warehouse_id' => $order_product["warehouse_id"],
-                'quantity' => $order_product["quantity"],
-                'unit_price' => $order_product["unit_price"],
-                'total_amount' => $order_product["total_amount"],
-                'note' => $order_product["note"],
-            ])->save();
         }
 
         $this->dispatch('successOrder', [
@@ -163,11 +218,19 @@ class AddOrder extends Component
         ]);
     }
 
-    public function updateAmount($index)
+    public function updateAmount()
     {
         $this->subtotal_amount = 0;
         foreach ($this->order_details as $key => $order_product) {
-            $this->subtotal_amount += $order_product["total_amount"];
+            if (is_string($order_product)) {
+                $order_product = json_decode($order_product, true);
+            }
+            
+            if (is_object($order_product)) {
+                $this->subtotal_amount += $order_product->total_amount;
+            } elseif (is_array($order_product) && isset($order_product["total_amount"])) {
+                $this->subtotal_amount += $order_product["total_amount"];
+            }
         }
     }
     public function calTotalAmountDiscount()
@@ -208,11 +271,13 @@ class AddOrder extends Component
     public function render()
     {
         $this->order_date = now()->format('Y-m-d');
-        $grandtotal_notpay = Order::where('order_date', '<', now())->where('payment_status', '=', 'pending')
-        ->whereHas('orderStatus', function($query) {
-            $query->where('status', '!=', 'rejected')
-                  ->orWhereNull('status');
-        })->get();
+        $grandtotal_notpay = Order::where('user_id', $this->customer_id)
+            ->where('order_date', '<', now())
+            ->where('payment_status', '=', 'pending')
+            ->whereHas('orderStatus', function($query) {
+                $query->where('status', '!=', 'rejected')
+                      ->orWhereNull('status');
+            })->get();
         $this->grandtotal_notpay = $grandtotal_notpay->sum('total_amount');
         $this->grandtotal_all = $this->total_amount + $this->grandtotal_notpay;
     

@@ -22,14 +22,11 @@ class AddProductModal extends ModalComponent
     public $warehouses;
     public $product_id;
     public $product_detail_id;
-    public $product_size_id;
-    public $product_quantity = 0;
-    public $product_unit_price = 0;
-    public $product_total_amount = 0;
+    public $size_items = [];
     public $note = '';
     public $warehouse_id = 1;
-    public $order_product;
     public $classRef;
+    public $base_price = 0;
 
     public function mount($mode)
     {
@@ -47,66 +44,173 @@ class AddProductModal extends ModalComponent
 
     public function loadProductAttributes()
     {
+        if (!$this->product_id) {
+            $this->product_details = collect();
+            $this->base_price = 0;
+            $this->product_detail_id = '';
+            $this->size_items = [];
+            return;
+        }
+        
         $this->product_details = ProductDetail::where('product_id', $this->product_id)->get();
-        $this->product_sizes = ProductSize::where('product_id', $this->product_id)->get();
-        $this->product_unit_price = Product::where('id', $this->product_id)->first()->retail_price;
+        $product = Product::where('id', $this->product_id)->first();
+        $this->base_price = $product ? $product->retail_price : 0;
         $this->product_detail_id = '';
-        $this->product_size_id = '';
+        $this->size_items = [];
     }
     
-    public function updateAmount()
+    public function updatedProductDetailId()
     {
-        $this->product_total_amount = $this->product_quantity * $this->product_unit_price;
+        $this->loadSizeInventory();
+    }
+    
+    public function loadSizeInventory()
+    {
+        $this->size_items = [];
+        $this->addError('size_items', '');
+        
+        if (!$this->product_id || !$this->product_detail_id) {
+            return;
+        }
+        
+        $sizes = ProductSize::where('product_id', $this->product_id)->orderBy('id')->get();
+        $warehouse = Warehouse::find($this->warehouse_id);
+        
+        foreach ($sizes as $size) {
+            $stock = $warehouse->totalProductAvailable($this->product_id, $this->product_detail_id, $size->id);
+            
+            $this->size_items[] = [
+                'size_id' => $size->id,
+                'size_name' => $size->size,
+                'stock' => $stock,
+                'quantity' => 0,
+                'price' => $this->base_price,
+            ];
+        }
+        
+        if (empty($this->size_items)) {
+            $this->addError('size_items', 'Sản phẩm này hiện không có size nào còn hàng trong kho.');
+        }
+    }
+    
+    public function incrementQuantity($index)
+    {
+        if ($this->size_items[$index]['quantity'] < $this->size_items[$index]['stock'] || $this->size_items[$index]['stock'] == 0) {
+            $this->size_items[$index]['quantity']++;
+        }
+    }
+    
+    public function decrementQuantity($index)
+    {
+        if ($this->size_items[$index]['quantity'] > 0) {
+            $this->size_items[$index]['quantity']--;
+        }
+    }
+    
+    public function copyPriceToAll($index)
+    {
+        $price = $this->size_items[$index]['price'];
+        foreach ($this->size_items as $key => $item) {
+            $this->size_items[$key]['price'] = $price;
+        }
+    }
+    
+    public function getTotalQuantityProperty()
+    {
+        return collect($this->size_items)->sum(function($item) {
+            return (int) $item['quantity'];
+        });
+    }
+    
+    public function getTotalAmountProperty()
+    {
+        return collect($this->size_items)->sum(function($item) {
+            return (int) $item['quantity'] * (float) $item['price'];
+        });
     }
 
     public function storeOrderProduct(){
-        $this->validate(
-            [
-                'product_id' => 'required',
-                'product_detail_id' => 'required',
-                'product_size_id' => 'required',
-                // 'warehouse_id' => 'required',
-                'product_quantity' => 'required|numeric|min:1',
-                'product_unit_price' => 'required|numeric|min:0',
-                'product_total_amount' => 'required|numeric|min:0',
-            ],
-            [
-                'product_id.required' => 'Trường sản phẩm là bắt buộc.',
-                'product_detail_id.required' => 'Trường chi tiết sản phẩm là bắt buộc.',
-                'product_size_id.required' => 'Trường kích thước là bắt buộc.',
-                // 'warehouse_id.required' => 'Trường kho hàng là bắt buộc.',
-                'product_quantity.required' => 'Trường số lượng là bắt buộc.',
-                'product_quantity.numeric' => 'Trường số lượng phải là số.',
-                'product_quantity.min' => 'Trường số lượng phải lớn hơn 0.',
-                'product_unit_price.required' => 'Trường giá bán là bắt buộc.',
-                'product_unit_price.numeric' => 'Trường giá bán phải là số.',
-                'product_unit_price.min' => 'Trường giá bán không được nhỏ hơn 0.',
-                'product_total_amount.required' => 'Trường thành tiền là bắt buộc.',
-                'product_total_amount.numeric' => 'Trường thành tiền phải là số.',
-                'product_total_amount.min' => 'Trường thành tiền phải lớn hơn 0.',
-            ]
-        );
+        $this->validate([
+            'product_id' => 'required',
+            'product_detail_id' => 'required',
+        ], [
+            'product_id.required' => 'Vui lòng chọn sản phẩm.',
+            'product_detail_id.required' => 'Vui lòng chọn màu/mẫu sản phẩm.',
+        ]);
         
-        $totalAvailable = Warehouse::find($this->warehouse_id)->totalProductAvailable($this->product_id, $this->product_detail_id, $this->product_size_id);
-
-        if($this->product_quantity > $totalAvailable){
-            $this->addError('product_quantity', 'Số lượng sản phẩm trong kho không đủ. Sản phẩm còn lại: '.$totalAvailable.' sản phẩm.');
+        if (empty($this->size_items)) {
+            $this->addError('size_items', 'Không có size nào còn hàng cho sản phẩm này.');
+            return; 
+        }
+        
+        if ($this->total_quantity <= 0) {
+            $this->addError('size_items', 'Vui lòng nhập số lượng cho ít nhất 1 size.');
             return;
         }
-        $this->order_product->product_id = $this->product_id;
-        $this->order_product->product_detail_id = $this->product_detail_id;
-        $this->order_product->product_name = $this->order_product->product->name;
-        $this->order_product->product_detail_name = $this->order_product->product_detail->title;
-        $this->order_product->size_id = $this->product_size_id;
-        $this->order_product->size_name = $this->order_product->product_size->size;
-        $this->order_product->warehouse_id = 1;
-        $this->order_product->warehouse_name = "TK";
-        $this->order_product->quantity = $this->product_quantity;
-        $this->order_product->unit_price = $this->product_unit_price;
-        $this->order_product->total_amount = $this->product_total_amount;
-        $this->order_product->note = $this->note;
+        
+        // Get current order items from parent component using Livewire events
+        // Since getParent() is not available in LivewireUI ModalComponent we skip this validation for now
+        $existingItems = [];
+        
+        foreach ($this->size_items as $index => $item) {
+            if ($item['quantity'] > 0 && $item['price'] < 0) {
+                $this->addError("size_items.$index.price", "Giá size {$item['size_name']} không hợp lệ.");
+                return;
+            }
+            
+            // Calculate total existing quantity for this exact product variant
+            $existingTotal = 0;
+            foreach ($existingItems as $existing) {
+                if (is_string($existing)) {
+                    $existing = json_decode($existing, true);
+                }
+                
+                $existingProductId = is_object($existing) ? ($existing->product_id ?? 0) : ($existing['product_id'] ?? 0);
+                $existingDetailId = is_object($existing) ? ($existing->product_detail_id ?? 0) : ($existing['product_detail_id'] ?? 0);
+                $existingSizeId = is_object($existing) ? ($existing->size_id ?? 0) : ($existing['size_id'] ?? 0);
+                $existingQuantity = is_object($existing) ? ($existing->quantity ?? 0) : ($existing['quantity'] ?? 0);
+                
+                if ($existingProductId == $this->product_id 
+                    && $existingDetailId == $this->product_detail_id 
+                    && $existingSizeId == $item['size_id']) {
+                    $existingTotal += $existingQuantity;
+                }
+            }
+            
+            $totalRequested = $existingTotal + $item['quantity'];
+            
+            if ($totalRequested > $item['stock']) {
+                $this->addError("size_items.$index.quantity", "Số lượng size {$item['size_name']} vượt tồn kho. Đã có {$existingTotal} trong đơn, còn {$item['stock']} trong kho.");
+                return;
+            }
+        }
+        
+        $product = Product::find($this->product_id);
+        $productDetail = ProductDetail::find($this->product_detail_id);
+        
+        $orderItems = [];
+        
+        foreach ($this->size_items as $item) {
+            if ($item['quantity'] > 0) {
+                $orderItems[] = [
+                    'product_id' => $this->product_id,
+                    'product_detail_id' => $this->product_detail_id,
+                    'product_name' => $product->name,
+                    'product_detail_name' => $productDetail->title,
+                    'size_id' => $item['size_id'],
+                    'size_name' => $item['size_name'],
+                    'warehouse_id' => $this->warehouse_id,
+                    'warehouse_name' => "TK",
+                    'quantity' => $item['quantity'],
+                    'unit_price' => $item['price'],
+                    'total_amount' => (int) $item['quantity'] * (float) $item['price'],
+                    'note' => $this->note,
+                ];
+            }
+        }
+        
         $this->closeModalWithEvents([
-            $this->classRef => ['updateOrderProduct', [$this->order_product, null]],
+            $this->classRef => ['updateOrderProduct', [$orderItems, true]],
         ]);
     }
 

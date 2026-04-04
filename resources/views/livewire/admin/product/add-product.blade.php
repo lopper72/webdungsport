@@ -139,7 +139,7 @@
                                         </table>
                                     </div>
                                 </div>
-                                <div class="col-span-1 sm:col-span-2 md:col-span-8">
+                                {{-- <div class="col-span-1 sm:col-span-2 md:col-span-8">
                                     <label for="product_description" class="block text-sm font-medium leading-6 text-gray-900">Mô tả sản phẩm</label>
                                     <div class="mt-2">
                                         <div wire:ignore>
@@ -149,7 +149,7 @@
                                                       id="product_description"></textarea>
                                         </div>
                                     </div>
-                                </div>
+                                </div> --}}
                             </div>
                         </div>
                         <div class="col-span-1 sm:col-span-2 md:col-span-3 bg-slate-200">
@@ -190,12 +190,12 @@
                                                 <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
                                             @enderror
                                         </div>
-                                        <div class="sm:col-span-8">
+                                        {{-- <div class="sm:col-span-8">
                                             <label for="product_detail_short_description.{{$index}}" class="block text-sm font-medium leading-6 text-gray-900">Mô tả ngắn</label>
                                             <div class="mt-2">
-                                                <textarea wire:model="product_detail_short_description.{{$index}}" id="product_detail_short_description.{{$index}}" name="product_detail_short_description.{{$index}}" rows="2" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"></textarea>
+                                                <textarea wire:model="product_detail_short_description.{{$index}}" id="product_detail_short_description.{{$index}}" name="product_detail_short_description.{{$index}}" rows="2" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:indigo-600 sm:text-sm sm:leading-6"></textarea>
                                             </div>
-                                        </div>
+                                        </div> --}}
                                         <div class="col-span-8 mb-4">
                                             <label for="product_detail_image.{{ $index }}" class="block text-sm font-medium leading-6 text-gray-900">Hình ảnh <span class="text-red-700">*</span></label>
                                             <div class="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-3 py-3">

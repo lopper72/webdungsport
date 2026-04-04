@@ -178,7 +178,7 @@
                             <input wire:model="total_amount" type="hidden" name="total_amount" id="total_amount">
                         </td>
                     </tr>
-                    <tr style ="display:none">
+                    <tr>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
                         <td scope="col" class="px-2 py-2 text-xs sm:text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Nợ Cũ</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">

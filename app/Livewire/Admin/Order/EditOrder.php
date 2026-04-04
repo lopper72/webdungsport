@@ -38,34 +38,85 @@ class EditOrder extends Component
     public $order_product_delete = [];
     public $action = '';
 
-    protected $listeners = ['updateOrderProduct'];
+    protected $listeners = ['updateOrderProduct', 'updateOrderProductEdit'];
 
-    public function updateOrderProduct($order_product, $index = null)
+    public function updateOrderProduct($order_product, $isMultiple = false)
     {
-        if($index === null){
-            $this->order_details[] = $order_product;
-            $index = count($this->order_details) - 1;
-        } else {
-            $index = $index - 1;
-            if(empty($this->order_details[$index]["id"])){
-                $id = null;
-            } else {
-                $id = $this->order_details[$index]["id"];
+        if ($isMultiple) {
+            foreach ($order_product as $item) {
+                // Validate stock before adding
+                $warehouse = Warehouse::find($this->warehouse_id ?? 1);
+                $stock = $warehouse->totalProductAvailable(
+                    $item['product_id'], 
+                    $item['product_detail_id'], 
+                    $item['size_id']
+                );
+                
+                // Calculate existing total for this product variant including current order
+                $existingTotal = 0;
+                foreach ($this->order_details as $existing) {
+                    if (is_string($existing)) {
+                        $existing = json_decode($existing, true);
+                    }
+                    
+                    $existingProductId = is_object($existing) ? ($existing->product_id ?? 0) : ($existing['product_id'] ?? 0);
+                    $existingDetailId = is_object($existing) ? ($existing->product_detail_id ?? 0) : ($existing['product_detail_id'] ?? 0);
+                    $existingSizeId = is_object($existing) ? ($existing->size_id ?? 0) : ($existing['size_id'] ?? 0);
+                    $existingQuantity = is_object($existing) ? ($existing->quantity ?? 0) : ($existing['quantity'] ?? 0);
+                    
+                    if ($existingProductId == $item['product_id'] 
+                        && $existingDetailId == $item['product_detail_id'] 
+                        && $existingSizeId == $item['size_id']) {
+                        $existingTotal += $existingQuantity;
+                    }
+                }
+                
+                // Calculate total requested including current item being added
+                $totalRequested = $existingTotal + $item['quantity'];
+                
+                if ($totalRequested > $stock) {
+                    $this->dispatch('successOrder', [
+                        'title' => 'Thất bại',
+                        'message' => "Số lượng size {$item['size_name']} vượt tồn kho. Đã có {$existingTotal} trong đơn, còn {$stock} trong kho.",
+                        'type' => 'error',
+                        'timeout' => 3000
+                    ]);
+                    return;
+                }
+                
+                $this->order_details[] = $item;
             }
-            
-            $this->order_details[$index] = $order_product;
-            $this->order_details[$index]["id"] = $id;
+        } else {
+            $this->order_details[] = $order_product;
         }
-        $this->updateAmount($index);
+        
+        $this->updateAmount();
+        $this->calTotalAmount();
+    }
+    
+    public function updateOrderProductEdit($order_product, $index)
+    {
+        // Always convert to array for consistent format
+        if (is_object($order_product) && method_exists($order_product, 'toArray')) {
+            $order_product = $order_product->toArray();
+        }
+        
+        $this->order_details[$index] = $order_product;
+        
+        $this->updateAmount();
         $this->calTotalAmount();
     }
 
     public function removeProduct($index)
     {
-        $this->order_product_delete[] = $this->order_details[$index];
+        // Only add to delete list if item has database id
+        if (isset($this->order_details[$index]["id"]) && $this->order_details[$index]["id"]) {
+            $this->order_product_delete[] = $this->order_details[$index];
+        }
+        
         unset($this->order_details[$index]);
         $this->order_details = array_values($this->order_details);
-        $this->updateAmount($index-1);
+        $this->updateAmount();
         $this->calTotalAmount();
     }
 
@@ -121,25 +172,28 @@ class EditOrder extends Component
         ]);
 
         foreach ($this->order_product_delete as $order_product) {
-            OrderDetail::find($order_product["id"])->delete();
+            if (isset($order_product["id"]) && $order_product["id"]) {
+                OrderDetail::find($order_product["id"])->delete();
+            }
         }
         foreach ($this->order_details as $order_product) {
-            if(empty($order_product["id"])){
-                $order_detail = new OrderDetail();
-            } else {
-                $order_detail = OrderDetail::find($order_product["id"]);
-            }
-            $order_detail->fill([
+            $attributes = [
                 'order_id' => $this->order->id,
                 'product_id' => $order_product["product_id"],
                 'product_detail_id' => $order_product["product_detail_id"],
                 'size_id' => $order_product["size_id"],
                 'warehouse_id' => $order_product["warehouse_id"],
+            ];
+            
+            $values = [
                 'quantity' => $order_product["quantity"],
                 'unit_price' => $order_product["unit_price"],
                 'total_amount' => $order_product["total_amount"],
                 'note' => $order_product["note"],
-            ])->save();
+            ];
+            
+            // Always use updateOrCreate - this is 100% safe, no duplicate items
+            OrderDetail::updateOrCreate($attributes, $values);
         }
         $this->dispatch('successOrder', [
             'title' => 'Thành công',
@@ -177,11 +231,19 @@ class EditOrder extends Component
         ]);
     }
 
-    public function updateAmount($index)
+    public function updateAmount()
     {
         $this->subtotal_amount = 0;
         foreach ($this->order_details as $key => $order_product) {
-            $this->subtotal_amount += $order_product["total_amount"];
+            if (is_string($order_product)) {
+                $order_product = json_decode($order_product, true);
+            }
+            
+            if (is_object($order_product)) {
+                $this->subtotal_amount += $order_product->total_amount;
+            } elseif (is_array($order_product) && isset($order_product["total_amount"])) {
+                $this->subtotal_amount += $order_product["total_amount"];
+            }
         }
     }
 
@@ -237,10 +299,14 @@ class EditOrder extends Component
         $this->payment_methods = $payment_methods;
         $this->order_details = $this->order->order_detail()->with('product', 'product_size', 'warehouse', 'product_detail')->get()->toArray();
         
-        $grandtotal_notpay = Order::where('user_id', '=', $this->customer_id)->where('id', '<>', $id)->where('order_date', '<', now())->where('payment_status', '=', 'pending')->whereHas('orderStatus', function($query) {
-            $query->where('status', '!=', 'rejected')
-                  ->orWhereNull('status');
-        })->get();
+        $grandtotal_notpay = Order::where('user_id', '=', $this->customer_id)
+            ->where('id', '<>', $id)
+            ->where('order_date', '<', now())
+            ->where('payment_status', '=', 'pending')
+            ->whereHas('orderStatus', function($query) {
+                $query->where('status', '!=', 'rejected')
+                      ->orWhereNull('status');
+            })->get();
         $this->grandtotal_notpay = $grandtotal_notpay->sum('total_amount');
 
         $this->grandtotal_all = $this->total_amount + $this->grandtotal_notpay;

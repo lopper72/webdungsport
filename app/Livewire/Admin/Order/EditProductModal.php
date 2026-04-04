@@ -36,7 +36,7 @@ class EditProductModal extends ModalComponent
             $this->classRef = AddOrder::class;
         }else{
             $this->classRef = EditOrder::class;
-            $this->id = $this->order_product["id"];
+            $this->id = isset($order_detail["id"]) ? $order_detail["id"] : null;
         }
         $this->index = $index+1;
         $this->product_id = $this->order_product["product_id"];
@@ -126,9 +126,11 @@ class EditProductModal extends ModalComponent
         });
 
         $totalAvailable = $totalImported - $totalOrdered + $totalTransferTo - $totalTransferFrom;
+        
+        $totalRequested = $this->product_quantity;
 
-        if($this->product_quantity > $totalAvailable){
-            $this->addError('product_quantity', 'Số lượng sản phẩm trong kho không đủ. Sản phẩm còn lại: '.$totalAvailable.' sản phẩm.');
+        if($totalRequested > $totalAvailable){
+            $this->addError('product_quantity', "Số lượng sản phẩm trong kho không đủ. Sản phẩm còn lại: {$totalAvailable} sản phẩm.");
             return;
         }
 
@@ -145,7 +147,7 @@ class EditProductModal extends ModalComponent
         $this->order_product->total_amount = $this->product_total_amount;
         $this->order_product->note = $this->note;
         $this->closeModalWithEvents([
-            $this->classRef => ['updateOrderProduct', [$this->order_product, $this->index]],
+            $this->classRef => ['updateOrderProductEdit', [$this->order_product->toArray(), $this->index - 1]],
         ]);
     }
 

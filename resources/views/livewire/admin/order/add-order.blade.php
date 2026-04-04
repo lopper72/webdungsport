@@ -86,26 +86,40 @@
                                 </tr>
                             @endif
                             @foreach ($order_details as $index => $order_detail)
+                                @php
+                                    // Handle all possible types: string (json), object, array, invalid
+                                    if (is_string($order_detail)) {
+                                        $decoded = json_decode($order_detail, true);
+                                        if (json_last_error() === JSON_ERROR_NONE) {
+                                            $order_detail = $decoded;
+                                        }
+                                    }
+                                    
+                                    // Skip invalid entries completely
+                                    if (!is_object($order_detail) && !is_array($order_detail)) {
+                                        continue;
+                                    }
+                                @endphp
                                 <tr>
                                     <td class="px-2 py-2 whitespace-nowrap text-center">{{$index+1}}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-left">
-                                        {{$order_detail['product_name']}}
+                                        {{ is_object($order_detail) ? ($order_detail->product_name ?? '') : ($order_detail['product_name'] ?? '') }}
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-left">
-                                        {{$order_detail['product_detail_name']}}
+                                        {{ is_object($order_detail) ? ($order_detail->product_detail_name ?? '') : ($order_detail['product_detail_name'] ?? '') }}
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-left">
-                                        {{$order_detail['size_name']}}
+                                        {{ is_object($order_detail) ? ($order_detail->size_name ?? '') : ($order_detail['size_name'] ?? '') }}
                                     </td>
                                   
                                     <td class="px-2 py-2 whitespace-nowrap text-right">
-                                        {{$order_detail['quantity']}}
+                                        {{ is_object($order_detail) ? ($order_detail->quantity ?? 0) : ($order_detail['quantity'] ?? 0) }}
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-right">
-                                        {{number_format($order_detail['unit_price'])}}
+                                        {{ number_format(is_object($order_detail) ? ($order_detail->unit_price ?? 0) : ($order_detail['unit_price'] ?? 0)) }}
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-right">
-                                        {{number_format($order_detail['total_amount'])}}
+                                        {{ number_format(is_object($order_detail) ? ($order_detail->total_amount ?? 0) : ($order_detail['total_amount'] ?? 0)) }}
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-center">
                                         <button type="button" 
@@ -170,7 +184,7 @@
                             <input wire:model="total_amount" type="hidden" name="total_amount" id="total_amount">
                         </td>
                     </tr>
-                    <tr style="display:none">
+                    <tr>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
                         <td scope="col" class="px-2 py-2 text-xs sm:text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Nợ Cũ</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
