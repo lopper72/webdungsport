@@ -79,17 +79,36 @@ class AddProductModal extends ModalComponent
         foreach ($sizes as $size) {
             $stock = $warehouse->totalProductAvailable($this->product_id, $this->product_detail_id, $size->id);
             
-            $this->size_items[] = [
-                'size_id' => $size->id,
-                'size_name' => $size->size,
-                'stock' => $stock,
-                'quantity' => 0,
-                'price' => $this->base_price,
-            ];
-        }
-        
-        if (empty($this->size_items)) {
-            $this->addError('size_items', 'Sản phẩm này hiện không có size nào còn hàng trong kho.');
+            // Calculate existing total for this product variant including current order
+            $existingTotal = 0;
+            foreach ($this->size_items as $existing) {
+                if (is_string($existing)) {
+                    $existing = json_decode($existing, true);
+                }
+                
+                $existingProductId = is_object($existing) ? ($existing->product_id ?? 0) : ($existing['product_id'] ?? 0);
+                $existingDetailId = is_object($existing) ? ($existing->product_detail_id ?? 0) : ($existing['product_detail_id'] ?? 0);
+                $existingSizeId = is_object($existing) ? ($existing->size_id ?? 0) : ($existing['size_id'] ?? 0);
+                $existingQuantity = is_object($existing) ? ($existing->quantity ?? 0) : ($existing['quantity'] ?? 0);
+                
+                if ($existingProductId == $this->product_id 
+                    && $existingDetailId == $this->product_detail_id 
+                    && $existingSizeId == $size->id) {
+                    $existingTotal += $existingQuantity;
+                }
+            }
+            
+            $availableStock = $stock - $existingTotal;
+            
+            if ($availableStock > 0) {
+                $this->size_items[] = [
+                    'size_id' => $size->id,
+                    'size_name' => $size->size,
+                    'stock' => $availableStock,
+                    'quantity' => 0,
+                    'price' => $this->base_price,
+                ];
+            }
         }
     }
     
