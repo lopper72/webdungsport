@@ -9,6 +9,9 @@
             <h2 class="font-bold">NHÃN HÀNG</h2>
         </div>
     </div>
+    @php
+        /*
+    @endphp
     <div class="my-brand py-4 md:py-6 px-2 md:px-4 relative">
         @foreach($brands as $brand)
             <div class="item-brand text-center">
@@ -23,6 +26,26 @@
                 </div>
                 <p class="text-gray-900 font-medium text-xs md:text-sm uppercase"><a href="{{route('brand',['slug'=>$brand->slug])}}">{{$brand->name}}</a></p>
             </div>
+        @endforeach
+    </div>
+    @php
+        */
+    @endphp
+    <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 pt-4 md:pt-6">
+        @foreach($brands as $brand)
+                <div class="item-brand text-center">
+                    <div class="size-12 lg:size-16 mx-auto overflow-hidden">
+                        <a href="{{route('brand',['slug'=>$brand->slug])}}">
+                            @if ($brand->logo)
+                                <img src="{{ asset('storage/images/brands/' . $brand->logo) }}" alt="Brand Logo" class="w-full h-full object-cover lazyload">
+                            @else
+                                <img src="{{ asset('library/images/image-not-found.jpg') }}" alt="Brand Logo" class="w-full h-full lazyload">
+                            @endif
+                        </a>
+                    </div>
+                    <p class="text-gray-900 font-medium text-xs md:text-sm uppercase"><a href="{{route('brand',['slug'=>$brand->slug])}}">{{$brand->name}}</a></p>
+                </div>
+            
         @endforeach
     </div>
 @endif

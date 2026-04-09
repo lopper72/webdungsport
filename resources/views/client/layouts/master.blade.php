@@ -189,7 +189,7 @@
 
             $('#showMenu').on('click', openMenu);
             $('#closeMenu').on('click', closeMenu);
-
+            /*
             $('.my-brand').slick({
                 slidesToShow: 8,
                 slidesToScroll: 1,
@@ -221,6 +221,7 @@
                     }
                 ]
             });
+            */
         });
     </script>
 </html>
