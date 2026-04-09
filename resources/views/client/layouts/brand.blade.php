@@ -34,7 +34,7 @@
     <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 pt-4 md:pt-6">
         @foreach($brands as $brand)
                 <div class="item-brand text-center">
-                    <div class="size-12 lg:size-16 mx-auto overflow-hidden">
+                    <div class="mb-2 size-12 lg:size-16 mx-auto overflow-hidden">
                         <a href="{{route('brand',['slug'=>$brand->slug])}}">
                             @if ($brand->logo)
                                 <img src="{{ asset('storage/images/brands/' . $brand->logo) }}" alt="Brand Logo" class="w-full h-full object-cover lazyload">
