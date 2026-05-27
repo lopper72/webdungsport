@@ -29,6 +29,10 @@ class ReportController extends Controller
     {
         return view('admin.dashboard.report.brand_report');
     }
+    public function revenueBrand()
+    {
+        return view('admin.dashboard.report.revenue_brand_report');
+    }
     public function customer()
     {
         return view('admin.dashboard.report.customer_report');

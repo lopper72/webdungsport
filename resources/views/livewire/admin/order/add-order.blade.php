@@ -184,18 +184,27 @@
                             <input wire:model="total_amount" type="hidden" name="total_amount" id="total_amount">
                         </td>
                     </tr>
-                    <tr>
+                    <<tr>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
-                        <td scope="col" class="px-2 py-2 text-xs sm:text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Nợ Cũ</b></td>
+                        <td scope="col" class="px-2 py-2 text-xs sm:text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Công nợ</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
-                            <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-xs sm:text-sm">{{number_format($grandtotal_notpay)}}</span>
+                            <input wire:model="has_debt" type="checkbox" name="has_debt" id="has_debt" class="form-checkbox h-4 w-4 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300" wire:click="toggleDebtCheckbox">
                         </td>
                     </tr>
                     <tr>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
-                        <td scope="col" class="px-2 py-2 text-xs sm:text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Cần Thanh Toán</b></td>
+                        <td scope="col" class="px-2 py-2 text-xs sm:text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2">
+                            <span wire:click="toggleDebtCheckbox" class="cursor-pointer"><b>Nợ Cũ</b></span>
+                        </td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
-                            <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-xs sm:text-sm">{{number_format($grandtotal_all)}}</span>
+                            <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-sm">{{number_format($grandtotal_notpay)}}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
+                        <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Cần Thanh Toán</b></td>
+                        <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
+                            <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-sm">{{number_format($grandtotal_all)}}</span>
                         </td>
                     </tr>
                 </table>

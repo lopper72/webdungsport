@@ -43,6 +43,9 @@ class PrelimReport extends Component
         }elseif($id==4){
             $link_route = 'admin.reports.customer';
             $arr_value = ['startdate'=>$start_date,'endate'=>$end_date,'userid'=>$userid];
+        }elseif($id==5){
+            $link_route = 'admin.reports.revenue-brand';
+            $arr_value = ['startdate'=>$start_date,'endate'=>$end_date,'brandId'=>$brandId];
         }
         return redirect()->route($link_route,$arr_value);
     }

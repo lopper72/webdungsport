@@ -3,39 +3,49 @@
 namespace App\Livewire\Admin\Report;
 
 use Livewire\Component;
-use Illuminate\Support\Str;
-
-use Spatie\LaravelImageOptimizer\Facades\ImageOptimizer;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 
 
 class RevenueReport extends Component
 {
 
+    public $id = null;
     public $startdate = "";
     public $endate = "";
 
-    public function render()
+    public function mount($id = null)
     {
-        $where = '';
-        $startdate = request()->startdate;
-        $endate = request()->endate;
-        if($startdate != '' && $endate != ''){
-            $where = "where od.order_date between '".$startdate."' and '".$endate."'";
-        }
-        if($startdate != '' && $endate == ''){
-            $where = "where od.order_date >= '".$startdate."'";
-        }
-        if($startdate == '' && $endate != ''){
-            $where = "where od.order_date <= '".$endate."'";
+        $this->id = $id;
+        $this->startdate = request()->startdate ?? "";
+        $this->endate = request()->endate ?? "";
+    }
+
+    private function revenueQuery()
+    {
+        $query = DB::table('orders as od')
+            ->join('users as user', 'user.id', '=', 'od.user_id')
+            ->select('od.code', 'od.id', 'user.name', 'od.total_amount', 'od.order_date')
+            ->orderBy('od.order_date');
+
+        if ($this->startdate !== "") {
+            $query->whereDate('od.order_date', '>=', $this->startdate);
         }
 
-        $results = DB::select('
-        SELECT  od.code, od.id , user.name , od.total_amount, od.order_date
-        FROM orders as od 
-        INNER JOIN users user on user.id = od.user_id '.$where);
-        
-        return view('livewire.admin.report.revenue-report', ['results' => $results]);
+        if ($this->endate !== "") {
+            $query->whereDate('od.order_date', '<=', $this->endate);
+        }
+
+        return $query;
+    }
+
+    public function render()
+    {
+        $results = $this->revenueQuery()->get();
+        $totalAmount = $results->sum('total_amount');
+
+        return view('livewire.admin.report.revenue-report', [
+            'results' => $results,
+            'totalAmount' => $totalAmount,
+        ]);
     }
 }

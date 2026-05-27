@@ -33,8 +33,10 @@ class AddOrder extends Component
     public $shipping_amount = 0;
     public $total_amount = 0;
     public $grandtotal_notpay = 0;
-    public $grandtotal_all = 0;
-    public $discount_percentage = 0;   
+public $grandtotal_all = 0;
+public $discount_percentage = 0;   
+public $has_debt = false;
+public $show_debt_checkbox = false;
 
     protected $listeners = ['updateOrderProduct', 'updateOrderProductEdit'];
 
@@ -137,7 +139,7 @@ class AddOrder extends Component
             return;
         }
        
-        $order = Order::create([
+$order = Order::create([
             'code' => $this->order_code,
             'user_id' => $this->customer_id,
             'payment_method_id' => $this->payment_method_id,
@@ -156,6 +158,7 @@ class AddOrder extends Component
             'shipping_amount' => $this->shipping_amount,
             'total_amount' => $this->total_amount,
             'discount_percent' => $this->discount_percentage,
+            'has_debt' => $this->has_debt,
         ]);
 
         foreach ($this->order_details as $order_product) {
@@ -281,10 +284,28 @@ protected function recalculateGrandtotalNotpay()
     $this->grandtotal_all = $this->total_amount + $this->grandtotal_notpay;
 }
 
+public function manageDebt()
+{
+    $this->dispatch('successOrder', [
+        'title' => 'Quản lý nợ',
+        'message' => 'Chức năng quản lý nợ đang được phát triển',
+        'type' => 'info',
+        'timeout' => 3000
+    ]);
+}
+
+public function toggleDebtCheckbox()
+{
+    $this->show_debt_checkbox = !$this->show_debt_checkbox;
+}
+
 public function render()
 {
     $this->order_date = now()->format('Y-m-d');
     $this->recalculateGrandtotalNotpay();
+
+    // Show checkbox only if there is existing debt
+    $this->show_debt_checkbox = $this->grandtotal_notpay > 0;
 
     return view('livewire.admin.order.add-order');
 }

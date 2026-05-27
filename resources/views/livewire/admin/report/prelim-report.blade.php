@@ -20,6 +20,10 @@
 
                 $styleDate = "";
                 $styleUser = "";
+            }elseif ($id==5) {
+                $styleBrand = "visibility: hidden;display:none";
+                $styleCategory = "";
+                $styleDate = "";
             }
             
         @endphp

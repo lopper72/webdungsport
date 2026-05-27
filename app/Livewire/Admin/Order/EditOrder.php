@@ -32,8 +32,10 @@ class EditOrder extends Component
     public $shipping_amount = 0;
     public $total_amount = 0;
     public $grandtotal_notpay = 0;
-    public $grandtotal_all = 0;
-    public $order;
+public $grandtotal_all = 0;
+public $order;
+public $has_debt = false;
+public $show_debt_checkbox = false;
     public $order_id;
     public $order_product_delete = [];
     public $action = '';
@@ -156,7 +158,7 @@ public function updateCustomerId($customer_id)
             return;
         }
 
-        $this->order->update([
+$this->order->update([
             'code' => $this->order_code,
             'user_id' => $this->customer_id,
             'payment_method_id' => $this->payment_method_id,
@@ -175,6 +177,7 @@ public function updateCustomerId($customer_id)
             'grandtotal_amount' => $this->grandtotal_amount,
             'shipping_amount' => $this->shipping_amount,
             'total_amount' => $this->total_amount,
+            'has_debt' => $this->has_debt,
         ]);
 
         foreach ($this->order_product_delete as $order_product) {
@@ -292,6 +295,21 @@ protected function recalculateGrandtotalNotpay()
     $this->grandtotal_all = $this->total_amount + $this->grandtotal_notpay;
 }
 
+public function manageDebt()
+{
+    $this->dispatch('successOrder', [
+        'title' => 'Quản lý nợ',
+        'message' => 'Chức năng quản lý nợ đang được phát triển',
+        'type' => 'info',
+        'timeout' => 3000
+    ]);
+}
+
+public function toggleDebtCheckbox()
+{
+    $this->show_debt_checkbox = !$this->show_debt_checkbox;
+}
+
 public function mount($id, $customers, $payment_methods)
 {
     $this->order = Order::findOrFail($id);
@@ -321,8 +339,11 @@ public function mount($id, $customers, $payment_methods)
     $this->recalculateGrandtotalNotpay();
 }
 
-    public function render()
-    {
-        return view('livewire.admin.order.edit-order');
-    }
+public function render()
+{
+    // Show checkbox only if there is existing debt
+    $this->show_debt_checkbox = $this->grandtotal_notpay > 0;
+
+    return view('livewire.admin.order.edit-order');
+}
 }
