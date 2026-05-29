@@ -39,14 +39,12 @@ class OrderSummaries extends Component
             if (isset($paid_order)) {
                 $paid = (int)$paid_order->total;
             }
-            $unpaid_order = Order::select('user_id', Order::raw('SUM(total_amount) as total'))
-                ->where('user_id',Auth::user()->id)
-                ->where('payment_status','pending')
+            $unpaid_order = Order::where('user_id',Auth::user()->id)
+                ->whereIn('payment_status', ['unpaid', 'partial', 'pending'])
                 ->where('status','<>','rejected')
-                ->groupBy('user_id')
-                ->first();
-            if (isset($unpaid_order)) {
-                $unpaid = (int)$unpaid_order->total;
+                ->get();
+            if ($unpaid_order->isNotEmpty()) {
+                $unpaid = (int) $unpaid_order->sum(fn ($order) => max($order->total_amount - ($order->paid_amount ?? 0), 0));
             }
         }else{
             $orders = Order::where('user_id',Auth::user()->id)
@@ -62,15 +60,13 @@ class OrderSummaries extends Component
             if (isset($paid_order)) {
                 $paid = (int)$paid_order->total;
             }
-            $unpaid_order = Order::select('user_id', Order::raw('SUM(total_amount) as total'))
-                ->where('user_id',Auth::user()->id)
-                ->where('payment_status','pending')
+            $unpaid_order = Order::where('user_id',Auth::user()->id)
+                ->whereIn('payment_status', ['unpaid', 'partial', 'pending'])
                 ->where('status','<>','rejected')
                 ->whereBetween('order_date', [$this->from_date, $this->to_date])
-                ->groupBy('user_id')
-                ->first();
-            if (isset($unpaid_order)) {
-                $unpaid = (int)$unpaid_order->total;
+                ->get();
+            if ($unpaid_order->isNotEmpty()) {
+                $unpaid = (int) $unpaid_order->sum(fn ($order) => max($order->total_amount - ($order->paid_amount ?? 0), 0));
             }
         }
         

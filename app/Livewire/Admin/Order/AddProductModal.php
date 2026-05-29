@@ -212,6 +212,7 @@ class AddProductModal extends ModalComponent
         foreach ($this->size_items as $item) {
             if ($item['quantity'] > 0) {
                 $orderItems[] = [
+                    'uuid' => (string) \Illuminate\Support\Str::uuid(),
                     'product_id' => $this->product_id,
                     'product_detail_id' => $this->product_detail_id,
                     'product_name' => $product->name,

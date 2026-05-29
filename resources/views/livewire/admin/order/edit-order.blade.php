@@ -3,19 +3,19 @@
         <div class="space-y-12">
             <div class="border-b border-gray-900/10 pb-12">
                 <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-2">
-                    <div class="col-span-4 sm:col-span-1">
+                    <div class="col-span-4 sm:col-span-1" wire:key="order-code-container">
                         <label for="order_code" class="block text-sm font-medium leading-6 text-gray-900">Mã đơn hàng <span class="text-red-700">*</span></label>
                         <div class="mt-2">
-                            <input wire:model="order_code" type="text" name="order_code" id="order_code" autocomplete="order_code" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                            <input wire:model.change="order_code" type="text" name="order_code" id="order_code" autocomplete="order_code" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
                         </div>
                         @error('order_code')
                             <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
                         @enderror
                     </div>
-                    <div class="col-span-4 sm:col-span-1">
+                    <div class="col-span-4 sm:col-span-1" wire:key="customer-select-container">
                         <label class="block text-sm font-medium leading-6 text-gray-900">Khách hàng <span class="text-red-700">*</span></label>
                         <div class="mt-2">
-<select id="customer" wire:model="customer_id" wire:change="updateCustomerId(customer_id)" name="customer" class="convert-to-dropdown block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                            <select id="customer" wire:model.change="customer_id" name="customer" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
                                 <option value="">-</option>
                                 @foreach($customers as $customer)
                                     <option value="{{$customer->id}}">{{$customer->name}}</option>
@@ -26,32 +26,33 @@
                             <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
                         @enderror
                     </div>
-                    <div class="col-span-4 sm:col-span-1">
+                    <div class="col-span-4 sm:col-span-1" wire:key="order-date-container">
                         <label for="order_date" class="block text-sm font-medium leading-6 text-gray-900">Ngày đặt hàng <span class="text-red-700">*</span></label>
                         <div class="mt-2">
-                            <input wire:model="order_date" type="date" name="order_date" id="order_date" autocomplete="order_date" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                            <input wire:model.change="order_date" type="date" name="order_date" id="order_date" autocomplete="order_date" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
                         </div>
                         @error('order_date')
                             <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
                         @enderror
                     </div>
-                    <div class="col-span-4 sm:col-span-1">
+                    <div class="col-span-4 sm:col-span-1" wire:key="payment-status-container">
                         <label class="block text-sm font-medium leading-6 text-gray-900">Trạng thái thanh toán <span class="text-red-700">*</span></label>
                         <div class="mt-2">
-                            <select wire:model="payment_status" id="payment_status" name="payment_status" class="convert-to-dropdown block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                            <select wire:model.change="payment_status" id="payment_status" name="payment_status" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
                                 <option value="">-</option>
-                                <option value="pending">Đang chờ thanh toán</option>
                                 <option value="paid">Đã thanh toán</option>
+                                <option value="partial">Thanh toán một phần</option>
+                                <option value="unpaid">Chưa thanh toán</option>
                             </select>
                         </div>
                         @error('payment_status')
                             <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
                         @enderror
                     </div>
-                    <div class="col-span-4 sm:col-span-1">
+                    <div class="col-span-4 sm:col-span-1" wire:key="order-note-container">
                         <label class="block text-sm font-medium leading-6 text-gray-900">Ghi chú</label>
                         <div class="mt-2">
-                            <textarea wire:model="order_note" name="order_note" id="order_note" rows="3" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"></textarea>
+                            <textarea wire:model.change="order_note" name="order_note" id="order_note" rows="3" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"></textarea>
                         </div>
                     </div>
                 </div>
@@ -61,7 +62,7 @@
                         <button type="button" 
                                 wire:click="$dispatch('openModal', { component: 'admin.order.add-product-modal', arguments: { mode : 'Edit' } })"
                                 class="inline-flex items-center px-4 py-2 bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white tracking-widest hover:bg-blue-600 active:bg-blue-700 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150"
-                                >Thêm sảm phẩm</button>
+                                >Thêm sản phẩm</button>
                     </div>
                 </div>
                 <div class="overflow-x-auto mt-2">
@@ -86,7 +87,7 @@
                                 </tr>
                             @endif
                             @foreach ($order_details as $index => $order_detail)
-                                <tr>
+                                <tr wire:key="order-detail-row-{{ $index }}">
                                     <td class="px-2 py-2 whitespace-nowrap text-center">{{$index+1}}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-left">
                                         {{ is_object($order_detail) ? ($order_detail->product_name ?? '') : ($order_detail['product_name'] ?? $order_detail['product']['name'] ?? '') }}
@@ -123,7 +124,8 @@
                     </table>
                 </div>
                 <table class="min-w-full divide-y divide-gray-200">
-                    <tr>
+                    <tbody>
+                    <tr wire:key="edit-row-subtotal">
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
                         <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider text-left" colspan="2"><b>Tổng tiền hàng</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
@@ -131,13 +133,13 @@
                             <input wire:model="subtotal_amount" type="hidden" name="subtotal_amount" id="subtotal_amount" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-right">
                         </td>
                     </tr>
-                    <tr>
+                    <tr wire:key="edit-row-discount">
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
                         <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left"><b>Giảm giá</b></td>
                         
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
                             <div class="flex items-center">
-                                <input wire:model="discount_percentage" wire:change="calTotalAmountDiscount" type="number" name="discount_percentage" id="discount_percentage" class="block w-24 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-right">
+                                <input wire:model.change="discount_percentage" type="number" name="discount_percentage" id="discount_percentage" class="block w-24 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-right">
                                 <span class="text-sm font-medium text-gray-700 ml-2">%</span>
                             </div>
                         </td>
@@ -147,7 +149,7 @@
                         </td>
                     </tr>
                    
-                    <tr style="display: none;">
+                    <tr style="display: none;" wire:key="edit-row-subtotal-temp">
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
                         <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" ><b>Tạm tính</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
@@ -155,44 +157,60 @@
                             <input wire:model="grandtotal_amount" type="hidden" name="grandtotal_amount" id="grandtotal_amount">
                         </td>
                     </tr>
-                    <tr style="display: none;">
+                    <tr style="display: none;" wire:key="edit-row-shipping">
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
                         <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left"><b>Phí ship</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
-                            <input wire:model="shipping_amount" wire:change="calTotalAmount" type="text" name="shipping_amount" id="shipping_amount" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-right">
+                            <input wire:model.change="shipping_amount" type="text" name="shipping_amount" id="shipping_amount" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-right">
                         </td>
                     </tr>
-                    <tr>
+                    <tr wire:key="edit-row-total-amount">
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
                         <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Thành tiền</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
                             <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-sm">{{number_format($total_amount)}}</span>
                             <input wire:model="total_amount" type="hidden" name="total_amount" id="total_amount">
                         </td>
-                    </tr>
-                    <tr>
+                    </tr>                    
+                    <tr wire:key="edit-row-paid-amount">
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
-                        <td scope="col" class="px-2 py-2 text-xs sm:text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Công nợ</b></td>
+                        <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Đã thanh toán</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
-                            <input wire:model="has_debt" type="checkbox" name="has_debt" id="has_debt" class="form-checkbox h-4 w-4 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300" wire:click="toggleDebtCheckbox">
+                            @if($payment_status === 'partial')
+                                <div wire:key="edit-paid-amount-input-container">
+                                    <input wire:model.change="paid_amount" type="number" min="0" max="{{ $total_amount }}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 sm:text-sm sm:leading-6 text-right">
+                                    @error('paid_amount') <div class="mt-1 text-sm text-red-600 normal-case">{{ $message }}</div> @enderror
+                                </div>
+                            @else
+                                <span wire:key="edit-paid-amount-text" class="px-3 py-2 whitespace-nowrap text-right font-bold text-sm">{{ number_format($paid_amount) }}</span>
+                            @endif
                         </td>
                     </tr>
-                    <tr>
+                    @if($payment_status === 'paid')
+                    <tr wire:key="edit-row-remaining">
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
-                        <td scope="col" class="px-2 py-2 text-xs sm:text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2">
-                            <span wire:click="toggleDebtCheckbox" class="cursor-pointer"><b>Nợ Cũ</b></span>
-                        </td>
+                        <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Còn lại</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
-                            <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-sm">{{number_format($grandtotal_notpay)}}</span>
+                            <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-sm">0</span>
                         </td>
                     </tr>
-                    <tr>
+                    @elseif(in_array($payment_status, ['partial', 'unpaid']))
+                    <tr wire:key="edit-row-debt-amount">
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
-                        <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Cần Thanh Toán</b></td>
+                        <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Nợ phát sinh</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
-                            <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-sm">{{number_format($grandtotal_all)}}</span>
+                            <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-sm">{{ number_format($debt_amount) }}</span>
                         </td>
                     </tr>
+                    <tr wire:key="edit-row-total-debt">
+                        <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
+                        <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Tổng nợ khách hàng</b></td>
+                        <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
+                            <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-sm">{{ number_format($total_customer_debt) }}</span>
+                        </td>
+                    </tr>
+                    @endif
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -211,23 +229,25 @@
     </form>
 
     
-    <button id="modal_success" data-modal-target="popup-modal" data-modal-toggle="popup-modal" class="hidden block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="button">
-    </button>
-    
-    <div id="popup-modal" tabindex="-1" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-        <div class="relative p-4 w-full max-w-md max-h-full">
-            <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                <div class="p-4 md:p-5 text-center">
-                    <div id="svg-icon" class="text-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
+    <div wire:ignore>
+        <button id="modal_success" data-modal-target="popup-modal" data-modal-toggle="popup-modal" class="hidden block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="button">
+        </button>
+        
+        <div id="popup-modal" tabindex="-1" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+            <div class="relative p-4 w-full max-w-md max-h-full">
+                <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                    <div class="p-4 md:p-5 text-center">
+                        <div id="svg-icon" class="text-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                        <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400"><span id="title-message"></span></h3>
+                        <p id="message" class="mb-5 text-sm text-gray-500 dark:text-gray-400"></p>
+                        <button data-modal-hide="popup-modal" type="button" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
+                            OK
+                        </button>
                     </div>
-                    <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400"><span id="title-message"></span></h3>
-                    <p id="message" class="mb-5 text-sm text-gray-500 dark:text-gray-400"></p>
-                    <button data-modal-hide="popup-modal" type="button" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
-                        OK
-                    </button>
                 </div>
             </div>
         </div>
@@ -264,6 +284,18 @@
                     }
                 }
             })
+            window.addEventListener('confirmOrderSave', event => {
+                const data = event.detail[0]
+                if (window.confirm('Trạng thái thanh toán đang chọn: ' + data.paymentStatusLabel + '. Bạn có chắc muốn lưu đơn hàng?')) {
+                    $wire.confirmStoreOrder(data.action)
+                }
+            })
         </script>
     @endscript
 </div>
+
+
+
+
+
+

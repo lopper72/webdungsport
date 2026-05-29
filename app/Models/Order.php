@@ -27,6 +27,11 @@ class Order extends Model
         'shipping_amount',
         'total_amount',
         'discount_percent',
+        'paid_amount',
+    ];
+
+    protected $casts = [
+        'paid_amount' => 'decimal:2',
     ];
     public function order_detail()
     {

@@ -108,13 +108,24 @@
                 <td>{{number_format($total_price - $discount, 0, ',', '.')}}</td>
             </tr>
             <tr>
-                <td>Nợ cũ:</td>
-                <td>{{number_format($totalUnpaid_user, 0, ',', '.')}}</td>
+                <td>Đã thanh toán:</td>
+                <td>{{number_format($paid_amount, 0, ',', '.')}}</td>
+            </tr>
+            @if($payment_status === 'paid')
+            <tr class="total-cell">
+                <td>Còn lại:</td>
+                <td>0</td>
+            </tr>
+            @else
+            <tr>
+                <td>Nợ phát sinh:</td>
+                <td>{{number_format($debt_amount, 0, ',', '.')}}</td>
             </tr>
             <tr class="total-cell">
-                <td>Cần thanh toán:</td>
-                <td>{{number_format($total_price - $discount + $totalUnpaid_user, 0, ',', '.')}}</td>
+                <td>Tổng nợ khách hàng:</td>
+                <td>{{number_format($total_customer_debt, 0, ',', '.')}}</td>
             </tr>
+            @endif
         </tbody>
     </table>
 

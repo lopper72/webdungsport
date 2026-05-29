@@ -1,8 +1,8 @@
 @extends('admin.layouts.master')
-
+ 
 @section('title', 'Thêm đơn hàng')
 @section('menu', 'orders')
-
+ 
 @section('content')
     <div class="container mx-auto px-2 py-8 sm:px-6 md:px-8">
         <h3 class="text-2xl text-gray-700 font-bold">THÊM ĐƠN HÀNG</h3>
@@ -27,9 +27,9 @@
                     <h4 class="text-xl font-bold text-black dark:text-white inline">THÊM MỚI</h4>
                 </div>
             </div>
-
+ 
             <div class="overflow-x-auto px-4 py-6 md:px-6 xl:px-7.5">
-                @livewire('admin.order.add-order', ['customers' => $customers, 'payment_methods' => $payment_methods, 'products' => $products])
+                @livewire('admin.order.add-order')
             </div>
         </div>
     </div>

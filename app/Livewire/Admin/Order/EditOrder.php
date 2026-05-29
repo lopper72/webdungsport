@@ -2,16 +2,13 @@
 
 namespace App\Livewire\Admin\Order;
 
-use Livewire\Component;
 use App\Models\Order;
 use App\Models\OrderDetail;
-use App\Models\Product;
 use App\Models\Warehouse;
+use Livewire\Component;
 
 class EditOrder extends Component
 {
-    public $customers;
-    public $payment_methods;
     public $payment_method_id = '';
     public $payment_status = '';
     public $customer_id = '';
@@ -31,134 +28,169 @@ class EditOrder extends Component
     public $grandtotal_amount = 0;
     public $shipping_amount = 0;
     public $total_amount = 0;
+    public $paid_amount = 0;
+    public $debt_amount = 0;
+    public $previous_debt = 0;
+    public $total_customer_debt = 0;
     public $grandtotal_notpay = 0;
-public $grandtotal_all = 0;
-public $order;
-public $has_debt = false;
-public $show_debt_checkbox = false;
+    public $grandtotal_all = 0;
+    public $warehouse_id = 1;
     public $order_id;
+    public $order_created_at = '';
     public $order_product_delete = [];
     public $action = '';
 
-protected $listeners = ['updateOrderProduct', 'updateOrderProductEdit', 'updateCustomerId'];
+    protected $listeners = ['updateOrderProduct', 'updateOrderProductEdit', 'updateCustomerId'];
+
+    public function mount($id, $customers, $payment_methods)
+    {
+        $order = Order::findOrFail($id);
+        $this->order_id = $id;
+        $this->order_created_at = $order->created_at?->toDateTimeString();
+        $this->payment_method_id = $order->payment_method_id;
+        $this->payment_status = $this->normalizeStatus($order->payment_status);
+        $this->customer_id = $order->user_id;
+        $this->order_date = date('Y-m-d', strtotime($order->order_date));
+        $this->order_status = $order->status;
+        $this->order_note = $order->note;
+        $this->order_code = $order->code;
+        $this->order_phone = $order->shipping_phone;
+        $this->order_email = $order->shipping_email;
+        $this->order_address = $order->shipping_address;
+        $this->order_state = $order->shipping_state;
+        $this->order_city = $order->shipping_city;
+        $this->subtotal_amount = $order->subtotal_amount;
+        $this->discount_amount = $order->discount_amount;
+        $this->discount_percentage = $order->discount_percent;
+        $this->grandtotal_amount = $order->grandtotal_amount;
+        $this->shipping_amount = $order->shipping_amount;
+        $this->total_amount = $order->total_amount;
+        $this->paid_amount = $order->paid_amount ?? 0;
+        $this->order_details = $order->order_detail()
+            ->with('product', 'product_size', 'warehouse', 'product_detail')
+            ->get()
+            ->toArray();
+
+        $this->recalculatePreviousDebt();
+    }
 
     public function updateOrderProduct($order_product, $isMultiple = false)
     {
         if ($isMultiple) {
             foreach ($order_product as $item) {
-                // Validate stock before adding
-                $warehouse = Warehouse::find($this->warehouse_id ?? 1);
-                $stock = $warehouse->totalProductAvailable(
-                    $item['product_id'], 
-                    $item['product_detail_id'], 
-                    $item['size_id']
-                );
-                
-                // Calculate existing total for this product variant including current order
-                $existingTotal = 0;
-                foreach ($this->order_details as $existing) {
-                    if (is_string($existing)) {
-                        $existing = json_decode($existing, true);
-                    }
-                    
-                    $existingProductId = is_object($existing) ? ($existing->product_id ?? 0) : ($existing['product_id'] ?? 0);
-                    $existingDetailId = is_object($existing) ? ($existing->product_detail_id ?? 0) : ($existing['product_detail_id'] ?? 0);
-                    $existingSizeId = is_object($existing) ? ($existing->size_id ?? 0) : ($existing['size_id'] ?? 0);
-                    $existingQuantity = is_object($existing) ? ($existing->quantity ?? 0) : ($existing['quantity'] ?? 0);
-                    
-                    if ($existingProductId == $item['product_id'] 
-                        && $existingDetailId == $item['product_detail_id'] 
-                        && $existingSizeId == $item['size_id']) {
-                        $existingTotal += $existingQuantity;
-                    }
-                }
-                
-                // Calculate total requested including current item being added
-                $totalRequested = $existingTotal + $item['quantity'];
-                
-                if ($totalRequested > $stock) {
-                    $this->dispatch('successOrder', [
-                        'title' => 'Thất bại',
-                        'message' => "Số lượng size {$item['size_name']} vượt tồn kho. Đã có {$existingTotal} trong đơn, còn {$stock} trong kho.",
-                        'type' => 'error',
-                        'timeout' => 3000
-                    ]);
+                if (!$this->canAddProduct($item)) {
                     return;
                 }
-                
+
                 $this->order_details[] = $item;
             }
         } else {
             $this->order_details[] = $order_product;
         }
-        
+
         $this->updateAmount();
         $this->calTotalAmount();
     }
-    
-public function updateOrderProductEdit($order_product, $index)
-{
-    // Always convert to array for consistent format
-    if (is_object($order_product) && method_exists($order_product, 'toArray')) {
-        $order_product = $order_product->toArray();
+
+    public function updateOrderProductEdit($order_product, $index)
+    {
+        if (is_object($order_product) && method_exists($order_product, 'toArray')) {
+            $order_product = $order_product->toArray();
+        }
+
+        $this->order_details[$index] = $order_product;
+
+        $this->updateAmount();
+        $this->calTotalAmount();
     }
 
-    $this->order_details[$index] = $order_product;
+    public function updateCustomerId($customer_id)
+    {
+        $this->customer_id = $customer_id;
+        $this->recalculatePreviousDebt();
+    }
 
-    $this->updateAmount();
-    $this->calTotalAmount();
-}
+    public function setCustomerId($customer_id)
+    {
+        $this->customer_id = $customer_id;
+        $this->recalculatePreviousDebt();
+    }
 
-public function updateCustomerId($customer_id)
-{
-    $this->customer_id = $customer_id;
-    $this->recalculateGrandtotalNotpay();
-}
+    public function setPaymentMethodId($payment_method_id)
+    {
+        $this->payment_method_id = $payment_method_id;
+    }
 
     public function removeProduct($index)
     {
-        // Only add to delete list if item has database id
-        if (isset($this->order_details[$index]["id"]) && $this->order_details[$index]["id"]) {
+        if (isset($this->order_details[$index]['id']) && $this->order_details[$index]['id']) {
             $this->order_product_delete[] = $this->order_details[$index];
         }
-        
+
         unset($this->order_details[$index]);
         $this->order_details = array_values($this->order_details);
         $this->updateAmount();
         $this->calTotalAmount();
     }
 
-    public function createOrder(){
-        $this->order_status = "pending";
-        $this->storeOrder('create');
+    public function createOrder()
+    {
+        $this->order_status = 'pending';
+        $this->confirmBeforeStore('create');
     }
 
-    public function updateOrder(){
-        $this->order_status = Order::find($this->order_id)->status;
-        $this->storeOrder('update');
+    public function updateOrder()
+    {
+        $this->order_status = Order::findOrFail($this->order_id)->status;
+        $this->confirmBeforeStore('update');
     }
 
-    public function draftOrder(){
-        $this->order_status = "draft";
-        $this->storeOrder('draft');
+    public function draftOrder()
+    {
+        $this->order_status = 'draft';
+        $this->confirmBeforeStore('draft');
+    }
+
+    public function confirmBeforeStore($action)
+    {
+        $this->validateOrder();
+
+        if (empty($this->order_details)) {
+            $this->dispatchSuccessMessage('That bai', 'Vui long chon san pham cho don hang', 'error', $action);
+            return;
+        }
+
+        $this->dispatch('confirmOrderSave', [
+            'action' => $action,
+            'paymentStatus' => $this->payment_status,
+            'paymentStatusLabel' => $this->paymentStatusLabel(),
+        ]);
+    }
+
+    public function confirmStoreOrder($action)
+    {
+        if ($action === 'create') {
+            $this->order_status = 'pending';
+        } elseif ($action === 'draft') {
+            $this->order_status = 'draft';
+        } elseif ($action === 'update') {
+            $this->order_status = Order::findOrFail($this->order_id)->status;
+        }
+
+        $this->storeOrder($action);
     }
 
     public function storeOrder($action)
     {
         $this->validateOrder();
 
-        if(empty($this->order_details)){
-            $this->dispatch('successOrder', [
-                'title' => 'Thất bại',
-                'message' => 'Vui lòng chọn sản phẩm cho đơn hàng',
-                'type' => 'error',
-                'timeout' => 3000,
-                'action' => $action
-            ]);
+        if (empty($this->order_details)) {
+            $this->dispatchSuccessMessage('That bai', 'Vui long chon san pham cho don hang', 'error', $action);
             return;
         }
 
-$this->order->update([
+        $order = Order::findOrFail($this->order_id);
+        $order->update([
             'code' => $this->order_code,
             'user_id' => $this->customer_id,
             'payment_method_id' => $this->payment_method_id,
@@ -177,81 +209,63 @@ $this->order->update([
             'grandtotal_amount' => $this->grandtotal_amount,
             'shipping_amount' => $this->shipping_amount,
             'total_amount' => $this->total_amount,
-            'has_debt' => $this->has_debt,
+            'paid_amount' => $this->paid_amount,
         ]);
 
         foreach ($this->order_product_delete as $order_product) {
-            if (isset($order_product["id"]) && $order_product["id"]) {
-                OrderDetail::find($order_product["id"])->delete();
+            if (isset($order_product['id']) && $order_product['id']) {
+                OrderDetail::find($order_product['id'])?->delete();
             }
         }
+
         foreach ($this->order_details as $order_product) {
-            $attributes = [
-                'order_id' => $this->order->id,
-                'product_id' => $order_product["product_id"],
-                'product_detail_id' => $order_product["product_detail_id"],
-                'size_id' => $order_product["size_id"],
-                'warehouse_id' => $order_product["warehouse_id"],
-            ];
-            
-            $values = [
-                'quantity' => $order_product["quantity"],
-                'unit_price' => $order_product["unit_price"],
-                'total_amount' => $order_product["total_amount"],
-                'note' => $order_product["note"],
-            ];
-            
-            // Always use updateOrCreate - this is 100% safe, no duplicate items
-            OrderDetail::updateOrCreate($attributes, $values);
+            OrderDetail::updateOrCreate([
+                'order_id' => $order->id,
+                'product_id' => $order_product['product_id'],
+                'product_detail_id' => $order_product['product_detail_id'],
+                'size_id' => $order_product['size_id'],
+                'warehouse_id' => $order_product['warehouse_id'],
+            ], [
+                'quantity' => $order_product['quantity'],
+                'unit_price' => $order_product['unit_price'],
+                'total_amount' => $order_product['total_amount'],
+                'note' => $order_product['note'],
+            ]);
         }
-        $this->dispatch('successOrder', [
-            'title' => 'Thành công',
-            'message' => '',
-            'type' => 'success',
-            'timeout' => 3000,
-            'action' => $action
-        ]);
+
+        $this->dispatchSuccessMessage('Thanh cong', '', 'success', $action);
     }
 
     protected function validateOrder()
     {
+        $this->syncPaymentAmounts();
+
         $this->validate([
             'customer_id' => 'required',
             'payment_method_id' => 'required',
-            'payment_status' => 'required',
+            'payment_status' => 'required|in:paid,partial,unpaid',
+            'paid_amount' => 'required|numeric|min:0|lte:total_amount',
             'order_date' => 'required',
             'order_status' => 'required',
             'order_code' => 'required',
-            // 'order_phone' => 'required',
-            // 'order_address' => 'required',
-            // 'order_state' => 'required',
-            // 'order_city' => 'required'
         ], [
-            'customer_id.required' => 'Trường khách hàng là bắt buộc.',
-            'payment_method_id.required' => 'Trường phương thức thanh toán là bắt buộc.',
-            'payment_status.required' => 'Trường trạng thái thanh toán là bắt buộc.',
-            'order_date.required' => 'Trường ngày đặt hàng là bắt buộc.',
-            'order_status.required' => 'Trường trạng thái đơn hàng là bắt buộc.',
-            'order_code.required' => 'Trường mã đơn hàng là bắt buộc.',
-            // 'order_phone.required' => 'Trường số điện thoại đơn hàng là bắt buộc.',
-            // 'order_address.required' => 'Trường địa chỉ đơn hàng là bắt buộc.',
-            // 'order_state.required' => 'Trường tỉnh/thành phố đơn hàng là bắt buộc.',
-            // 'order_city.required' => 'Trường quận/huyện đơn hàng là bắt buộc.'
+            'paid_amount.lte' => 'Số tiền đã thanh toán không được lớn hơn tổng tiền.',
         ]);
     }
 
     public function updateAmount()
     {
         $this->subtotal_amount = 0;
-        foreach ($this->order_details as $key => $order_product) {
+
+        foreach ($this->order_details as $order_product) {
             if (is_string($order_product)) {
                 $order_product = json_decode($order_product, true);
             }
-            
+
             if (is_object($order_product)) {
                 $this->subtotal_amount += $order_product->total_amount;
-            } elseif (is_array($order_product) && isset($order_product["total_amount"])) {
-                $this->subtotal_amount += $order_product["total_amount"];
+            } elseif (is_array($order_product) && isset($order_product['total_amount'])) {
+                $this->subtotal_amount += $order_product['total_amount'];
             }
         }
     }
@@ -260,90 +274,175 @@ $this->order->update([
     {
         if ($this->discount_percentage < 1 || $this->discount_percentage > 100) {
             $this->discount_percentage = 0;
-            $this->dispatch('successOrder', [
-                'title' => 'Thất bại',
-                'message' => 'Giảm giá % phải nằm trong khoảng từ 1 đến 100.',
-                'type' => 'error',
-                'timeout' => 3000
-            ]);
-            
+            $this->dispatchSuccessMessage('That bai', 'Giam gia % phai nam trong khoang tu 1 den 100.', 'error');
             return;
         }
+
+        $this->calTotalAmount();
+    }
+
+    public function calTotalAmount()
+    {
         $this->discount_amount = round($this->subtotal_amount * $this->discount_percentage / 100, 3);
         $this->grandtotal_amount = $this->subtotal_amount - $this->discount_amount;
         $this->total_amount = $this->grandtotal_amount + $this->shipping_amount;
-        $this->grandtotal_all = $this->total_amount + $this->grandtotal_notpay;
+        $this->syncPaymentAmounts();
     }
-public function calTotalAmount()
-{
-    $this->discount_amount = round($this->subtotal_amount * $this->discount_percentage / 100, 3);
-    $this->grandtotal_amount = $this->subtotal_amount - $this->discount_amount;
-    $this->total_amount = $this->grandtotal_amount + $this->shipping_amount;
-    $this->grandtotal_all = $this->total_amount + $this->grandtotal_notpay;
-}
 
-protected function recalculateGrandtotalNotpay()
-{
-    $grandtotal_notpay = Order::where('user_id', '=', $this->customer_id)
-        ->where('id', '<>', $this->order_id)
-        ->where('created_at', '<', $this->order->created_at)
-        ->where('payment_status', '=', 'pending')
-        ->whereDoesntHave('orderStatus', function($query) {
-            $query->where('status', '=', 'rejected');
-        })->get();
-    $this->grandtotal_notpay = $grandtotal_notpay->sum('total_amount');
-    $this->grandtotal_all = $this->total_amount + $this->grandtotal_notpay;
-}
+    public function updatedDiscountPercentage()
+    {
+        $this->calTotalAmountDiscount();
+    }
 
-public function manageDebt()
-{
-    $this->dispatch('successOrder', [
-        'title' => 'Quản lý nợ',
-        'message' => 'Chức năng quản lý nợ đang được phát triển',
-        'type' => 'info',
-        'timeout' => 3000
-    ]);
-}
+    public function updatedShippingAmount()
+    {
+        $this->calTotalAmount();
+    }
 
-public function toggleDebtCheckbox()
-{
-    $this->show_debt_checkbox = !$this->show_debt_checkbox;
-}
+    public function setPaymentStatus($status)
+    {
+        $this->payment_status = $this->normalizeStatus($status);
+        $this->syncPaymentAmounts();
+    }
 
-public function mount($id, $customers, $payment_methods)
-{
-    $this->order = Order::findOrFail($id);
-    $this->order_id = $id;
-    $this->payment_method_id = $this->order->payment_method_id;
-    $this->payment_status = $this->order->payment_status;
-    $this->customer_id = $this->order->user_id;
-    $this->order_date = date('Y-m-d', strtotime($this->order->order_date));
-    $this->order_status = $this->order->status;
-    $this->order_note = $this->order->note;
-    $this->order_code = $this->order->code;
-    $this->order_phone = $this->order->shipping_phone;
-    $this->order_email = $this->order->shipping_email;
-    $this->order_address = $this->order->shipping_address;
-    $this->order_state = $this->order->shipping_state;
-    $this->order_city = $this->order->shipping_city;
-    $this->subtotal_amount = $this->order->subtotal_amount;
-    $this->discount_amount = $this->order->discount_amount;
-    $this->discount_percentage = $this->order->discount_percent;
-    $this->grandtotal_amount = $this->order->grandtotal_amount;
-    $this->shipping_amount = $this->order->shipping_amount;
-    $this->total_amount = $this->order->total_amount;
-    $this->customers = $customers;
-    $this->payment_methods = $payment_methods;
-    $this->order_details = $this->order->order_detail()->with('product', 'product_size', 'warehouse', 'product_detail')->get()->toArray();
+    public function updatedCustomerId()
+    {
+        $this->recalculatePreviousDebt();
+    }
 
-    $this->recalculateGrandtotalNotpay();
-}
+    public function updatedPaymentStatus()
+    {
+        $this->payment_status = $this->normalizeStatus($this->payment_status);
+        $this->syncPaymentAmounts();
+    }
 
-public function render()
-{
-    // Show checkbox only if there is existing debt
-    $this->show_debt_checkbox = $this->grandtotal_notpay > 0;
+    public function updatedPaidAmount()
+    {
+        $this->syncPaymentAmounts();
+    }
 
-    return view('livewire.admin.order.edit-order');
-}
+    protected function recalculatePreviousDebt()
+    {
+        if (!$this->customer_id) {
+            $this->grandtotal_notpay = 0;
+            $this->previous_debt = 0;
+            $this->syncPaymentAmounts();
+            return;
+        }
+
+        $query = Order::where('user_id', $this->customer_id)
+            ->where('id', '<>', $this->order_id)
+            ->whereIn('payment_status', ['unpaid', 'partial', 'pending'])
+            ->where('status', '<>', 'rejected');
+
+        if ($this->order_created_at) {
+            $query->where('created_at', '<', $this->order_created_at);
+        }
+
+        $this->grandtotal_notpay = $query->get()
+            ->sum(fn ($order) => max($order->total_amount - ($order->paid_amount ?? 0), 0));
+
+        $this->previous_debt = $this->grandtotal_notpay;
+        $this->syncPaymentAmounts();
+    }
+
+    protected function syncPaymentAmounts()
+    {
+        $this->payment_status = $this->normalizeStatus($this->payment_status);
+
+        if ($this->payment_status === 'paid') {
+            $this->paid_amount = $this->total_amount;
+        } elseif ($this->payment_status === 'unpaid') {
+            $this->paid_amount = 0;
+        } else {
+            $this->paid_amount = min((float) $this->paid_amount, (float) $this->total_amount);
+            $this->paid_amount = max((float) $this->paid_amount, 0);
+        }
+
+        $this->debt_amount = max((float) $this->total_amount - (float) $this->paid_amount, 0);
+        $this->total_customer_debt = (float) $this->previous_debt + (float) $this->debt_amount;
+        $this->grandtotal_all = $this->total_customer_debt;
+    }
+
+    protected function normalizeStatus($status)
+    {
+        return $status === 'pending' ? 'unpaid' : $status;
+    }
+
+    protected function paymentStatusLabel()
+    {
+        return match ($this->payment_status) {
+            'paid' => 'Đã thanh toán',
+            'partial' => 'Thanh toán một phần',
+            'unpaid' => 'Chưa thanh toán',
+            default => 'Chưa chọn',
+        };
+    }
+
+    protected function canAddProduct($item)
+    {
+        $warehouseId = $item['warehouse_id'] ?? $this->warehouse_id ?? 1;
+        $warehouse = Warehouse::find($warehouseId);
+
+        if (!$warehouse) {
+            $this->dispatchSuccessMessage('That bai', 'Không tìm thấy kho hàng.', 'error');
+            return false;
+        }
+
+        $stock = $warehouse->totalProductAvailable(
+            $item['product_id'],
+            $item['product_detail_id'],
+            $item['size_id']
+        );
+
+        $existingTotal = 0;
+        foreach ($this->order_details as $existing) {
+            if (is_string($existing)) {
+                $existing = json_decode($existing, true);
+            }
+
+            $existingProductId = is_object($existing) ? ($existing->product_id ?? 0) : ($existing['product_id'] ?? 0);
+            $existingDetailId = is_object($existing) ? ($existing->product_detail_id ?? 0) : ($existing['product_detail_id'] ?? 0);
+            $existingSizeId = is_object($existing) ? ($existing->size_id ?? 0) : ($existing['size_id'] ?? 0);
+            $existingQuantity = is_object($existing) ? ($existing->quantity ?? 0) : ($existing['quantity'] ?? 0);
+
+            if ($existingProductId == $item['product_id']
+                && $existingDetailId == $item['product_detail_id']
+                && $existingSizeId == $item['size_id']) {
+                $existingTotal += $existingQuantity;
+            }
+        }
+
+        if ($existingTotal + $item['quantity'] <= $stock) {
+            return true;
+        }
+
+        $this->dispatchSuccessMessage('That bai', "So luong size {$item['size_name']} vuot ton kho.", 'error');
+
+        return false;
+    }
+
+    protected function dispatchSuccessMessage($title, $message, $type, $action = null)
+    {
+        $payload = [
+            'title' => $title,
+            'message' => $message,
+            'type' => $type,
+            'timeout' => 3000,
+        ];
+
+        if ($action !== null) {
+            $payload['action'] = $action;
+        }
+
+        $this->dispatch('successOrder', $payload);
+    }
+
+    public function render()
+    {
+        return view('livewire.admin.order.edit-order', [
+            'customers' => \App\Models\User::where('username', '!=', 'm8')->get(),
+            'payment_methods' => \App\Models\PaymentMethod::all(),
+        ]);
+    }
 }

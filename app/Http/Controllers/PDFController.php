@@ -35,7 +35,11 @@ class PDFController extends Controller
         $total_quantity = $orderDetails->sum('quantity');   
         $total_price = $orderDetails->sum('total');
         $discount = $order->discount_amount;
-        $debt = $order->debt;
+        $paymentStatus = $order->payment_status === 'pending' ? 'unpaid' : $order->payment_status;
+        $paidAmount = $paymentStatus === 'paid'
+            ? $order->total_amount
+            : ($paymentStatus === 'unpaid' ? 0 : ($order->paid_amount ?? 0));
+        $debt = max($order->total_amount - $paidAmount, 0);
         
         $date = date('d');
         $month = date('m');
@@ -47,12 +51,14 @@ class PDFController extends Controller
     
 
         $totalUnpaid_user = Order::where('user_id', '=', $order->user_id)
-        ->where('id', '<>', $order->order_id)
+        ->where('id', '<>', $order->id)
         ->where('created_at', '<', $order->created_at)
-        ->where('payment_status', '=', 'pending')
+        ->whereIn('payment_status', ['unpaid', 'partial', 'pending'])
         ->whereDoesntHave('orderStatus', function($query) {
             $query->where('status', '=', 'rejected');
-        })->sum('total_amount');
+        })->get()->sum(function ($order) {
+            return max($order->total_amount - ($order->paid_amount ?? 0), 0);
+        });
       
         
         $time = date('H:i');
@@ -71,6 +77,10 @@ class PDFController extends Controller
             'debt' => $debt,
             'username' => $username,
             'totalUnpaid_user' => $totalUnpaid_user,
+            'paid_amount' => $paidAmount,
+            'payment_status' => $paymentStatus,
+            'debt_amount' => $debt,
+            'total_customer_debt' => $totalUnpaid_user + $debt,
             'address' => $address,
             'discount_percent' => $order->discount_percent,
         ];

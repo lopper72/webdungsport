@@ -81,6 +81,10 @@ class ListArap extends Component
         $this->user_choose = User::where('role', 'customer')->get();
         if($this->search_input == ''){
                 $users = User::where('role', 'customer')
+                            ->whereHas('orders', function ($query) {
+                                $query->whereIn('payment_status', ['unpaid', 'partial', 'pending'])
+                                    ->where('status', '<>', 'rejected');
+                            })
                             ->when($this->customer != "ALL", function ($query) {
                                 $query->where('id', $this->customer);
                             })
@@ -92,6 +96,10 @@ class ListArap extends Component
                              ->paginate(10);
         }else{
                 $users = User::where('role', '=', 'customer')
+                            ->whereHas('orders', function ($query) {
+                                $query->whereIn('payment_status', ['unpaid', 'partial', 'pending'])
+                                    ->where('status', '<>', 'rejected');
+                            })
                             ->when($this->customer != "ALL", function ($query) {                        
                                 $query->where('id', $this->customer);
                             })
@@ -105,6 +113,6 @@ class ListArap extends Component
         }
         $this->list_user = collect($users->items());
         $this->YearSelect = $this->year;
-        return view('livewire.admin.arap.list-arap', ['orders' => $orders, 'users' => $users, 'YearSelect' => $this->year, 'user_choose' => $this->user_choose]);
+        return view('livewire.admin.arap.list-arap', ['orders' => $orders, 'users' => $users, 'YearSelect' => $this->year, 'year' => $this->year, 'user_choose' => $this->user_choose]);
     }
 }

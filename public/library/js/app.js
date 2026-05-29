@@ -1,6 +1,13 @@
 // Function to create a dropdown with search
 const createDropdown = (selectElement) => {
+	if ([...selectElement.attributes].some(attr => attr.name.startsWith('wire:'))) {
+		return;
+	}
 	const container = selectElement.parentElement;
+	if (selectElement.dataset.dropdownConverted === 'true') {
+		return;
+	}
+	selectElement.dataset.dropdownConverted = 'true';
 	const data = Array.from(selectElement.options).map(option => option);
 	const selectClasses = selectElement.classList;
 	selectClasses.remove("convert-to-dropdown"); // Remove class to prevent duplicate conversion
@@ -10,19 +17,13 @@ const createDropdown = (selectElement) => {
 		selectWidth = "100%"; // Set width to 100% if it is 0
 	}
 	// Get classes of select element
-	const selectClassList = selectElement.classList;
+	const selectClassList = [...selectElement.classList];
 	const selectId = selectElement.id;
 	const selectedValue = selectElement.options[selectElement.selectedIndex].value;
 	const selectedText = selectElement.options[selectElement.selectedIndex].textContent;
-	const hiddenInput = document.createElement('input');
-	hiddenInput.type = 'hidden';
-	hiddenInput.name = `${selectId}-attributes`;
-	// Copy all attributes from select element to hidden input
-	for (const attr of selectElement.attributes) {
-		hiddenInput.setAttribute(attr.name, attr.value);
-	}
-	hiddenInput.value = selectedValue;
-	hiddenInput.dispatchEvent(new Event('input')); // Dispatch change event to hidden input
+	selectElement.classList.add('hidden');
+	selectElement.style.display = 'none';
+	selectElement.setAttribute('aria-hidden', 'true');
 	container.innerHTML = `
 		<div class="relative">
 			<input type="text" id="search_${selectId}" class="${[...selectClassList].join(' ')}" placeholder="Search..." value="${selectedText}" style="width: ${selectWidth}; padding-right: 20px;">
@@ -34,7 +35,7 @@ const createDropdown = (selectElement) => {
 			</svg>
 		</div>
 		`;
-	container.appendChild(hiddenInput);
+	container.appendChild(selectElement);
 	const searchInput = container.querySelector('#search_' + selectId);
 	const dropdown = container.querySelector('#dropdown' + selectId);
 	// Function to filter dropdown items based on search query
@@ -55,9 +56,9 @@ const createDropdown = (selectElement) => {
 			div.addEventListener('click', () => {
 				searchInput.value = item.innerText; // Set selected item to input value
 				dropdown.classList.add('hidden'); // Hide dropdown after selecting an item
-				hiddenInput.value = item.value;
-				hiddenInput.dispatchEvent(new Event('input')); // Dispatch change event to hidden input
-				hiddenInput.dispatchEvent(new Event('change')); // Dispatch change event to hidden input
+				selectElement.value = item.value;
+				selectElement.dispatchEvent(new Event('input', { bubbles: true }));
+				selectElement.dispatchEvent(new Event('change', { bubbles: true }));
 			});
 			dropdown.appendChild(div);
 		});

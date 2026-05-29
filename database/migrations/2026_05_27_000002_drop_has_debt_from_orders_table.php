@@ -6,26 +6,20 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            if (!Schema::hasColumn('orders', 'paid_amount')) {
-                $table->decimal('paid_amount', 15, 2)->default(0)->after('total_amount');
+            if (Schema::hasColumn('orders', 'has_debt')) {
+                $table->dropColumn('has_debt');
             }
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            if (Schema::hasColumn('orders', 'paid_amount')) {
-                $table->dropColumn('paid_amount');
+            if (!Schema::hasColumn('orders', 'has_debt')) {
+                $table->boolean('has_debt')->default(false)->after('total_amount');
             }
         });
     }

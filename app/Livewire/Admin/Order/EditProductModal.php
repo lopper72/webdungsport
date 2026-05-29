@@ -28,6 +28,7 @@ class EditProductModal extends ModalComponent
     public $index;
     public $classRef;
     public $id;
+    public $uuid;
 
     public function mount($order_detail, $index, $mode)
     {
@@ -38,6 +39,7 @@ class EditProductModal extends ModalComponent
             $this->classRef = EditOrder::class;
             $this->id = isset($order_detail["id"]) ? $order_detail["id"] : null;
         }
+        $this->uuid = isset($order_detail["uuid"]) ? $order_detail["uuid"] : null;
         $this->index = $index+1;
         $this->product_id = $this->order_product["product_id"];
         $this->product_detail_id = $this->order_product["product_detail_id"];
@@ -146,8 +148,12 @@ class EditProductModal extends ModalComponent
         $this->order_product->unit_price = $this->product_unit_price;
         $this->order_product->total_amount = $this->product_total_amount;
         $this->order_product->note = $this->note;
+        $order_product_array = $this->order_product->toArray();
+        if ($this->uuid) {
+            $order_product_array['uuid'] = $this->uuid;
+        }
         $this->closeModalWithEvents([
-            $this->classRef => ['updateOrderProductEdit', [$this->order_product->toArray(), $this->index - 1]],
+            $this->classRef => ['updateOrderProductEdit', [$order_product_array, $this->index - 1]],
         ]);
     }
 

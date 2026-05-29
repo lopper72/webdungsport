@@ -23,6 +23,12 @@ class ShareDataMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Skip for Livewire AJAX requests — sharing view data on these
+        // requests interferes with Livewire snapshot checksum verification.
+        if ($request->hasHeader('X-Livewire')) {
+            return $next($request);
+        }
+
         $system_info = SystemInfo::first();
         $categories = Category::where('parent_id', null)->get();
         $cart = CartMD::where('user_id', auth()->id())->first();

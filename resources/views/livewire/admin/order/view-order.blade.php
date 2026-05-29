@@ -1,4 +1,4 @@
-<div>
+﻿<div>
     <form>
         <div class="space-y-12">
             <div class="border-b border-gray-900/10 pb-12">
@@ -31,8 +31,11 @@
                         <label class="block text-sm font-medium leading-6 text-gray-900">Trạng thái thanh toán <span class="text-red-700">*</span></label>
                         <div class="mt-2">
                             @switch($payment_status)
-                                @case("pending")
-                                    Đang chờ thanh toán
+                                @case("unpaid")
+                                    Chưa thanh toán
+                                    @break
+                                @case("partial")
+                                    Thanh toán một phần
                                     @break
                                 @case("paid")
                                     Đã thanh toán
@@ -177,21 +180,37 @@
                             <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-xs sm:text-sm">{{number_format($total_amount)}}</span>
                             <input wire:model="total_amount" type="hidden" name="total_amount" id="total_amount">
                         </td>
+                    </tr>                    <tr>
+                        <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
+                        <td scope="col" class="px-2 py-2 text-xs sm:text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Đã thanh toán</b></td>
+                        <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
+                            <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-xs sm:text-sm">{{ number_format($paid_amount) }}</span>
+                        </td>
                     </tr>
+                    @if($payment_status === 'paid')
                     <tr>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
-                        <td scope="col" class="px-2 py-2 text-xs sm:text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Nợ Cũ</b></td>
+                        <td scope="col" class="px-2 py-2 text-xs sm:text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Còn lại</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
-                            <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-xs sm:text-sm">{{number_format($grandtotal_notpay)}}</span>
+                            <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-xs sm:text-sm">0</span>
+                        </td>
+                    </tr>
+                    @elseif(in_array($payment_status, ['partial', 'unpaid']))
+                    <tr>
+                        <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
+                        <td scope="col" class="px-2 py-2 text-xs sm:text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Nợ phát sinh</b></td>
+                        <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
+                            <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-xs sm:text-sm">{{ number_format($debt_amount) }}</span>
                         </td>
                     </tr>
                     <tr>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
-                        <td scope="col" class="px-2 py-2 text-xs sm:text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Cần Thanh Toán</b></td>
+                        <td scope="col" class="px-2 py-2 text-xs sm:text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Tổng nợ khách hàng</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
-                            <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-xs sm:text-sm">{{number_format($grandtotal_all)}}</span>
+                            <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-xs sm:text-sm">{{ number_format($total_customer_debt) }}</span>
                         </td>
                     </tr>
+                    @endif
                 </table>
             </div>
         </div>
@@ -296,3 +315,8 @@ function recalculateGrandtotalNotpay() {
 }
 </script>
 @endpush
+
+
+
+
+

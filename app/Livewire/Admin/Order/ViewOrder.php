@@ -40,6 +40,10 @@ class ViewOrder extends Component
     public $order_product_delete = [];
     public $grandtotal_notpay = 0;
     public $grandtotal_all = 0;
+    public $paid_amount = 0;
+    public $debt_amount = 0;
+    public $previous_debt = 0;
+    public $total_customer_debt = 0;
 
     protected $listeners = ['updateOrderProduct'];
 
@@ -204,7 +208,7 @@ class ViewOrder extends Component
         $this->order_id = $id;
         $this->payment_method_id = $this->order->payment_method_id;
         $this->payment_method_name = PaymentMethod::find($this->payment_method_id)->name;
-        $this->payment_status = $this->order->payment_status;
+        $this->payment_status = $this->order->payment_status === 'pending' ? 'unpaid' : $this->order->payment_status;
         $this->customer_id = $this->order->user_id;
         $this->customer_name = User::find($this->customer_id)->name;
         $this->order_date = date('Y-m-d', strtotime($this->order->order_date));
@@ -221,6 +225,9 @@ class ViewOrder extends Component
         $this->grandtotal_amount = $this->order->grandtotal_amount;
         $this->shipping_amount = $this->order->shipping_amount;
         $this->total_amount = $this->order->total_amount;
+        $this->paid_amount = $this->payment_status === 'paid'
+            ? $this->total_amount
+            : ($this->payment_status === 'unpaid' ? 0 : ($this->order->paid_amount ?? 0));
         $this->customers = $customers;
         $this->payment_methods = $payment_methods;
         $this->discount_percent = $this->order->discount_percent;
@@ -229,12 +236,17 @@ class ViewOrder extends Component
         $grandtotal_notpay = Order::where('user_id', '=', $this->customer_id)
         ->where('id', '<>', $this->order_id)
         ->where('created_at', '<', $this->order->created_at)
-        ->where('payment_status', '=', 'pending')
+        ->whereIn('payment_status', ['unpaid', 'partial', 'pending'])
         ->whereDoesntHave('orderStatus', function($query) {
             $query->where('status', '=', 'rejected');
         })->get();
-        $this->grandtotal_notpay = $grandtotal_notpay->sum('total_amount');
-        $this->grandtotal_all = $this->total_amount + $this->grandtotal_notpay; 
+        $this->grandtotal_notpay = $grandtotal_notpay->sum(function ($order) {
+            return max($order->total_amount - ($order->paid_amount ?? 0), 0);
+        });
+        $this->previous_debt = $this->grandtotal_notpay;
+        $this->debt_amount = max((float) $this->total_amount - (float) $this->paid_amount, 0);
+        $this->total_customer_debt = (float) $this->previous_debt + (float) $this->debt_amount;
+        $this->grandtotal_all = $this->total_customer_debt; 
     }
 
     public function render()

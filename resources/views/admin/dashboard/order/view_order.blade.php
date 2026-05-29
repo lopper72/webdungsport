@@ -1,4 +1,4 @@
-@extends('admin.layouts.master')
+﻿@extends('admin.layouts.master')
 
 @section('title', 'Xem đơn hàng')
 @section('menu', 'orders')
@@ -90,9 +90,18 @@
                                                 @endif
                                                 @if($logStatus->status == 'completed')
                                                     HOÀN THÀNH
-                                                @endif
-                                                @if($logStatus->status == 'pending' || $logStatus->status == 'paid')
-                                                    CẬP NHẬT TRẠNG THÁI THANH TOÁN : {{$logStatus->status == 'pending' ? 'ĐANG CHỜ THANH TOÁN' : 'ĐÃ THANH TOÁN'}}
+                                                @endif                                                @if(in_array($logStatus->status, ['pending', 'unpaid', 'partial', 'paid']))
+                                                    CAP NHAT TRANG THAI THANH TOAN :
+                                                    @switch($logStatus->status)
+                                                        @case('paid')
+                                                            DA THANH TOAN
+                                                            @break
+                                                        @case('partial')
+                                                            THANH TOAN MOT PHAN
+                                                            @break
+                                                        @default
+                                                            CHUA THANH TOAN
+                                                    @endswitch
                                                 @endif
                                             </h3>
                                             <time class="block text-xs font-normal leading-none text-gray-500 dark:text-gray-400">{{ $logStatus->created_at }}</time>
@@ -114,3 +123,5 @@
        
     </div>
 @endsection
+
+

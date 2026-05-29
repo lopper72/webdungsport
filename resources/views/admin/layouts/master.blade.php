@@ -51,6 +51,6 @@
 		</div>
 		<!-- ===== Page Wrapper End ===== -->
 		@livewireScripts
-		<script src="{{asset('library/js/app.js')}}"></script>
+		<script src="{{ asset('library/js/app.js') }}?v={{ filemtime(public_path('library/js/app.js')) }}"></script>
 	</body>
 </html>

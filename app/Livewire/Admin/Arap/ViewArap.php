@@ -6,111 +6,175 @@ use Livewire\Component;
 use App\Models\Order;
 use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
-use App\Models\OrderDetail;
 use App\Models\User;
+
 class ViewArap extends Component
 {
     use WithPagination, WithoutUrlPagination;
+
     public $search_input = '';
-    public $list_order = [];
-    public $selected_index = [];
-    public $id = '';
-    public $year = 'ALL';
-    public $month = 'ALL';
+    public $list_order   = [];
+    public $id           = '';
+    public $year         = 'ALL';
+    public $month        = 'ALL';
+    public $payment_amount = '';
 
-    public function search()
+    // Preview modal
+    public $allocation_preview = [];   // mảng các dòng phân bổ, mỗi dòng có 'applied_amount' có thể sửa
+    public $show_preview        = false;
+    public $preview_error       = '';  // lỗi validate trong modal
+
+    /* ------------------------------------------------------------------ */
+    /*  Filters / Search                                                    */
+    /* ------------------------------------------------------------------ */
+    public function search()        { $this->resetPage(); }
+    public function filterByYear()  { $this->resetPage(); }
+    public function filterByMonth() { $this->resetPage(); }
+
+    /* ------------------------------------------------------------------ */
+    /*  Bước 1 – Tính phân bổ tự động và mở modal                         */
+    /* ------------------------------------------------------------------ */
+    public function previewDebtAllocation()
     {
-        $this->resetPage();
-    }
+        $this->preview_error = '';
 
+        $this->validate([
+            'payment_amount' => 'required|numeric|min:1',
+        ], [
+            'payment_amount.required' => 'Vui lòng nhập số tiền thanh toán.',
+            'payment_amount.numeric'  => 'Số tiền thanh toán không hợp lệ.',
+            'payment_amount.min'      => 'Số tiền thanh toán phải lớn hơn 0.',
+        ]);
 
-    public function filterByYear()
-    {
-        $this->resetPage();
-    }
-    public function filterByMonth()
-    {
-        $this->resetPage();
-    }   
+        $remaining = (float) $this->payment_amount;
 
-    public function updateOrder($id){
-        $order_detail = OrderDetail::where('order_id', $id)->get();
-        foreach ($order_detail as $item) {
-            $item->delete();
+        $orders = Order::where('user_id', $this->id)
+            ->whereIn('payment_status', ['unpaid', 'partial', 'pending'])
+            ->where('status', '<>', 'rejected')
+            ->orderBy('order_date')
+            ->orderBy('id')
+            ->get();
+
+        $preview = [];
+
+        foreach ($orders as $order) {
+            $currentPaid   = (float) ($order->paid_amount ?? 0);
+            $remainingDebt = max((float) $order->total_amount - $currentPaid, 0);
+
+            if ($remainingDebt <= 0) continue;
+
+            $applied = $remaining > 0 ? min($remaining, $remainingDebt) : 0;
+
+            $preview[] = [
+                'id'             => $order->id,
+                'code'           => $order->code,
+                'order_date'     => $order->order_date,
+                'total_amount'   => (float) $order->total_amount,
+                'before_paid'    => $currentPaid,
+                'max_applicable' => $remainingDebt,        // trần tối đa có thể nhập
+                'applied_amount' => $applied,              // người dùng có thể sửa field này
+            ];
+
+            $remaining -= $applied;
         }
-        $order = Order::find($id);
-        $order->payment_status = 'paid';
-        $order->save();
-        
+
+        $this->allocation_preview = $preview;
+        $this->show_preview       = true;
     }
 
-    public function paySelectedOrders()
+    /* ------------------------------------------------------------------ */
+    /*  Tính toán lại khi người dùng sửa applied_amount của 1 dòng        */
+    /* ------------------------------------------------------------------ */
+    public function updatedAllocationPreview()
     {
-        foreach ($this->selected_index as $key => $checked) {
-            if($checked == true){
-                $order_id = $this->list_order[$key]['id'];
-                $this->updateOrder($order_id);
-            }
+        // Livewire gọi hook này mỗi khi bất kỳ phần tử nào của mảng thay đổi.
+        // Chỉ cần giữ giá trị hợp lệ (không âm, không vượt max_applicable).
+        $this->preview_error = '';
+
+        foreach ($this->allocation_preview as $i => &$item) {
+            $val = (float) ($item['applied_amount'] ?? 0);
+            $val = max(0, $val);
+            $val = min($val, $item['max_applicable']);
+            $item['applied_amount'] = $val;
         }
-        $this->selected_index = [];
-        session()->flash('success', 'Order updated successfully');
-        $this->render();
+        unset($item);
     }
 
-    public function handleDetele($id)
+    /* ------------------------------------------------------------------ */
+    /*  Bước 2 – Xác nhận lưu                                             */
+    /* ------------------------------------------------------------------ */
+    public function confirmDebtAllocation()
     {
-        $this->deleteOrder($id);
-        $this->render();
+        $this->preview_error = '';
+
+        if (empty($this->allocation_preview)) {
+            $this->preview_error = 'Không có đơn hàng nào để cập nhật.';
+            return;
+        }
+
+        // Validate: tổng applied không được vượt quá số tiền đã nhập
+        $totalApplied   = array_sum(array_column($this->allocation_preview, 'applied_amount'));
+        $inputAmount    = (float) $this->payment_amount;
+
+        if (round($totalApplied, 2) > round($inputAmount, 2)) {
+            $this->preview_error = 'Tổng tiền phân bổ vượt quá số tiền thanh toán đã nhập.';
+            return;
+        }
+
+        $count = 0;
+        foreach ($this->allocation_preview as $item) {
+            if ((float) $item['applied_amount'] <= 0) continue;
+
+            $order = Order::find($item['id']);
+            if (!$order) continue;
+
+            $newPaid = (float) ($order->paid_amount ?? 0) + (float) $item['applied_amount'];
+            $order->paid_amount    = $newPaid;
+            $order->payment_status = ($newPaid >= (float) $order->total_amount) ? 'paid' : 'partial';
+            $order->save();
+            $count++;
+        }
+
+        $this->payment_amount     = '';
+        $this->allocation_preview = [];
+        $this->show_preview       = false;
+
+        session()->flash('success', "Đã cập nhật công nợ thành công cho {$count} đơn hàng.");
     }
 
+    public function cancelPreview()
+    {
+        $this->allocation_preview = [];
+        $this->show_preview       = false;
+        $this->preview_error      = '';
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Lifecycle                                                           */
+    /* ------------------------------------------------------------------ */
     public function mount($id)
     {
         $this->id = $id;
     }
-    function toggleSelectAll()
-    {
-        $this->selected_index = $this->list_order->pluck('id')->toArray();
-        
-        $this->render();    
-    }   
 
     public function render()
     {
         $user = User::find($this->id);
-        if($this->search_input == ''){
-            $orders = Order::where('user_id', '=', $this->id)->when($this->year != "ALL", function ($query) {
-                $query->whereYear('order_date', $this->year);
-            })
+
+        $orders = Order::where('user_id', $this->id)
+            ->whereIn('payment_status', ['unpaid', 'partial', 'pending'])
             ->where('status', '!=', 'rejected')
-            ->when($this->month != "ALL", function ($query) {
-                $query->whereMonth('order_date', $this->month);
-            })
-            ->whereHas('orderStatus', function($query) {
-                $query->where('status', '!=', 'rejected')
-                      ->orWhereNull('status');
-            })
+            ->when($this->year  !== 'ALL', fn($q) => $q->whereYear('order_date',  $this->year))
+            ->when($this->month !== 'ALL', fn($q) => $q->whereMonth('order_date', $this->month))
+            ->when($this->search_input !== '', fn($q) => $q->where('code', 'like', '%' . $this->search_input . '%'))
             ->orderBy('order_date', 'desc')
             ->paginate(1000);
-           
-        } else {
-            $orders = Order::where('user_id', '=', $this->id)->where('code', 'like', '%'.$this->search_input.'%')->when($this->year != "ALL", function ($query) {
-                $query->whereYear('order_date', $this->year);
-            })
-            ->when($this->month != "ALL", function ($query) {
-                $query->whereMonth('order_date', $this->month);
-            })
-            ->where('status', '!=', 'rejected')
-            ->whereHas('orderStatus', function($query) {
-                $query->where('status', '!=', 'rejected')
-                      ->orWhereNull('status');
-            })
-            ->orderBy('order_date', 'desc')
-            ->paginate(1000);
-        }
-        foreach ($orders as $index => $order) {
-            $this->selected_index[$index] = false;
-        }
-        $this->list_order = collect($orders->items());
-        return view('livewire.admin.arap.view-arap', ['orders' => $orders, 'year' => $this->year, 'user' => $user]);
+
+        $this->list_order = collect($orders->items())->map(fn($o) => ['id' => $o->id])->toArray();
+
+        return view('livewire.admin.arap.view-arap', [
+            'orders' => $orders,
+            'user'   => $user,
+        ]);
     }
 }
