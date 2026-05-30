@@ -103,9 +103,10 @@
                                 </div>
                             </td>
                             <td class="px-2 py-2 whitespace-nowrap text-center">
-                                <button type="button" wire:click="selectProduct({{ $product->id }})" class="font-medium text-blue-600 underline-offset-2 hover:text-blue-800 hover:underline">
-                                    {{$product->code}}
-                                </button>
+                                <a href="{{ route('admin.reports.inventory.history', $product->id) }}" target="_blank"
+                                    class="font-medium text-blue-600 underline-offset-2 hover:text-blue-800 hover:underline">
+                                    {{ $product->code }}
+                                </a>
                             </td>
                             <td class="px-2 py-2">{{$product->name}}</td>
                             <td class="px-2 py-2 whitespace-nowrap text-left">{{ optional($product->productCategory)->name }}</td>

@@ -23,6 +23,9 @@ class ViewArap extends Component
     public $allocation_preview = [];   // mảng các dòng phân bổ, mỗi dòng có 'applied_amount' có thể sửa
     public $show_preview        = false;
     public $preview_error       = '';  // lỗi validate trong modal
+    public $confirm_message     = '';  // thông báo xác nhận hiển thị trong modal header
+    public $total_debt          = 0;   // tổng công nợ hiện tại của user
+    public $success_message     = '';  // thông báo sau khi lưu thành công
 
     /* ------------------------------------------------------------------ */
     /*  Filters / Search                                                    */
@@ -36,7 +39,8 @@ class ViewArap extends Component
     /* ------------------------------------------------------------------ */
     public function previewDebtAllocation()
     {
-        $this->preview_error = '';
+        $this->preview_error   = '';
+        $this->confirm_message = '';
 
         $this->validate([
             'payment_amount' => 'required|numeric|min:1',
@@ -46,7 +50,8 @@ class ViewArap extends Component
             'payment_amount.min'      => 'Số tiền thanh toán phải lớn hơn 0.',
         ]);
 
-        $remaining = (float) $this->payment_amount;
+        $inputAmount = (float) $this->payment_amount;
+        $user        = User::find($this->id);
 
         $orders = Order::where('user_id', $this->id)
             ->whereIn('payment_status', ['unpaid', 'partial', 'pending'])
@@ -54,6 +59,23 @@ class ViewArap extends Component
             ->orderBy('order_date')
             ->orderBy('id')
             ->get();
+
+        // Tổng công nợ hiện tại
+        $this->total_debt = $orders->sum(fn($o) => max((float)$o->total_amount - (float)($o->paid_amount ?? 0), 0));
+
+        // Không cho phép nhập vượt quá tổng công nợ
+        if ($inputAmount > $this->total_debt) {
+            $this->addError('payment_amount',
+                'Số tiền ' . number_format($inputAmount, 0, ',', '.') . ' đ vượt quá tổng công nợ hiện tại là '
+                . number_format($this->total_debt, 0, ',', '.') . ' đ. Vui lòng nhập lại.'
+            );
+            return;
+        }
+
+        // Thông báo xác nhận hiển thị trong modal
+        $this->confirm_message = 'Bạn muốn thanh toán ' . number_format($inputAmount, 0, ',', '.') . ' đ cho ' . $user->name . '.';
+
+        $remaining = $inputAmount;
 
         $preview = [];
 
@@ -138,8 +160,12 @@ class ViewArap extends Component
         $this->payment_amount     = '';
         $this->allocation_preview = [];
         $this->show_preview       = false;
+        $this->confirm_message    = '';
 
-        session()->flash('success', "Đã cập nhật công nợ thành công cho {$count} đơn hàng.");
+        $this->success_message = "✓ Đã cập nhật công nợ thành công cho {$count} đơn hàng.";
+
+        // Tự động ẩn sau 4 giây
+        $this->dispatch('clear-success-message');
     }
 
     public function cancelPreview()
@@ -147,6 +173,8 @@ class ViewArap extends Component
         $this->allocation_preview = [];
         $this->show_preview       = false;
         $this->preview_error      = '';
+        $this->confirm_message    = '';
+        $this->success_message    = '';
     }
 
     /* ------------------------------------------------------------------ */

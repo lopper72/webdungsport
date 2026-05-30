@@ -130,7 +130,8 @@ Route::group(['middleware' => [AdminAuth::class]], function () {
     Route::get('/admin/reports/brand', [ReportController::class, 'brand'])->name('admin.reports.brand');
     Route::get('/admin/reports/revenue-brand', [ReportController::class, 'revenueBrand'])->name('admin.reports.revenue-brand');
     Route::get('/admin/reports/customer', [ReportController::class, 'customer'])->name('admin.reports.customer');
-
+    Route::get('/admin/reports/inventory/history/{id}', [ReportController::class, 'inventoryHistory'])
+    ->name('admin.reports.inventory.history');
     /* Admin */
     Route::get('/admin/info_admin', [InfoAdminController::class, 'index'])->name('admin.info_admin');
     Route::get('/admin/change_password', [InfoAdminController::class, 'change_password'])->name('admin.change_password');

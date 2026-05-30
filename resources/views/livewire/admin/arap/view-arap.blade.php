@@ -27,6 +27,11 @@
                 @if (session()->has('success'))
                     <div class="mt-2 text-sm text-green-600 font-medium">✓ {{ session('success') }}</div>
                 @endif
+                @if ($success_message)
+                    <div class="mt-2 text-sm text-green-600 font-medium bg-green-50 border border-green-200 rounded px-3 py-2" id="success-alert">
+                        {{ $success_message }}
+                    </div>
+                @endif
             </div>
 
             {{-- Tìm kiếm & lọc --}}
@@ -70,6 +75,15 @@
                     <button wire:click="cancelPreview"
                         class="text-gray-400 hover:text-gray-600 text-2xl leading-none flex-shrink-0 mt-0.5">&times;</button>
                 </div>
+
+                {{-- Thông báo xác nhận --}}
+                @if ($confirm_message)
+                    <div class="px-6 py-3 bg-blue-500 text-white text-sm font-medium flex items-center gap-2">
+                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20A10 10 0 0012 2z"/></svg>
+                        {{ $confirm_message }}
+                        Vui lòng kiểm tra phân bổ bên dưới rồi bấm <strong class="underline">Xác nhận lưu</strong>.
+                    </div>
+                @endif
 
                 {{-- Tổng kết nhanh ở trên --}}
                 <div class="px-6 py-3 bg-blue-50 border-b border-blue-100 flex flex-wrap gap-6 text-sm">
@@ -147,6 +161,7 @@
                                         <td class="px-3 py-2 text-right whitespace-nowrap">
                                             <input
                                                 wire:model.lazy="allocation_preview.{{ $i }}.applied_amount"
+                                                id="applied-input-{{ $i }}"
                                                 type="number"
                                                 min="0"
                                                 max="{{ $item['max_applicable'] }}"
@@ -195,7 +210,9 @@
                             Huỷ
                         </button>
                         @if (count($allocation_preview) > 0)
-                            <button wire:click="confirmDebtAllocation"
+                            <button
+                                id="btn-confirm-debt"
+                                type="button"
                                 class="px-4 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 font-medium">
                                 Xác nhận lưu
                             </button>
@@ -280,3 +297,33 @@
         {{ $orders->links('livewire.custom-pagination') }}
     </div>
 </div>
+
+<script>
+    document.addEventListener('livewire:initialized', () => {
+        // Xác nhận lưu
+        document.addEventListener('click', function (e) {
+            if (e.target && e.target.id === 'btn-confirm-debt') {
+                const userName = @js($user->name ?? '');
+                const totalApplied = Array.from(
+                    document.querySelectorAll('[id^="applied-input-"]')
+                ).reduce((sum, el) => sum + (parseFloat(el.value) || 0), 0);
+                const formatted = new Intl.NumberFormat('vi-VN').format(totalApplied);
+                if (confirm(`Xác nhận thanh toán ${formatted} đ cho ${userName}?`)) {
+                    @this.confirmDebtAllocation();
+                }
+            }
+        });
+
+        // Tự ẩn success message sau 4 giây
+        Livewire.on('clear-success-message', () => {
+            setTimeout(() => {
+                const el = document.getElementById('success-alert');
+                if (el) {
+                    el.style.transition = 'opacity 0.5s';
+                    el.style.opacity = '0';
+                }
+                setTimeout(() => @this.set('success_message', ''), 500);
+            }, 4000);
+        });
+    });
+</script>
