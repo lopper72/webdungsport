@@ -11,8 +11,8 @@ use App\Models\OrderDetail;
 class ListOrder extends Component
 {
     use WithPagination, WithoutUrlPagination;
+
     public $search_input = '';
-    public $list_order = [];
     public $selected_index = [];
 
     public function search()
@@ -22,17 +22,20 @@ class ListOrder extends Component
 
     public function deleteListCheckbox()
     {
+        $orders = $this->getOrders();
         foreach ($this->selected_index as $key => $checked) {
-            if($checked == true){
-                $order_id = $this->list_order[$key]['id'];
-                $this->deleteOrder($order_id);
+            if ($checked == true) {
+                $order = $orders->items()[$key] ?? null;
+                if ($order) {
+                    $this->deleteOrder($order->id);
+                }
             }
         }
         $this->selected_index = [];
-        $this->render();
     }
 
-    public function deleteOrder($id){
+    public function deleteOrder($id)
+    {
         $order_detail = OrderDetail::where('order_id', $id)->get();
         foreach ($order_detail as $item) {
             $item->delete();
@@ -45,17 +48,24 @@ class ListOrder extends Component
     public function handleDetele($id)
     {
         $this->deleteOrder($id);
-        $this->render();
+    }
+
+    private function getOrders()
+    {
+        if ($this->search_input == '') {
+            return Order::with('customer')->orderBy('created_at', 'desc')->paginate(10);
+        } else {
+            return Order::with('customer')
+                ->where('code', 'like', '%' . $this->search_input . '%')
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        }
     }
 
     public function render()
     {
-        if($this->search_input == ''){
-            $orders = Order::with('customer')->orderBy('created_at', 'desc')->paginate(10);
-        } else {
-            $orders = Order::with('customer')->where('code', 'like', '%'.$this->search_input.'%')->orderBy('created_at', 'desc')->paginate(10);
-        }
-        $this->list_order = collect($orders->items());
-        return view('livewire.admin.order.list-order', ['orders' => $orders]);
+        return view('livewire.admin.order.list-order', [
+            'orders' => $this->getOrders(),
+        ]);
     }
 }
