@@ -113,7 +113,13 @@ class ReportController extends Controller
             ->sortByDesc('date')
             ->values();
 
-        return view('admin.dashboard.report.inventory_history_report', compact('product', 'history'));
+        // Tính tổng toàn bộ trước khi phân trang
+        $totalIn  = $history->sum('quantity_in');
+        $totalOut = $history->sum('quantity_out');
+
+        return view('admin.dashboard.report.inventory_history_report', compact(
+            'product', 'history', 'totalIn', 'totalOut'
+        ));
     }
 
     public function revenue()

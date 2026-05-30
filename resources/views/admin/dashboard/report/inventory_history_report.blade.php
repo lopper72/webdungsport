@@ -35,11 +35,16 @@
         </div>
     </div>
 
-    {{-- Thống kê nhanh --}}
+    {{-- Thống kê nhanh — tính từ toàn bộ $history, không đổi theo trang --}}
     @php
-        $totalIn  = $history->sum('quantity_in');
-        $totalOut = $history->sum('quantity_out');
-        $stock    = $totalIn - $totalOut;
+        $stock = $totalIn - $totalOut;
+        $perPage = 20;
+        $currentPage = request()->get('page', 1);
+        $pagedHistory = $history->forPage($currentPage, $perPage);
+        $total = $history->count();
+        $lastPage = ceil($total / $perPage);
+        $firstItem = ($currentPage - 1) * $perPage + 1;
+        $lastItem = min($currentPage * $perPage, $total);
     @endphp
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 px-4 py-5 md:px-6 xl:px-7.5 border-b border-stroke">
         <div class="rounded-sm border border-stroke bg-gray-50 px-4 py-3">
@@ -56,7 +61,7 @@
         </div>
         <div class="rounded-sm border border-stroke bg-gray-50 px-4 py-3">
             <p class="text-sm font-medium text-gray-500">Số giao dịch</p>
-            <p class="mt-1 text-2xl font-bold text-gray-700">{{ $history->count() }}</p>
+            <p class="mt-1 text-2xl font-bold text-gray-700">{{ $total }}</p>
         </div>
     </div>
 
@@ -77,9 +82,9 @@
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200 text-sm">
-                @forelse ($history as $i => $row)
+                @forelse ($pagedHistory as $i => $row)
                     <tr class="hover:bg-gray-50">
-                        <td class="px-3 py-2 whitespace-nowrap text-center text-gray-400">{{ $i + 1 }}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-center text-gray-400">{{ $firstItem + $i }}</td>
                         <td class="px-3 py-2 whitespace-nowrap">
                             {{ $row->date ? \Carbon\Carbon::parse($row->date)->format('d/m/Y H:i') : '—' }}
                         </td>
@@ -107,7 +112,7 @@
                     </tr>
                 @endforelse
 
-                @if($history->count() > 0)
+                @if($total > 0)
                 <tr class="bg-gray-100 font-semibold">
                     <td class="px-3 py-2 text-right" colspan="7">Tổng:</td>
                     <td class="px-3 py-2 text-right text-green-600">{{ number_format($totalIn, 0, ',', '.') }}</td>
@@ -117,6 +122,33 @@
             </tbody>
         </table>
     </div>
+
+    {{-- Phân trang thủ công --}}
+    @if($lastPage > 1)
+    <div class="px-4 py-4 md:px-6 xl:px-7.5 flex flex-col sm:flex-row justify-between items-center gap-2 border-t border-stroke">
+        <p class="text-sm text-gray-500">
+            Hiển thị {{ $firstItem }}–{{ $lastItem }} / {{ $total }} giao dịch
+        </p>
+        <div class="flex gap-1">
+            @if($currentPage > 1)
+                <a href="?page={{ $currentPage - 1 }}"
+                   class="px-3 py-1.5 text-sm border border-stroke rounded hover:bg-gray-100">← Trước</a>
+            @endif
+
+            @for($p = max(1, $currentPage - 2); $p <= min($lastPage, $currentPage + 2); $p++)
+                <a href="?page={{ $p }}"
+                   class="px-3 py-1.5 text-sm border rounded {{ $p == $currentPage ? 'bg-sky-500 text-white border-sky-500' : 'border-stroke hover:bg-gray-100' }}">
+                    {{ $p }}
+                </a>
+            @endfor
+
+            @if($currentPage < $lastPage)
+                <a href="?page={{ $currentPage + 1 }}"
+                   class="px-3 py-1.5 text-sm border border-stroke rounded hover:bg-gray-100">Sau →</a>
+            @endif
+        </div>
+    </div>
+    @endif
 
     <div class="px-4 py-4 md:px-6 xl:px-7.5 text-xs text-gray-400 text-right">
         Xem lúc: {{ now()->format('d/m/Y H:i') }}
