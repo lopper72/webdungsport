@@ -66,14 +66,14 @@
             <thead class="bg-gray-200">
                 <tr>
                     <th class="px-3 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-12 text-center">STT</th>
-                    <th class="px-3 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Ngày</th>
+                    <th class="px-3 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Mẫu sản phẩm</th>
                     <th class="px-3 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Loại</th>
                     <th class="px-3 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Mã phiếu / đơn</th>
                     <th class="px-3 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Tham chiếu</th>
                     <th class="px-3 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Kho</th>
                     <th class="px-3 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Size</th>
-                    <th class="px-3 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-right text-green-600">Nhập</th>
-                    <th class="px-3 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-right text-red-500">Xuất</th>
+                    <th class="px-3 py-4 text-sm font-medium uppercase tracking-wider text-right text-green-600">Nhập</th>
+                    <th class="px-3 py-4 text-sm font-medium uppercase tracking-wider text-right text-red-500">Xuất</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200 text-sm">
@@ -81,7 +81,7 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-3 py-2 whitespace-nowrap text-center text-gray-400">{{ $i + 1 }}</td>
                         <td class="px-3 py-2 whitespace-nowrap">
-                            {{ $row->date ? \Carbon\Carbon::parse($row->date)->format('d/m/Y H:i') : '—' }}
+                            {{ $row->date ? \Carbon\Carbon::parse($row->date)->format('d/m/Y') : '—' }} {{ $row->reference_name ?? '—' }}
                         </td>
                         <td class="px-3 py-2 whitespace-nowrap">
                             @if(str_contains(strtolower($row->type), 'nhập'))

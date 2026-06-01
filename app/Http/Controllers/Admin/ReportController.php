@@ -34,6 +34,8 @@ class ReportController extends Controller
             ->join('import_product', 'import_product_detail.import_product_id', '=', 'import_product.id')
             ->leftJoin('warehouse', 'import_product.warehouse_id', '=', 'warehouse.id')
             ->leftJoin('product_size', 'import_product_detail.size_id', '=', 'product_size.id')
+            ->leftJoin('product_detail', 'import_product_detail.product_detail_id', '=', 'product_detail.id')
+            ->leftJoin('products', 'import_product_detail.product_id', '=', 'products.id')
             ->where('import_product_detail.product_id', $id)
             ->select(
                 'import_product_detail.created_at as date',
@@ -42,6 +44,7 @@ class ReportController extends Controller
                 'import_product.name as reference_name',
                 'warehouse.name as warehouse_name',
                 'product_size.size as size_name',
+                'product_detail.title as product_model',
                 'import_product_detail.quantity as quantity_in',
                 DB::raw('0 as quantity_out')
             )
@@ -51,6 +54,8 @@ class ReportController extends Controller
             ->join('orders', 'order_detail.order_id', '=', 'orders.id')
             ->leftJoin('warehouse', 'order_detail.warehouse_id', '=', 'warehouse.id')
             ->leftJoin('product_size', 'order_detail.size_id', '=', 'product_size.id')
+            ->leftJoin('product_detail', 'order_detail.product_detail_id', '=', 'product_detail.id')
+            ->leftJoin('products', 'order_detail.product_id', '=', 'products.id')
             ->leftJoin('users', 'orders.user_id', '=', 'users.id')
             ->where('order_detail.product_id', $id)
             ->where('orders.status', '<>', 'rejected')
@@ -61,6 +66,7 @@ class ReportController extends Controller
                 'users.name as reference_name',
                 'warehouse.name as warehouse_name',
                 'product_size.size as size_name',
+                'product_detail.title as product_model',
                 DB::raw('0 as quantity_in'),
                 'order_detail.quantity as quantity_out'
             )
@@ -71,6 +77,8 @@ class ReportController extends Controller
             ->leftJoin('warehouse as from_warehouse', 'transfer_product.from_warehouse_id', '=', 'from_warehouse.id')
             ->leftJoin('warehouse as to_warehouse', 'transfer_product.to_warehouse_id', '=', 'to_warehouse.id')
             ->leftJoin('product_size', 'transfer_product_detail.size_id', '=', 'product_size.id')
+            ->leftJoin('product_detail', 'transfer_product_detail.product_detail_id', '=', 'product_detail.id')
+            ->leftJoin('products', 'transfer_product_detail.product_id', '=', 'products.id')
             ->where('transfer_product_detail.product_id', $id)
             ->select(
                 'transfer_product_detail.created_at as date',
@@ -79,6 +87,7 @@ class ReportController extends Controller
                 'from_warehouse.name as from_warehouse_name',
                 'to_warehouse.name as to_warehouse_name',
                 'product_size.size as size_name',
+                'product_detail.title as product_model',
                 'transfer_product_detail.quantity as quantity'
             )
             ->get()
@@ -91,6 +100,7 @@ class ReportController extends Controller
                         'reference_name' => $transfer->reference_name,
                         'warehouse_name' => $transfer->from_warehouse_name,
                         'size_name'      => $transfer->size_name,
+                        'product_model'  => $transfer->product_model,
                         'quantity_in'    => 0,
                         'quantity_out'   => $transfer->quantity,
                     ],
@@ -101,6 +111,7 @@ class ReportController extends Controller
                         'reference_name' => $transfer->reference_name,
                         'warehouse_name' => $transfer->to_warehouse_name,
                         'size_name'      => $transfer->size_name,
+                        'product_model'  => $transfer->product_model,
                         'quantity_in'    => $transfer->quantity,
                         'quantity_out'   => 0,
                     ],
