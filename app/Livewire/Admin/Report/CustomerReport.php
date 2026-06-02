@@ -32,29 +32,44 @@ class CustomerReport extends Component
 
     public function render()
     {
-        $where = 'where 1 = 1 ';
         $startdate = $this->startdate;
         $endate = $this->endate;
         $userid = $this->userid;
+
+        $where = [];
+        $bindings = [];
+
         if ($startdate != '' && $endate != '') {
-            $where = "and od.order_date between '" . $startdate . "' and '" . $endate . "'";
+            $where[] = 'od.order_date between ? and ?';
+            $bindings[] = $startdate;
+            $bindings[] = $endate;
         }
         if ($startdate != '' && $endate == '') {
-            $where = "and od.order_date >= '" . $startdate . "'";
+            $where[] = 'od.order_date >= ?';
+            $bindings[] = $startdate;
         }
         if ($startdate == '' && $endate != '') {
-            $where = "and od.order_date <= '" . $endate . "'";
+            $where[] = 'od.order_date <= ?';
+            $bindings[] = $endate;
         }
         if ($userid != '') {
-            $where .= " and od.user_id = " . (int) $userid;
+            $where[] = 'od.user_id = ?';
+            $bindings[] = (int) $userid;
+        }
+
+        $whereSql = '';
+        if (!empty($where)) {
+            $whereSql = ' AND ' . implode(' AND ', $where);
         }
 
         $results = DB::select(
             'SELECT user.id as user_id, user.name, SUM(od.total_amount) as total_amount
             FROM orders as od
             INNER JOIN users user on user.id = od.user_id
-            WHERE 1 = 1 ' . $where . '
-            GROUP BY user.id, user.name'
+            WHERE 1 = 1 ' . $whereSql . '
+            GROUP BY user.id, user.name
+            ORDER BY SUM(od.total_amount) DESC',
+            $bindings
         );
 
         return view('livewire.admin.report.customer-report', [
