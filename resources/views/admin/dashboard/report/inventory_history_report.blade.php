@@ -71,14 +71,13 @@
             <thead class="bg-gray-200">
                 <tr>
                     <th class="px-3 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-12 text-center">STT</th>
-                    <th class="px-3 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Mẫu sản phẩm</th>
-                    <th class="px-3 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Loại</th>
-                    <th class="px-3 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Mã phiếu / đơn</th>
                     <th class="px-3 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Tham chiếu</th>
-                    <th class="px-3 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Kho</th>
+                    <th class="px-3 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Mẫu sản phẩm</th>
                     <th class="px-3 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Size</th>
                     <th class="px-3 py-4 text-sm font-medium uppercase tracking-wider text-right text-green-600">Nhập</th>
                     <th class="px-3 py-4 text-sm font-medium uppercase tracking-wider text-right text-red-500">Xuất</th>
+                    <th class="px-3 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Loại</th>
+                    <th class="px-3 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Ngày</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200 text-sm">
@@ -86,7 +85,17 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-3 py-2 whitespace-nowrap text-center text-gray-400">{{ $firstItem + $i }}</td>
                         <td class="px-3 py-2 whitespace-nowrap">
+                            {{ $row->reference_name ?? '—' }}
+                        </td>
+                        <td class="px-3 py-2 whitespace-nowrap">
                             {{ $product->name }}{{ !empty($row->product_model) ? ' - ' . $row->product_model : '' }}
+                        </td>
+                        <td class="px-3 py-2 whitespace-nowrap">{{ $row->size_name ?? '—' }}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-right font-medium text-green-600">
+                            {{ $row->quantity_in > 0 ? number_format($row->quantity_in, 0, ',', '.') : '—' }}
+                        </td>
+                        <td class="px-3 py-2 whitespace-nowrap text-right font-medium text-red-500">
+                            {{ $row->quantity_out > 0 ? number_format($row->quantity_out, 0, ',', '.') : '—' }}
                         </td>
                         <td class="px-3 py-2 whitespace-nowrap">
                             @if(str_contains(strtolower($row->type), 'nhập'))
@@ -95,30 +104,23 @@
                                 <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-600">{{ $row->type }}</span>
                             @endif
                         </td>
-                        <td class="px-3 py-2 whitespace-nowrap font-medium text-indigo-600">{{ $row->code }}</td>
-                        <td class="px-3 py-2">
-                            {{ $row->date ? \Carbon\Carbon::parse($row->date)->format('d/m/Y') . ' ' : '' }}{{ $row->reference_name ?? '—' }}
-                        </td>
-                        <td class="px-3 py-2 whitespace-nowrap">{{ $row->warehouse_name ?? '—' }}</td>
-                        <td class="px-3 py-2 whitespace-nowrap">{{ $row->size_name ?? '—' }}</td>
-                        <td class="px-3 py-2 whitespace-nowrap text-right font-medium text-green-600">
-                            {{ $row->quantity_in > 0 ? number_format($row->quantity_in, 0, ',', '.') : '—' }}
-                        </td>
-                        <td class="px-3 py-2 whitespace-nowrap text-right font-medium text-red-500">
-                            {{ $row->quantity_out > 0 ? number_format($row->quantity_out, 0, ',', '.') : '—' }}
+                        <td class="px-3 py-2 whitespace-nowrap">
+                            {{ $row->date ? \Carbon\Carbon::parse($row->date)->format('d/m/Y H:i') : '—' }}
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td class="px-3 py-8 text-center text-gray-400" colspan="9">Không có lịch sử nhập xuất</td>
+                        <td class="px-3 py-8 text-center text-gray-400" colspan="8">Không có lịch sử nhập xuất</td>
                     </tr>
                 @endforelse
 
                 @if($total > 0)
                 <tr class="bg-gray-100 font-semibold">
-                    <td class="px-3 py-2 text-right" colspan="7">Tổng:</td>
+                    <td class="px-3 py-2 text-right" colspan="4">Tổng:</td>
                     <td class="px-3 py-2 text-right text-green-600">{{ number_format($totalIn, 0, ',', '.') }}</td>
                     <td class="px-3 py-2 text-right text-red-500">{{ number_format($totalOut, 0, ',', '.') }}</td>
+                    <td class="px-3 py-2"></td>
+                    <td class="px-3 py-2"></td>
                 </tr>
                 @endif
             </tbody>
