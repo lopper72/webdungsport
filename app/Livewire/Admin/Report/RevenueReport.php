@@ -38,13 +38,33 @@ class RevenueReport extends Component
         return $query;
     }
 
+    private function salesReturnTotal()
+    {
+        $query = DB::table('sales_returns')
+            ->where('status', '<>', 'canceled');
+
+        if ($this->startdate !== "") {
+            $query->whereDate('return_date', '>=', $this->startdate);
+        }
+
+        if ($this->endate !== "") {
+            $query->whereDate('return_date', '<=', $this->endate);
+        }
+
+        return $query->sum('total_amount');
+    }
+
     public function render()
     {
         $results = $this->revenueQuery()->get();
-        $totalAmount = $results->sum('total_amount');
+        $salesAmount = $results->sum('total_amount');
+        $returnAmount = $this->salesReturnTotal();
+        $totalAmount = $salesAmount - $returnAmount;
 
         return view('livewire.admin.report.revenue-report', [
             'results' => $results,
+            'salesAmount' => $salesAmount,
+            'returnAmount' => $returnAmount,
             'totalAmount' => $totalAmount,
         ]);
     }

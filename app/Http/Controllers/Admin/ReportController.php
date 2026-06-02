@@ -72,6 +72,27 @@ class ReportController extends Controller
             )
             ->get();
 
+        $returns = DB::table('sales_return_details')
+            ->join('sales_returns', 'sales_return_details.sales_return_id', '=', 'sales_returns.id')
+            ->leftJoin('warehouse', 'sales_return_details.warehouse_id', '=', 'warehouse.id')
+            ->leftJoin('product_size', 'sales_return_details.size_id', '=', 'product_size.id')
+            ->leftJoin('product_detail', 'sales_return_details.product_detail_id', '=', 'product_detail.id')
+            ->leftJoin('users', 'sales_returns.user_id', '=', 'users.id')
+            ->where('sales_return_details.product_id', $id)
+            ->where('sales_returns.status', '<>', 'canceled')
+            ->select(
+                DB::raw('COALESCE(sales_returns.return_date, sales_return_details.created_at) as date'),
+                DB::raw("'Trả hàng' as type"),
+                'sales_returns.code as code',
+                'users.name as reference_name',
+                'warehouse.name as warehouse_name',
+                'product_size.size as size_name',
+                'product_detail.title as product_model',
+                'sales_return_details.quantity as quantity_in',
+                DB::raw('0 as quantity_out')
+            )
+            ->get();
+
         $transfers = DB::table('transfer_product_detail')
             ->join('transfer_product', 'transfer_product_detail.transfer_product_id', '=', 'transfer_product.id')
             ->leftJoin('warehouse as from_warehouse', 'transfer_product.from_warehouse_id', '=', 'from_warehouse.id')
@@ -120,6 +141,7 @@ class ReportController extends Controller
 
         $history = $imports
             ->concat($exports)
+            ->concat($returns)
             ->concat($transfers)
             ->sortByDesc('date')
             ->values();

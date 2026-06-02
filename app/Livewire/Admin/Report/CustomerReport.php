@@ -36,41 +36,51 @@ class CustomerReport extends Component
         $endate = $this->endate;
         $userid = $this->userid;
 
-        $where = [];
-        $bindings = [];
+        $salesQuery = DB::table('orders as od')
+            ->select('od.user_id', DB::raw('SUM(od.total_amount) as sales_amount'))
+            ->where('od.status', '<>', 'rejected')
+            ->groupBy('od.user_id');
 
-        if ($startdate != '' && $endate != '') {
-            $where[] = 'od.order_date between ? and ?';
-            $bindings[] = $startdate;
-            $bindings[] = $endate;
-        }
-        if ($startdate != '' && $endate == '') {
-            $where[] = 'od.order_date >= ?';
-            $bindings[] = $startdate;
-        }
-        if ($startdate == '' && $endate != '') {
-            $where[] = 'od.order_date <= ?';
-            $bindings[] = $endate;
-        }
-        if ($userid != '') {
-            $where[] = 'od.user_id = ?';
-            $bindings[] = (int) $userid;
+        if ($startdate !== '') {
+            $salesQuery->whereDate('od.order_date', '>=', $startdate);
         }
 
-        $whereSql = '';
-        if (!empty($where)) {
-            $whereSql = ' AND ' . implode(' AND ', $where);
+        if ($endate !== '') {
+            $salesQuery->whereDate('od.order_date', '<=', $endate);
         }
 
-        $results = DB::select(
-            'SELECT user.id as user_id, user.name, SUM(od.total_amount) as total_amount
-            FROM orders as od
-            INNER JOIN users user on user.id = od.user_id
-            WHERE 1 = 1 ' . $whereSql . '
-            GROUP BY user.id, user.name
-            ORDER BY SUM(od.total_amount) DESC',
-            $bindings
-        );
+        $returnsQuery = DB::table('sales_returns as sr')
+            ->select('sr.user_id', DB::raw('SUM(sr.total_amount) as return_amount'))
+            ->where('sr.status', '<>', 'canceled')
+            ->groupBy('sr.user_id');
+
+        if ($startdate !== '') {
+            $returnsQuery->whereDate('sr.return_date', '>=', $startdate);
+        }
+
+        if ($endate !== '') {
+            $returnsQuery->whereDate('sr.return_date', '<=', $endate);
+        }
+
+        $query = DB::table('users as user')
+            ->joinSub($salesQuery, 'sales', function ($join) {
+                $join->on('user.id', '=', 'sales.user_id');
+            })
+            ->leftJoinSub($returnsQuery, 'returns', function ($join) {
+                $join->on('user.id', '=', 'returns.user_id');
+            })
+            ->select(
+                'user.id as user_id',
+                'user.name',
+                DB::raw('(sales.sales_amount - COALESCE(returns.return_amount, 0)) as total_amount')
+            )
+            ->orderByDesc('total_amount');
+
+        if ($userid !== '') {
+            $query->where('user.id', (int) $userid);
+        }
+
+        $results = $query->get();
 
         return view('livewire.admin.report.customer-report', [
             'results' => $results,

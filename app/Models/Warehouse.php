@@ -117,14 +117,32 @@ class Warehouse extends Model implements Auditable
             ->sum('quantity');
     }
 
+    public function totalProductReturned($product_id, $product_detail_id, $size_id)
+    {
+        $query = DB::table('sales_return_details')
+            ->join('sales_returns', 'sales_return_details.sales_return_id', '=', 'sales_returns.id')
+            ->where('sales_return_details.warehouse_id', $this->id)
+            ->where('sales_return_details.product_id', $product_id)
+            ->where('sales_return_details.product_detail_id', $product_detail_id)
+            ->where('sales_returns.status', '<>', 'canceled');
+
+        if ($size_id == null) {
+            return $query->sum('sales_return_details.quantity');
+        }
+
+        return $query->where('sales_return_details.size_id', $size_id)
+            ->sum('sales_return_details.quantity');
+    }
+
     public function totalProductAvailable($product_id, $product_detail_id, $size_id)
     {
         $totalImported = $this->totalProductImport($product_id, $product_detail_id, $size_id);
         $totalTransferFrom = $this->totalProductTransfer($product_id, $product_detail_id, $size_id);
         $totalTransferTo = $this->totalProductReceive($product_id, $product_detail_id, $size_id);
         $totalOrdered = $this->totalProductOrdered($product_id, $product_detail_id, $size_id);
+        $totalReturned = $this->totalProductReturned($product_id, $product_detail_id, $size_id);
 
-        return $totalImported - $totalOrdered + $totalTransferTo - $totalTransferFrom;
+        return $totalImported - $totalOrdered + $totalReturned + $totalTransferTo - $totalTransferFrom;
     }
     public function hasImportProduct()
     {
