@@ -58,6 +58,12 @@ class AddOrder extends Component
         $this->recalculatePreviousDebt();
     }
 
+    public function setCustomerId($customer_id)
+    {
+        $this->customer_id = $customer_id;
+        $this->recalculatePreviousDebt();
+    }
+
     public function updatedPaymentStatus()
     {
         $this->payment_status = $this->normalizeStatus($this->payment_status);

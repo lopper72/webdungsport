@@ -15,12 +15,11 @@
                     <div class="col-span-4 sm:col-span-1" wire:key="customer-select-container">
                         <label class="block text-sm font-medium leading-6 text-gray-900">Khách hàng <span class="text-red-700">*</span></label>
                         <div class="mt-2">
-                            <select id="customer" wire:model.change="customer_id" name="customer" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                                <option value="">-</option>
-                                @foreach($customers as $customer)
-                                    <option value="{{$customer->id}}">{{$customer->name}}</option>
-                                @endforeach
-                            </select>
+                            @include('livewire.admin.order.partials.customer-search-select', [
+                                'customers' => $customers,
+                                'selectedId' => $customer_id,
+                                'selectId' => 'customer',
+                            ])
                         </div>
                         @error('customer_id')
                             <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
