@@ -23,6 +23,8 @@ class EditOrder extends Component
     public $order_state = '';
     public $order_city = '';
     public $order_details = [];
+    public $total_quantity = 0;
+
     public $subtotal_amount = 0;
     public $discount_amount = 0;
     public $discount_percentage = 0;
@@ -72,9 +74,11 @@ class EditOrder extends Component
             ->with('product', 'product_size', 'warehouse', 'product_detail')
             ->get()
             ->toArray();
+        $this->total_quantity = collect($this->order_details)->sum('quantity');
         $this->can_cancel_order = ! SalesReturnDetail::where('order_id', $this->order_id)->exists();
 
         $this->recalculatePreviousDebt();
+
     }
 
     public function updateOrderProduct($order_product, $isMultiple = false)
@@ -260,6 +264,7 @@ class EditOrder extends Component
     public function updateAmount()
     {
         $this->subtotal_amount = 0;
+        $this->total_quantity  = 0;
 
         foreach ($this->order_details as $order_product) {
             if (is_string($order_product)) {
@@ -268,11 +273,14 @@ class EditOrder extends Component
 
             if (is_object($order_product)) {
                 $this->subtotal_amount += $order_product->total_amount;
+                $this->total_quantity  += $order_product->quantity;
             } elseif (is_array($order_product) && isset($order_product['total_amount'])) {
                 $this->subtotal_amount += $order_product['total_amount'];
+                $this->total_quantity  += $order_product['quantity'] ?? 0;
             }
         }
     }
+
 
     public function calTotalAmountDiscount()
     {

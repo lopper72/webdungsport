@@ -119,12 +119,23 @@
                                     </td>
                                 </tr>
                             @endforeach
+                            @if (count($order_details) > 0)
+                                <tr wire:key="order-total-quantity-row" class="bg-gray-50 font-semibold">
+                                    <td class="px-2 py-2 whitespace-nowrap text-center"></td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-left" colspan="3"><b>Tổng cộng</b></td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-right"><b>{{ $total_quantity }}</b></td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-right"></td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-right"></td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-center"></td>
+                                </tr>
+                            @endif
                         </tbody>
                     </table>
                 </div>
                 <table class="min-w-full divide-y divide-gray-200">
                     <tbody>
                     <tr wire:key="edit-row-subtotal">
+
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
                         <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider text-left" colspan="2"><b>Tổng tiền hàng</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">

@@ -15,14 +15,16 @@
             <div class="col-span-2">
                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Sản phẩm</label>
                 <div class="mt-2">
-                    <select id="product_id" wire:model="product_id" name="product_id" wire:change="loadProductAttributes()" class="convert-to-dropdown block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                        <option value="">-</option>
-                        @foreach($products as $product)
-                            <option value="{{$product["id"]}}">{{$product["name"]}}</option>
-                        @endforeach
-                    </select>
+                    @include('livewire.admin.order.partials.product-search-select', [
+                        'products' => $products,
+                        'selectedId' => $product_id,
+                        'selectId' => 'product_id',
+                        'wireModel' => 'product_id',
+                        'onChange' => 'loadProductAttributes',
+                    ])
                 </div>  
             </div>
+
             <div class="col-span-1">
                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Mẫu</label>
                 <div class="mt-2">
