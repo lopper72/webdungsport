@@ -93,7 +93,7 @@
                                                 @endif
                                             </h3>
                                             <time class="block text-xs font-normal leading-none text-gray-500 dark:text-gray-400">{{ $logStatus->created_at }}</time>
-                                            <i class="text-xs">Xác nhận bởi : <b>{{$logStatus->actioner->name}}</b></i>
+                                            <i class="text-xs">Xác nhận bởi : <b>{{ $logStatus->actioner?->name ?? 'Hệ thống' }}</b></i>
                                             <p class="mt-2 text-sm text-gray-700 dark:text-white">{{$logStatus->note}}</p>
                                         </li>
                                     @endforeach

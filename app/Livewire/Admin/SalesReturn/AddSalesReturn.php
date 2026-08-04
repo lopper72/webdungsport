@@ -38,6 +38,12 @@ class AddSalesReturn extends Component
         $this->loadReturnableItems();
     }
 
+    public function setCustomerId($customer_id)
+    {
+        $this->customer_id = $customer_id;
+        $this->loadReturnableItems();
+    }
+
     public function loadReturnableItems()
     {
         $this->rows = [];
@@ -53,7 +59,7 @@ class AddSalesReturn extends Component
             ->with(['order.customer', 'product', 'product_detail', 'product_size', 'warehouse'])
             ->whereHas('order', function ($query) {
                 $query->where('user_id', $this->customer_id)
-                    ->whereIn('status', ['delivered', 'completed']);
+                    ->where('status', 'completed');
             })
             ->orderByDesc('id')
             ->get();
@@ -61,7 +67,11 @@ class AddSalesReturn extends Component
         $this->current_debt = $this->customerDebt();
 
         foreach ($details as $detail) {
-            $returnedQuantity = SalesReturnDetail::where('order_detail_id', $detail->id)->sum('quantity');
+            $returnedQuantity = SalesReturnDetail::query()
+                ->join('sales_returns', 'sales_return_details.sales_return_id', '=', 'sales_returns.id')
+                ->where('sales_return_details.order_detail_id', $detail->id)
+                ->where('sales_returns.status', '<>', 'canceled')
+                ->sum('sales_return_details.quantity');
             $remainingQuantity = (int) $detail->quantity - (int) $returnedQuantity;
 
             if ($remainingQuantity <= 0) {

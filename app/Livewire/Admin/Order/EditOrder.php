@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Order;
 
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\SalesReturnDetail;
 use App\Models\Warehouse;
 use Livewire\Component;
 
@@ -39,6 +40,7 @@ class EditOrder extends Component
     public $order_created_at = '';
     public $order_product_delete = [];
     public $action = '';
+    public $can_cancel_order = false;
 
     protected $listeners = ['updateOrderProduct', 'updateOrderProductEdit', 'updateCustomerId'];
 
@@ -70,6 +72,7 @@ class EditOrder extends Component
             ->with('product', 'product_size', 'warehouse', 'product_detail')
             ->get()
             ->toArray();
+        $this->can_cancel_order = ! SalesReturnDetail::where('order_id', $this->order_id)->exists();
 
         $this->recalculatePreviousDebt();
     }
@@ -135,7 +138,7 @@ class EditOrder extends Component
 
     public function createOrder()
     {
-        $this->order_status = 'pending';
+        $this->order_status = 'completed';
         $this->confirmBeforeStore('create');
     }
 
@@ -170,7 +173,7 @@ class EditOrder extends Component
     public function confirmStoreOrder($action)
     {
         if ($action === 'create') {
-            $this->order_status = 'pending';
+            $this->order_status = 'completed';
         } elseif ($action === 'draft') {
             $this->order_status = 'draft';
         } elseif ($action === 'update') {
@@ -239,6 +242,7 @@ class EditOrder extends Component
     protected function validateOrder()
     {
         $this->syncPaymentAmounts();
+        $this->syncOrderStatusForCounterSale();
 
         $this->validate([
             'customer_id' => 'required',
@@ -362,6 +366,13 @@ class EditOrder extends Component
         $this->debt_amount = max((float) $this->total_amount - (float) $this->paid_amount, 0);
         $this->total_customer_debt = (float) $this->previous_debt + (float) $this->debt_amount;
         $this->grandtotal_all = $this->total_customer_debt;
+    }
+
+    protected function syncOrderStatusForCounterSale()
+    {
+        if (in_array($this->order_status, ['pending', 'confirmed', 'shipping', 'delivered'], true)) {
+            $this->order_status = 'completed';
+        }
     }
 
     protected function normalizeStatus($status)

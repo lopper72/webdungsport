@@ -6,6 +6,7 @@ use App\Models\PaymentMethod;
 use Livewire\Component;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\SalesReturnDetail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use PDF;
@@ -44,6 +45,7 @@ class ViewOrder extends Component
     public $debt_amount = 0;
     public $previous_debt = 0;
     public $total_customer_debt = 0;
+    public $can_cancel_order = false;
 
     protected $listeners = ['updateOrderProduct'];
 
@@ -232,6 +234,7 @@ class ViewOrder extends Component
         $this->payment_methods = $payment_methods;
         $this->discount_percent = $this->order->discount_percent;
         $this->order_details = $this->order->order_detail()->with('product', 'product_size', 'warehouse', 'product_detail')->get()->toArray();
+        $this->can_cancel_order = ! SalesReturnDetail::where('order_id', $this->order_id)->exists();
 
         $grandtotal_notpay = Order::where('user_id', '=', $this->customer_id)
         ->where('id', '<>', $this->order_id)

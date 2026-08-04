@@ -27,23 +27,33 @@
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-48 text-right">Tổng tiền</th>
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-48 text-right">Cấn nợ</th>
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-48 text-right">Hoàn tiền</th>
+                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-32 text-center">Thao tác</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200 text-sm">
                 @if ($salesReturns->isEmpty())
                     <tr>
-                        <td class="px-2 py-2 whitespace-nowrap text-center" colspan="7">Không có dữ liệu</td>
+                        <td class="px-2 py-2 whitespace-nowrap text-center" colspan="8">Không có dữ liệu</td>
                     </tr>
                 @endif
                 @foreach ($salesReturns as $salesReturn)
                     <tr>
                         <td class="px-2 py-2 whitespace-nowrap text-center">{{ $salesReturns->perPage() * ($salesReturns->currentPage() - 1) + $loop->iteration }}</td>
-                        <td class="px-2 py-2 whitespace-nowrap text-left">{{ $salesReturn->code }}</td>
+                        <td class="px-2 py-2 whitespace-nowrap text-left">
+                            <a href="{{ route('admin.sales-returns.view', ['id' => $salesReturn->id]) }}" class="text-blue-600 hover:text-blue-800">
+                                {{ $salesReturn->code }}
+                            </a>
+                        </td>
                         <td class="px-2 py-2 whitespace-nowrap text-left">{{ $salesReturn->customer?->name }}</td>
                         <td class="px-2 py-2 whitespace-nowrap text-left">{{ optional($salesReturn->return_date)->format('d/m/Y') }}</td>
                         <td class="px-2 py-2 whitespace-nowrap text-right">{{ number_format($salesReturn->total_amount, 0, ',', '.') }}</td>
                         <td class="px-2 py-2 whitespace-nowrap text-right">{{ number_format($salesReturn->debt_adjustment_amount, 0, ',', '.') }}</td>
                         <td class="px-2 py-2 whitespace-nowrap text-right">{{ number_format($salesReturn->refund_amount, 0, ',', '.') }}</td>
+                        <td class="px-2 py-2 whitespace-nowrap text-center">
+                            <a href="{{ route('admin.sales-returns.pdf', ['id' => $salesReturn->id]) }}" class="text-blue-600 hover:text-blue-800">
+                                In PDF
+                            </a>
+                        </td>
                     </tr>
                 @endforeach
             </tbody>

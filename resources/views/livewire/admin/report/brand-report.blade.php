@@ -39,8 +39,8 @@
                         <td class="px-2 py-2">{{$product->name}}</td>
                         <td class="px-2 py-2 whitespace-nowrap text-left">{{$product->productCategory->name}}</td>
                         <td class="px-2 py-2 whitespace-nowrap text-left">{{$product->productBrand->name}}</td>
-                        <td class="px-2 py-2 whitespace-nowrap text-right">{{$product->orderDetails->sum('quantity')}}</td>
-                        <td class="px-2 py-2 whitespace-nowrap text-right">{{$product->importProducts->sum('quantity')-$product->orderDetails->sum('quantity')}}</td>
+                        <td class="px-2 py-2 whitespace-nowrap text-right">{{ number_format($product->total_ordered, 0, ',', '.') }}</td>
+                        <td class="px-2 py-2 whitespace-nowrap text-right">{{ number_format($product->total_imported - $product->total_ordered + $product->total_returned, 0, ',', '.') }}</td>
                     </tr>
                 @endforeach
             </tbody>

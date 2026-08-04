@@ -25,6 +25,7 @@ class RevenueReport extends Component
         $query = DB::table('orders as od')
             ->join('users as user', 'user.id', '=', 'od.user_id')
             ->select('od.code', 'od.id', 'user.name', 'od.total_amount', 'od.order_date')
+            ->where('od.status', 'completed')
             ->orderBy('od.order_date');
 
         if ($this->startdate !== "") {

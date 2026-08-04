@@ -50,15 +50,30 @@ class ListOrder extends Component
 
     public function render()
     {
+        $query = Order::with([
+            'customer',
+            'salesReturnDetails' => function ($query) {
+                $query->whereHas('salesReturn', function ($returnQuery) {
+                    $returnQuery->where('status', '<>', 'canceled');
+                })->with('salesReturn');
+            },
+        ])->orderBy('created_at', 'desc');
+
         if($this->search_input == ''){
-            $orders = Order::with('customer')->orderBy('created_at', 'desc')->paginate(10);
+            $orders = $query->paginate(10);
         } else {
-            $orders = Order::with('customer')
-                ->where('code', 'like', '%'.$this->search_input.'%')
-                ->orWhereHas('customer', function ($query) {
-                    $query->where('name', 'like', '%'.$this->search_input.'%');
+            $search = $this->search_input;
+
+            $orders = $query
+                ->where(function ($query) use ($search) {
+                    $query->where('code', 'like', '%'.$search.'%')
+                        ->orWhereHas('customer', function ($customerQuery) use ($search) {
+                            $customerQuery->where('name', 'like', '%'.$search.'%');
+                        })
+                        ->orWhereHas('salesReturnDetails.salesReturn', function ($returnQuery) use ($search) {
+                            $returnQuery->where('code', 'like', '%'.$search.'%');
+                        });
                 })
-                ->orderBy('created_at', 'desc')
                 ->paginate(10);
         }
         $this->list_order = collect($orders->items());

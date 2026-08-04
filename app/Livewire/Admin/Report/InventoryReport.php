@@ -44,7 +44,7 @@ class InventoryReport extends Component
         $orderedQuantity = DB::table('order_detail')
             ->join('orders', 'order_detail.order_id', '=', 'orders.id')
             ->select('order_detail.product_id', DB::raw('SUM(order_detail.quantity) as total_ordered'))
-            ->where('orders.status', '<>', 'rejected')
+            ->where('orders.status', 'completed')
             ->groupBy('order_detail.product_id');
 
         $returnedQuantity = DB::table('sales_return_details')
@@ -146,7 +146,7 @@ class InventoryReport extends Component
             ->leftJoin('product_size', 'order_detail.size_id', '=', 'product_size.id')
             ->leftJoin('users', 'orders.user_id', '=', 'users.id')
             ->where('order_detail.product_id', $this->selectedProductId)
-            ->where('orders.status', '<>', 'rejected')
+            ->where('orders.status', 'completed')
             ->select(
                 DB::raw('COALESCE(orders.order_date, order_detail.created_at) as date'),
                 DB::raw("'Xuất bán' as type"),

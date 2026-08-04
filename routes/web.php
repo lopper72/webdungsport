@@ -104,6 +104,8 @@ Route::group(['middleware' => [AdminAuth::class]], function () {
     /* Sales Returns */
     Route::get('/admin/sales-returns', [SalesReturnController::class, 'index'])->name('admin.sales-returns');
     Route::get('/admin/sales-returns/add', [SalesReturnController::class, 'add'])->name('admin.sales-returns.add');
+    Route::get('/admin/sales-returns/view/{id}', [SalesReturnController::class, 'view'])->name('admin.sales-returns.view');
+    Route::get('/admin/sales-returns/pdf/{id}', [SalesReturnController::class, 'pdf'])->name('admin.sales-returns.pdf');
 
     /* Payment Method  */
     Route::get('/admin/payment-methods', [PaymentMethodController::class, 'index'])->name('admin.payment-methods');

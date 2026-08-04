@@ -58,7 +58,7 @@ class ReportController extends Controller
             ->leftJoin('products', 'order_detail.product_id', '=', 'products.id')
             ->leftJoin('users', 'orders.user_id', '=', 'users.id')
             ->where('order_detail.product_id', $id)
-            ->where('orders.status', '<>', 'rejected')
+            ->where('orders.status', 'completed')
             ->select(
                 DB::raw('COALESCE(orders.order_date, order_detail.created_at) as date'),
                 DB::raw("'Xuất bán' as type"),

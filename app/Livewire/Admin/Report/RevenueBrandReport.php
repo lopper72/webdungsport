@@ -60,7 +60,7 @@ class RevenueBrandReport extends Component
                 DB::raw('(SUM(order_detail.quantity) - COALESCE(returned_products.return_quantity, 0)) as total_quantity'),
                 DB::raw('(SUM(order_detail.total_amount) - COALESCE(returned_products.return_amount, 0)) as total_amount')
             )
-            ->where('orders.status', '<>', 'rejected')
+            ->where('orders.status', 'completed')
             ->groupBy('brands.id', 'brands.code', 'brands.name', 'returned_products.return_quantity', 'returned_products.return_amount')
             ->orderByDesc('total_amount');
 

@@ -38,7 +38,7 @@ class CustomerReport extends Component
 
         $salesQuery = DB::table('orders as od')
             ->select('od.user_id', DB::raw('SUM(od.total_amount) as sales_amount'))
-            ->where('od.status', '<>', 'rejected')
+            ->where('od.status', 'completed')
             ->groupBy('od.user_id');
 
         if ($startdate !== '') {

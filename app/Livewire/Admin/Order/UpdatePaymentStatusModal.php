@@ -35,6 +35,12 @@ class UpdatePaymentStatusModal extends ModalComponent
 
         $order->payment_status = $this->payment_status;
         $order->paid_amount = $this->paid_amount;
+        $shouldCompleteOrder = in_array($order->status, ['pending', 'confirmed', 'shipping', 'delivered'], true);
+
+        if ($shouldCompleteOrder) {
+            $order->status = 'completed';
+        }
+
         $order->save();
 
         $order_status = new OrderStatus();
@@ -43,6 +49,15 @@ class UpdatePaymentStatusModal extends ModalComponent
         $order_status->note = $this->note;
         $order_status->action_by = Auth::user()->id;
         $order_status->save();
+
+        if ($shouldCompleteOrder) {
+            $completedStatus = new OrderStatus();
+            $completedStatus->order_id = $this->order_id;
+            $completedStatus->status = 'completed';
+            $completedStatus->note = $this->note;
+            $completedStatus->action_by = Auth::user()->id;
+            $completedStatus->save();
+        }
 
         $this->redirectRoute('admin.orders');
     }

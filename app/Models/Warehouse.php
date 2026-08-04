@@ -22,23 +22,9 @@ class Warehouse extends Model implements Auditable
     public function orderProducts()
     {
         return $this->hasMany(OrderDetail::class, 'warehouse_id', 'id')
-            ->leftJoinSub(
-                DB::table('order_status')
-                    ->select('order_id', 'status')
-                    ->whereIn('id', function ($query) {
-                        $query->selectRaw('MAX(id)')
-                            ->from('order_status')
-                            ->groupBy('order_id');
-                    }),
-                'order_status',
-                'order_detail.order_id',
-                '=',
-                'order_status.order_id'
-            )
-            ->where(function($query) {
-                $query->where('order_status.status', '!=', 'rejected')
-                      ->orWhereNull('order_status.status');
-            });
+            ->join('orders', 'order_detail.order_id', '=', 'orders.id')
+            ->where('orders.status', 'completed')
+            ->select('order_detail.*');
     }
 
     public function transferWarehouseFrom()
