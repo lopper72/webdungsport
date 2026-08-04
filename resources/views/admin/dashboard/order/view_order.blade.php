@@ -90,17 +90,18 @@
                                                 @endif
                                                 @if($logStatus->status == 'completed')
                                                     HOÀN THÀNH
-                                                @endif                                                @if(in_array($logStatus->status, ['pending', 'unpaid', 'partial', 'paid']))
-                                                    CAP NHAT TRANG THAI THANH TOAN :
+                                                @endif
+                                                @if(in_array($logStatus->status, ['pending', 'unpaid', 'partial', 'paid']))
+                                                    CẬP NHẬT TRẠNG THÁI THANH TOÁN :
                                                     @switch($logStatus->status)
                                                         @case('paid')
-                                                            DA THANH TOAN
+                                                            ĐÃ THANH TOÁN
                                                             @break
                                                         @case('partial')
-                                                            THANH TOAN MOT PHAN
+                                                            THANH TOÁN MỘT PHẦN
                                                             @break
                                                         @default
-                                                            CHUA THANH TOAN
+                                                            CHƯA THANH TOÁN
                                                     @endswitch
                                                 @endif
                                             </h3>

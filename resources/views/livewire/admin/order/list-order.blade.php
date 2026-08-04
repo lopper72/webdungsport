@@ -1,16 +1,18 @@
 <div class="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
     <div class="px-4 py-6 md:px-6 xl:px-7.5">
         <div class="flex justify-between items-center">
-            <h4 class="text-xl font-bold text-black dark:text-white inline">DANH SACH DON HANG</h4>
+            <h4 class="text-xl font-bold text-black dark:text-white inline">DANH SÁCH ĐƠN HÀNG</h4>
             <a href="{{ route('admin.orders.add') }}" class="inline-flex items-center px-4 py-2 bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-600 active:bg-blue-700 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
-                Them moi
+                Thêm mới
             </a>
+
         </div>
     </div>
 
     <div class="px-4 py-1 mb-2 md:px-6 xl:px-7.5">
         <div class="flex justify-between items-center">
-            <input wire:model="search_input" wire:keydown="search" type="text" name="search" placeholder="Tim kiem..." class="px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300">
+            <input wire:model="search_input" wire:keydown="search" type="text" name="search" placeholder="Tìm kiếm..." class="px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300">
+
         </div>
     </div>
 
@@ -28,20 +30,22 @@
                         </svg>
                     </th>
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-12 text-center">STT</th>
-                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-72 text-center">Ma don hang</th>
-                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Ten khach hang</th>
-                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-56 text-left">Ngay dat hang</th>
-                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-56 text-center">Trang thai don</th>
-                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-56 text-center">Tra hang</th>
-                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-64 text-center">Trang thai thanh toan</th>
-                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-44 text-center">Con no</th>
-                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-56 text-right">Tong tien (VND)</th>
+                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-72 text-center">Mã đơn hàng</th>
+                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider text-left">Tên khách hàng</th>
+                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-56 text-left">Ngày đặt hàng</th>
+                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-56 text-center">Trạng thái đơn</th>
+                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-56 text-center">Trả hàng</th>
+                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-64 text-center">Trạng thái thanh toán</th>
+                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-44 text-center">Còn nợ</th>
+                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-56 text-right">Tổng tiền (VND)</th>
+
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200 text-sm">
                 @if ($orders->isEmpty())
                     <tr>
-                        <td class="px-2 py-2 whitespace-nowrap text-center" colspan="10">Khong co du lieu</td>
+                        <td class="px-2 py-2 whitespace-nowrap text-center" colspan="10">Không có dữ liệu</td>
+
                     </tr>
                 @endif
 
@@ -85,25 +89,26 @@
                         <td class="px-2 py-2 whitespace-nowrap text-center">
                             @switch($order->status)
                                 @case('draft')
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-700">Ban nhap</span>
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-700">Bản nháp</span>
                                     @break
                                 @case('pending')
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Cho xu ly</span>
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Chờ xử lý</span>
                                     @break
                                 @case('confirmed')
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Da xac nhan</span>
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Đã xác nhận</span>
                                     @break
                                 @case('shipping')
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">Dang giao</span>
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">Đang giao</span>
                                     @break
                                 @case('delivered')
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Da giao</span>
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Đã giao</span>
                                     @break
                                 @case('completed')
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Hoan thanh</span>
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Hoàn thành</span>
                                     @break
                                 @case('rejected')
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Da huy</span>
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Đã hủy</span>
+
                                     @break
                                 @default
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-700">{{ $order->status }}</span>
@@ -115,8 +120,9 @@
                             @else
                                 <div class="flex flex-col items-center gap-1">
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
-                                        Da tra {{ number_format($returnQuantity, 0, ',', '.') }} SP
+                                        Đã trả {{ number_format($returnQuantity, 0, ',', '.') }} SP
                                     </span>
+
                                     <span class="text-xs text-gray-600">{{ number_format($returnAmount, 0, ',', '.') }}</span>
                                     <div class="flex flex-wrap justify-center gap-1">
                                         @foreach ($salesReturns as $salesReturn)
@@ -130,12 +136,13 @@
                         </td>
                         <td class="px-2 py-2 whitespace-nowrap text-center">
                             @if ($order->payment_status == 'paid')
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Da thanh toan</span>
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Đã thanh toán</span>
                             @elseif ($order->payment_status == 'partial')
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Thanh toan mot phan</span>
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Thanh toán một phần</span>
                             @else
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Chua thanh toan</span>
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Chưa thanh toán</span>
                             @endif
+
                         </td>
                         <td class="px-2 py-2 whitespace-nowrap text-center">
                             @php $debtAmount = max($order->total_amount - ($order->paid_amount ?? 0), 0); @endphp
@@ -171,7 +178,8 @@
             if (countChecked == 0) {
                 const popupWarning = document.querySelector('[data-modal-target="popup-warning"]');
                 popupWarning.click();
-                parseInfoWarning('Ban chua chon don hang nao de xoa');
+                parseInfoWarning('Bạn chưa chọn đơn hàng nào để xóa');
+
             } else {
                 const popupDeleteMultiple = document.querySelector('[data-modal-target="popup-delete-multiple-item"]');
                 popupDeleteMultiple.click();
@@ -188,7 +196,8 @@
             document.body.removeChild(el);
             const popupWarning = document.querySelector('[data-modal-target="popup-warning"]');
             popupWarning.click();
-            parseInfoWarning('Da sao chep ma don hang');
+            parseInfoWarning('Đã sao chép mã đơn hàng');
+
         }
     </script>
     @script
