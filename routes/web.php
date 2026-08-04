@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\SystemInformationController;
 use App\Http\Controllers\Admin\MacController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\SalesReturnController;
 use App\Http\Controllers\Admin\PaymentMethodController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SliderController;
@@ -99,6 +100,12 @@ Route::group(['middleware' => [AdminAuth::class]], function () {
     Route::get('/admin/orders/add', [OrderController::class, 'add'])->name('admin.orders.add');
     Route::get('/admin/orders/edit/{id}', [OrderController::class, 'edit'])->name('admin.orders.edit');
     Route::get('/admin/orders/view/{id}', [OrderController::class, 'view'])->name('admin.orders.view');
+
+    /* Sales Returns */
+    Route::get('/admin/sales-returns', [SalesReturnController::class, 'index'])->name('admin.sales-returns');
+    Route::get('/admin/sales-returns/add', [SalesReturnController::class, 'add'])->name('admin.sales-returns.add');
+    Route::get('/admin/sales-returns/view/{id}', [SalesReturnController::class, 'view'])->name('admin.sales-returns.view');
+    Route::get('/admin/sales-returns/pdf/{id}', [SalesReturnController::class, 'pdf'])->name('admin.sales-returns.pdf');
 
     /* Payment Method  */
     Route::get('/admin/payment-methods', [PaymentMethodController::class, 'index'])->name('admin.payment-methods');

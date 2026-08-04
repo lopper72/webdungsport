@@ -127,6 +127,18 @@
                                         Đơn hàng
                                     </a>
                                 </li>
+                                <li @if (in_array("TMDTDH", explode(',', $list_active_modules)) && in_array("TMDTDH", explode(',', $list_active_user))) @else style='display:none' @endif>
+                                    <a  class="group relative flex items-center gap-2 rounded-md px-2 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
+                                        href="{{route('admin.sales-returns')}}"
+                                        :class="page === 'sales_returns' && '!text-white'">
+                                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                            <path d="M9 14l-4 -4l4 -4"></path>
+                                            <path d="M5 10h11a4 4 0 1 1 0 8h-1"></path>
+                                        </svg>
+                                        Trả hàng
+                                    </a>
+                                </li>
                                 <li @if (in_array("TMDTDM", explode(',', $list_active_modules)) && in_array("TMDTDM", explode(',', $list_active_user))) @else style='display:none' @endif>
                                     <a  class="group relative flex items-center gap-2 rounded-md px-2 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
                                         href="{{route('admin.categories')}}"

@@ -6,6 +6,7 @@ use Livewire\Component;
 use LivewireUI\Modal\ModalComponent;
 use App\Models\Order;
 use App\Models\OrderStatus;
+use App\Models\SalesReturnDetail;
 use Illuminate\Support\Facades\Auth;
 
 class UpdateStatusModal extends ModalComponent
@@ -43,6 +44,12 @@ class UpdateStatusModal extends ModalComponent
 
     public function updateStatus(){
         $order = Order::find($this->order_id);
+
+        if ($this->status === 'rejected' && SalesReturnDetail::where('order_id', $this->order_id)->exists()) {
+            $this->addError('status', 'Không thể hủy đơn đã phát sinh phiếu trả hàng.');
+            return;
+        }
+
         $order->status = $this->status;
         $order->save();
 

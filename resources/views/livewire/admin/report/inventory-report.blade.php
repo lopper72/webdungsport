@@ -77,13 +77,14 @@
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-32 text-right">Giá sỉ (VND)</th>
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-32 text-center">Tổng nhập kho</th>
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-32 text-center">Đã được đặt</th>
+                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-32 text-center">Đã trả</th>
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-32 text-center">Tồn kho</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200 text-sm	">
                 @if ($products->isEmpty())
                     <tr>
-                        <td class="px-2 py-2 whitespace-nowrap text-center" colspan="8">Không có dữ liệu</td>
+                        <td class="px-2 py-2 whitespace-nowrap text-center" colspan="12">Không có dữ liệu</td>
                     </tr>
                 @endif
                 @foreach ($products as $index => $product)
@@ -116,7 +117,8 @@
                             <td class="px-2 py-2 whitespace-nowrap text-right">{{ number_format($product->total_imported, 0, ',', '.') }}</td>
                            
                             <td class="px-2 py-2 whitespace-nowrap text-right">{{ number_format($product->total_ordered, 0, ',', '.') }}</td>
-                            <td class="px-2 py-2 whitespace-nowrap text-right">{{ number_format($product->total_imported - $product->total_ordered, 0, ',', '.') }}</td>
+                            <td class="px-2 py-2 whitespace-nowrap text-right">{{ number_format($product->total_returned, 0, ',', '.') }}</td>
+                            <td class="px-2 py-2 whitespace-nowrap text-right">{{ number_format($product->total_imported - $product->total_ordered + $product->total_returned, 0, ',', '.') }}</td>
                         </tr>
                 @endforeach
             </tbody>

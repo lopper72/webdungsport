@@ -157,7 +157,7 @@ class AddOrder extends Component
 
     public function createOrder()
     {
-        $this->order_status = 'pending';
+        $this->order_status = 'completed';
         $this->confirmBeforeStore('create');
     }
 
@@ -204,7 +204,7 @@ class AddOrder extends Component
     public function confirmStoreOrder($action)
     {
         if ($action === 'create') {
-            $this->order_status = 'pending';
+            $this->order_status = 'completed';
         } elseif ($action === 'draft') {
             $this->order_status = 'draft';
         }
@@ -287,6 +287,7 @@ class AddOrder extends Component
     protected function validateOrder()
     {
         $this->syncPaymentAmounts();
+        $this->syncOrderStatusForCounterSale();
 
         $this->validate([
             'customer_id'       => 'required',
@@ -393,6 +394,13 @@ class AddOrder extends Component
         $this->debt_amount          = max((float) $this->total_amount - (float) $this->paid_amount, 0);
         $this->total_customer_debt  = (float) $this->previous_debt + (float) $this->debt_amount;
         $this->grandtotal_all       = $this->total_customer_debt;
+    }
+
+    protected function syncOrderStatusForCounterSale()
+    {
+        if (in_array($this->order_status, ['pending', 'confirmed', 'shipping', 'delivered'], true)) {
+            $this->order_status = 'completed';
+        }
     }
 
     protected function normalizeStatus($status)

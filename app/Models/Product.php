@@ -25,13 +25,7 @@ class Product extends Model implements Auditable
     }
     public function orderDetails()
     {
-        return $this->hasMany(OrderDetail::class)
-            ->leftJoin('order_status', 'order_detail.order_id', '=', 'order_status.order_id')
-            ->where(function($query) {
-                $query->where('order_status.status', '!=', 'rejected')
-                      ->orWhereNull('order_status.status');
-            })
-            ->select('*');
+        return $this->hasMany(OrderDetail::class);
     }
     public function productBrand()
     {
@@ -47,11 +41,23 @@ class Product extends Model implements Auditable
     }
     public function totalSold()
     {
-        return $this->orderDetails()->sum('quantity');
+        return OrderDetail::query()
+            ->join('orders', 'order_detail.order_id', '=', 'orders.id')
+            ->where('order_detail.product_id', $this->id)
+            ->where('orders.status', 'completed')
+            ->sum('order_detail.quantity');
+    }
+    public function totalReturned()
+    {
+        return SalesReturnDetail::query()
+            ->join('sales_returns', 'sales_return_details.sales_return_id', '=', 'sales_returns.id')
+            ->where('sales_return_details.product_id', $this->id)
+            ->where('sales_returns.status', '<>', 'canceled')
+            ->sum('sales_return_details.quantity');
     }
     public function totalAvailable()
     {
-        return $this->totalImported() - $this->totalSold();
+        return $this->totalImported() - $this->totalSold() + $this->totalReturned();
     }
     public function warehouses(){
         $listImportId = $this->importProducts()->pluck('import_product_id')->toArray();
@@ -60,7 +66,7 @@ class Product extends Model implements Auditable
         return Warehouse::whereIn('id', $listWarehouseId)->get();
     }
     public function hasOrder(){
-        return $this->orderDetails()->count() > 0;
+        return $this->totalSold() > 0;
     }
     public function hasImport(){
         return $this->importProducts()->count() > 0;

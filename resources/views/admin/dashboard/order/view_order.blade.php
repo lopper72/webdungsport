@@ -90,22 +90,23 @@
                                                 @endif
                                                 @if($logStatus->status == 'completed')
                                                     HOÀN THÀNH
-                                                @endif                                                @if(in_array($logStatus->status, ['pending', 'unpaid', 'partial', 'paid']))
-                                                    CAP NHAT TRANG THAI THANH TOAN :
+                                                @endif
+                                                @if(in_array($logStatus->status, ['pending', 'unpaid', 'partial', 'paid']))
+                                                    CẬP NHẬT TRẠNG THÁI THANH TOÁN :
                                                     @switch($logStatus->status)
                                                         @case('paid')
-                                                            DA THANH TOAN
+                                                            ĐÃ THANH TOÁN
                                                             @break
                                                         @case('partial')
-                                                            THANH TOAN MOT PHAN
+                                                            THANH TOÁN MỘT PHẦN
                                                             @break
                                                         @default
-                                                            CHUA THANH TOAN
+                                                            CHƯA THANH TOÁN
                                                     @endswitch
                                                 @endif
                                             </h3>
                                             <time class="block text-xs font-normal leading-none text-gray-500 dark:text-gray-400">{{ $logStatus->created_at }}</time>
-                                            <i class="text-xs">Xác nhận bởi : <b>{{$logStatus->actioner->name}}</b></i>
+                                            <i class="text-xs">Xác nhận bởi : <b>{{ $logStatus->actioner?->name ?? 'Hệ thống' }}</b></i>
                                             <p class="mt-2 text-sm text-gray-700 dark:text-white">{{$logStatus->note}}</p>
                                         </li>
                                     @endforeach

@@ -70,9 +70,9 @@
                         <td class="px-2 py-2">{{$product->name}}</td>
                         <td class="px-2 py-2 whitespace-nowrap text-right">{{number_format($product->retail_price, 0, ',', '.')}}</td>
                         <td class="px-2 py-2 whitespace-nowrap text-right">@if ($product->is_sales == '0'){{number_format($product->wholesale_price, 0, ',', '.')}}@else {{number_format($product->sales_price, 0, ',', '.')}} @endif</td>
-                        <td class="px-2 py-2 whitespace-nowrap text-center">{{$product->importProducts->sum('quantity')}}</td>
-                        <td class="px-2 py-2 whitespace-nowrap text-center">{{$product->orderDetails->sum('quantity')}}</td>
-                        <td class="px-2 py-2 whitespace-nowrap text-center">{{$product->importProducts->sum('quantity')-$product->orderDetails->sum('quantity')}}</td>
+                        <td class="px-2 py-2 whitespace-nowrap text-center">{{ number_format($product->totalImported(), 0, ',', '.') }}</td>
+                        <td class="px-2 py-2 whitespace-nowrap text-center">{{ number_format($product->totalSold(), 0, ',', '.') }}</td>
+                        <td class="px-2 py-2 whitespace-nowrap text-center">{{ number_format($product->totalAvailable(), 0, ',', '.') }}</td>
                         <td class="px-2 py-2 whitespace-nowrap text-center">
                             <a href="{{route('admin.products.edit', $product->id)}}" class="inline-flex items-center mr-2 text-indigo-600 hover:text-indigo-900">
                                 <svg class="icon" data-bs-toggle="tooltip" data-bs-title="Edit" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

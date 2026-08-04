@@ -228,7 +228,7 @@
         <div class="mt-6 flex sm:flex-row items-center justify-end gap-x-6">
             <a href="{{route('admin.orders')}}" class="text-sm font-semibold leading-6 text-gray-900">Hủy</a>
             <a href="{{ route('admin.pdf', ['id' => $order_id]) }}" download class="inline-flex items-center px-4 py-2 bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white tracking-widest hover:bg-blue-600 active:bg-blue-700 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">Xuất PDF</a>
-            @if($order_status == 'pending' || $order_status == 'confirmed')
+            @if($can_cancel_order && in_array($order_status, ['pending', 'confirmed', 'completed']))
                 <button type="button" 
                     wire:click="$dispatch('openModal', { component: 'admin.order.update-status-modal', arguments: { order_id : {{$order_id}}, status : 'rejected' } })"
                     class="inline-flex items-center px-4 py-2 bg-red-500 border border-transparent rounded-md font-semibold text-xs text-white tracking-widest hover:bg-red-600 active:bg-red-700 focus:outline-none focus:border-red-900 focus:ring ring-red-300 disabled:opacity-25 transition ease-in-out duration-150">Hủy đơn</button>

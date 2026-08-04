@@ -44,8 +44,14 @@ class InventoryReport extends Component
         $orderedQuantity = DB::table('order_detail')
             ->join('orders', 'order_detail.order_id', '=', 'orders.id')
             ->select('order_detail.product_id', DB::raw('SUM(order_detail.quantity) as total_ordered'))
-            ->where('orders.status', '<>', 'rejected')
+            ->where('orders.status', 'completed')
             ->groupBy('order_detail.product_id');
+
+        $returnedQuantity = DB::table('sales_return_details')
+            ->join('sales_returns', 'sales_return_details.sales_return_id', '=', 'sales_returns.id')
+            ->select('sales_return_details.product_id', DB::raw('SUM(sales_return_details.quantity) as total_returned'))
+            ->where('sales_returns.status', '<>', 'canceled')
+            ->groupBy('sales_return_details.product_id');
 
         $query = Product::query()
             ->select(
@@ -57,13 +63,17 @@ class InventoryReport extends Component
                 'products.retail_price',
                 'products.wholesale_price',
                 DB::raw('COALESCE(imported_products.total_imported, 0) as total_imported'),
-                DB::raw('COALESCE(ordered_products.total_ordered, 0) as total_ordered')
+                DB::raw('COALESCE(ordered_products.total_ordered, 0) as total_ordered'),
+                DB::raw('COALESCE(returned_products.total_returned, 0) as total_returned')
             )
             ->joinSub($importedQuantity, 'imported_products', function ($join) {
                 $join->on('products.id', '=', 'imported_products.product_id');
             })
             ->leftJoinSub($orderedQuantity, 'ordered_products', function ($join) {
                 $join->on('products.id', '=', 'ordered_products.product_id');
+            })
+            ->leftJoinSub($returnedQuantity, 'returned_products', function ($join) {
+                $join->on('products.id', '=', 'returned_products.product_id');
             })
             ->with(['productDetails', 'productCategory', 'productBrand'])
             ->orderBy('products.code');
@@ -111,13 +121,32 @@ class InventoryReport extends Component
             )
             ->get();
 
+        $returns = DB::table('sales_return_details')
+            ->join('sales_returns', 'sales_return_details.sales_return_id', '=', 'sales_returns.id')
+            ->leftJoin('warehouse', 'sales_return_details.warehouse_id', '=', 'warehouse.id')
+            ->leftJoin('product_size', 'sales_return_details.size_id', '=', 'product_size.id')
+            ->leftJoin('users', 'sales_returns.user_id', '=', 'users.id')
+            ->where('sales_return_details.product_id', $this->selectedProductId)
+            ->where('sales_returns.status', '<>', 'canceled')
+            ->select(
+                DB::raw('COALESCE(sales_returns.return_date, sales_return_details.created_at) as date'),
+                DB::raw("'Trả hàng' as type"),
+                'sales_returns.code as code',
+                'users.name as reference_name',
+                'warehouse.name as warehouse_name',
+                'product_size.size as size_name',
+                'sales_return_details.quantity as quantity_in',
+                DB::raw('0 as quantity_out')
+            )
+            ->get();
+
         $exports = DB::table('order_detail')
             ->join('orders', 'order_detail.order_id', '=', 'orders.id')
             ->leftJoin('warehouse', 'order_detail.warehouse_id', '=', 'warehouse.id')
             ->leftJoin('product_size', 'order_detail.size_id', '=', 'product_size.id')
             ->leftJoin('users', 'orders.user_id', '=', 'users.id')
             ->where('order_detail.product_id', $this->selectedProductId)
-            ->where('orders.status', '<>', 'rejected')
+            ->where('orders.status', 'completed')
             ->select(
                 DB::raw('COALESCE(orders.order_date, order_detail.created_at) as date'),
                 DB::raw("'Xuất bán' as type"),
@@ -173,6 +202,7 @@ class InventoryReport extends Component
 
         return $imports
             ->concat($exports)
+            ->concat($returns)
             ->concat($transfers)
             ->sortByDesc('date')
             ->values();
@@ -183,8 +213,8 @@ class InventoryReport extends Component
         $allProducts = $this->productQuery()->get();
         $products = $this->productQuery()->paginate(20);
 
-        $totalStock = $allProducts->sum(fn ($product) => $product->total_imported - $product->total_ordered);
-        $totalInventoryAmount = $allProducts->sum(fn ($product) => ($product->total_imported - $product->total_ordered) * $product->wholesale_price);
+        $totalStock = $allProducts->sum(fn ($product) => $product->total_imported - $product->total_ordered + $product->total_returned);
+        $totalInventoryAmount = $allProducts->sum(fn ($product) => ($product->total_imported - $product->total_ordered + $product->total_returned) * $product->wholesale_price);
 
         return view('livewire.admin.report.inventory-report', [
             'products' => $products,

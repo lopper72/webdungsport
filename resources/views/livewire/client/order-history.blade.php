@@ -95,7 +95,7 @@
                                 @endif
                             </h3>
                             <time class="block text-xs font-normal leading-none text-gray-500 dark:text-gray-400">{{ $tracking_order->created_at->format('d/m/Y H:i:s') }}</time>
-                            <i class="text-xs">Bởi : <b>{{$tracking_order->actioner->name}}</b></i>
+                            <i class="text-xs">Bởi : <b>{{ $tracking_order->actioner?->name ?? 'Hệ thống' }}</b></i>
                             <p class="mt-2 text-sm text-gray-700 dark:text-white">{{$tracking_order->note}}</p>
                         </li>
                     @endforeach

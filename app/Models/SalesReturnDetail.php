@@ -5,25 +5,32 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class OrderDetail extends Model
+class SalesReturnDetail extends Model
 {
     use HasFactory;
-    protected $table = "order_detail";
+
     protected $fillable = [
+        'sales_return_id',
         'order_id',
+        'order_detail_id',
         'product_id',
         'product_detail_id',
         'size_id',
+        'warehouse_id',
         'quantity',
         'unit_price',
         'total_amount',
         'note',
-        'warehouse_id',
     ];
 
-    public function product()
+    protected $casts = [
+        'unit_price' => 'decimal:2',
+        'total_amount' => 'decimal:2',
+    ];
+
+    public function salesReturn()
     {
-        return $this->belongsTo(Product::class, 'product_id', 'id');
+        return $this->belongsTo(SalesReturn::class, 'sales_return_id', 'id');
     }
 
     public function order()
@@ -31,16 +38,26 @@ class OrderDetail extends Model
         return $this->belongsTo(Order::class, 'order_id', 'id');
     }
 
-    public function product_detail()
+    public function orderDetail()
+    {
+        return $this->belongsTo(OrderDetail::class, 'order_detail_id', 'id');
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id', 'id');
+    }
+
+    public function productDetail()
     {
         return $this->belongsTo(ProductDetail::class, 'product_detail_id', 'id');
     }
 
-    public function product_size()
+    public function productSize()
     {
         return $this->belongsTo(ProductSize::class, 'size_id', 'id');
     }
-    
+
     public function warehouse()
     {
         return $this->belongsTo(Warehouse::class, 'warehouse_id', 'id');

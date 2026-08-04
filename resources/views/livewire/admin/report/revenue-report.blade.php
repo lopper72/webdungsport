@@ -1,7 +1,15 @@
 <div class="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-    <div class="border-b border-stroke px-4 py-4 md:px-6 xl:px-7.5">
-        <div class="max-w-md rounded-sm border border-stroke bg-gray-50 px-4 py-3">
-            <p class="text-sm font-medium text-gray-500">Tổng tiền doanh thu</p>
+    <div class="grid gap-4 border-b border-stroke px-4 py-4 md:grid-cols-3 md:px-6 xl:px-7.5">
+        <div class="rounded-sm border border-stroke bg-gray-50 px-4 py-3">
+            <p class="text-sm font-medium text-gray-500">Doanh thu bán</p>
+            <p class="mt-1 text-2xl font-bold text-gray-800">{{ number_format($salesAmount, 2, '.', ',') }} VND</p>
+        </div>
+        <div class="rounded-sm border border-stroke bg-gray-50 px-4 py-3">
+            <p class="text-sm font-medium text-gray-500">Trả hàng</p>
+            <p class="mt-1 text-2xl font-bold text-red-600">-{{ number_format($returnAmount, 2, '.', ',') }} VND</p>
+        </div>
+        <div class="rounded-sm border border-stroke bg-gray-50 px-4 py-3">
+            <p class="text-sm font-medium text-gray-500">Doanh thu thực</p>
             <p class="mt-1 text-2xl font-bold text-gray-800">{{ number_format($totalAmount, 2, '.', ',') }} VND</p>
         </div>
     </div>
