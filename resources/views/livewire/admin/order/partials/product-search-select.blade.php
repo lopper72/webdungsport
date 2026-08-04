@@ -108,9 +108,8 @@
     </select>
 
     <div
-        x-cloak
         x-show="open"
-        class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5"
+        class="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-md bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5"
     >
         <template x-if="filteredProducts.length === 0">
             <div class="px-3 py-2 text-gray-500">Không tìm thấy sản phẩm</div>

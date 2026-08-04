@@ -29,6 +29,8 @@ class ViewOrder extends Component
     public $order_state = '';
     public $order_city = '';
     public $order_details = [];
+    public $total_quantity = 0;
+
     public $subtotal_amount = 0;
     public $discount_amount = 0;
     public $grandtotal_amount = 0;
@@ -191,10 +193,13 @@ class ViewOrder extends Component
     public function updateAmount($index)
     {
         $this->subtotal_amount = 0;
+        $this->total_quantity  = 0;
         foreach ($this->order_details as $key => $order_product) {
             $this->subtotal_amount += $order_product["total_amount"];
+            $this->total_quantity  += $order_product["quantity"] ?? 0;
         }
     }
+
 
     public function calTotalAmount()
     {
@@ -232,8 +237,10 @@ class ViewOrder extends Component
         $this->payment_methods = $payment_methods;
         $this->discount_percent = $this->order->discount_percent;
         $this->order_details = $this->order->order_detail()->with('product', 'product_size', 'warehouse', 'product_detail')->get()->toArray();
+        $this->total_quantity = collect($this->order_details)->sum('quantity');
 
         $grandtotal_notpay = Order::where('user_id', '=', $this->customer_id)
+
         ->where('id', '<>', $this->order_id)
         ->where('created_at', '<', $this->order->created_at)
         ->whereIn('payment_status', ['unpaid', 'partial', 'pending'])
