@@ -69,7 +69,7 @@
             <div class="col-span-1">
                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Thành tiền</label>
                 <div class="mt-2">
-                    <input wire:model="product_total_amount" name="product_total_amount" id="product_total_amount" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-right">
+                    <input wire:model="product_total_amount" wire:change="updateUnitPriceFromTotal" name="product_total_amount" id="product_total_amount" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-right">
                 </div>
                 @error('product_total_amount')
                     <p class="text-red-500 text-xs italic">{{$message}}</p>

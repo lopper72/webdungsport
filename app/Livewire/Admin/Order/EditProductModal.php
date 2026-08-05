@@ -68,7 +68,18 @@ class EditProductModal extends ModalComponent
 
     public function updateAmount()
     {
-        $this->product_total_amount = $this->product_quantity * $this->product_unit_price;
+        // Làm tròn thành tiền thành số nguyên (VNĐ), không hỗ trợ số lẻ.
+        $this->product_total_amount = (int) round($this->product_quantity * $this->product_unit_price);
+    }
+
+    public function updateUnitPriceFromTotal()
+    {
+        if ((float) $this->product_quantity > 0) {
+            // Làm tròn đơn giá thành số nguyên (VNĐ), không hỗ trợ số lẻ.
+            $this->product_unit_price = (int) round($this->product_total_amount / $this->product_quantity);
+            // Tính lại thành tiền theo đơn giá đã làm tròn.
+            $this->product_total_amount = $this->product_quantity * $this->product_unit_price;
+        }
     }
 
     public function storeOrderProduct(){

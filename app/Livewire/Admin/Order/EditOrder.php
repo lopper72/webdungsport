@@ -30,7 +30,9 @@ class EditOrder extends Component
     public $subtotal_amount = 0;
     public $discount_amount = 0;
     public $discount_percentage = 0;
+    public $discount_input_mode = 'percent';
     public $grandtotal_amount = 0;
+
     public $shipping_amount = 0;
     public $total_amount = 0;
     public $paid_amount = 0;
@@ -75,7 +77,13 @@ class EditOrder extends Component
         $this->subtotal_amount = $order->subtotal_amount;
         $this->discount_amount = $order->discount_amount;
         $this->discount_percentage = $order->discount_percent;
+        // Xác định chế độ nhập giảm giá dựa trên giá trị đã lưu:
+        // ưu tiên % nếu có, ngược lại dùng số tiền.
+        $this->discount_input_mode = ((float) $order->discount_percent > 0)
+            ? 'percent'
+            : (((float) $order->discount_amount > 0) ? 'amount' : 'percent');
         $this->grandtotal_amount = $order->grandtotal_amount;
+
         $this->shipping_amount = $order->shipping_amount;
         $this->total_amount = $order->total_amount;
         $this->paid_amount = $order->paid_amount ?? 0;
@@ -123,7 +131,17 @@ class EditOrder extends Component
             $order_product = $order_product->toArray();
         }
 
+        // Giữ nguyên id của dòng order_detail đang sửa.
+        // EditProductModal tạo mới OrderDetail rồi toArray() nên không có id,
+        // nếu ghi đè trực tiếp sẽ làm mất id → view không tra cứu được returned_quantities.
+        if (empty($this->order_details[$index]['id'])) {
+            $id = null;
+        } else {
+            $id = $this->order_details[$index]['id'];
+        }
+
         $this->order_details[$index] = $order_product;
+        $this->order_details[$index]['id'] = $id;
 
         $this->updateAmount();
         $this->calTotalAmount();
@@ -353,7 +371,6 @@ class EditOrder extends Component
         if ($this->discount_percentage < 1 || $this->discount_percentage > 100) {
             $this->discount_percentage = 0;
             $this->dispatchSuccessMessage('That bai', 'Giam gia % phai nam trong khoang tu 1 den 100.', 'error');
-            return;
         }
 
         $this->calTotalAmount();
@@ -361,21 +378,42 @@ class EditOrder extends Component
 
     public function calTotalAmount()
     {
-        $this->discount_amount = round($this->subtotal_amount * $this->discount_percentage / 100, 3);
-        $this->grandtotal_amount = $this->subtotal_amount - $this->discount_amount;
+        $subtotal = (float) $this->subtotal_amount;
+
+        if ($this->discount_input_mode === 'amount') {
+            // Người dùng nhập trực tiếp số tiền giảm → tính lại %.
+            $this->discount_amount = min(max((float) $this->discount_amount, 0), $subtotal);
+            $this->discount_percentage = $subtotal > 0
+                ? round($this->discount_amount / $subtotal * 100, 2)
+                : 0;
+        } else {
+            // Người dùng nhập % → tính lại số tiền giảm.
+            $this->discount_percentage = min(max((float) $this->discount_percentage, 0), 100);
+            $this->discount_amount = round($subtotal * $this->discount_percentage / 100, 3);
+        }
+
+        $this->grandtotal_amount = $subtotal - $this->discount_amount;
         $this->total_amount = $this->grandtotal_amount + $this->shipping_amount;
         $this->syncPaymentAmounts();
     }
 
     public function updatedDiscountPercentage()
     {
+        $this->discount_input_mode = 'percent';
         $this->calTotalAmountDiscount();
+    }
+
+    public function updatedDiscountAmount()
+    {
+        $this->discount_input_mode = 'amount';
+        $this->calTotalAmount();
     }
 
     public function updatedShippingAmount()
     {
         $this->calTotalAmount();
     }
+
 
     public function setPaymentStatus($status)
     {
