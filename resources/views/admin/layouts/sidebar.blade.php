@@ -127,7 +127,7 @@
                                         Đơn hàng
                                     </a>
                                 </li>
-                                <li @if (in_array("TMDTDH", explode(',', $list_active_modules)) && in_array("TMDTDH", explode(',', $list_active_user))) @else style='display:none' @endif>
+                                <li @if (in_array("return_order", explode(',', $list_active_modules)) && in_array("return_order", explode(',', $list_active_user))) @else style='display:none' @endif>
                                     <a  class="group relative flex items-center gap-2 rounded-md px-2 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
                                         href="{{route('admin.sales-returns')}}"
                                         :class="page === 'sales_returns' && '!text-white'">
@@ -139,6 +139,7 @@
                                         Trả hàng
                                     </a>
                                 </li>
+
                                 <li @if (in_array("TMDTDM", explode(',', $list_active_modules)) && in_array("TMDTDM", explode(',', $list_active_user))) @else style='display:none' @endif>
                                     <a  class="group relative flex items-center gap-2 rounded-md px-2 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
                                         href="{{route('admin.categories')}}"
