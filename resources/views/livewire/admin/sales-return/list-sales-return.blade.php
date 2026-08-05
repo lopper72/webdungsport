@@ -12,6 +12,11 @@
         <div class="px-4 py-2 md:px-6 xl:px-7.5 text-sm text-green-600">{{ session('message') }}</div>
     @endif
 
+    @if (session()->has('error'))
+        <div class="px-4 py-2 md:px-6 xl:px-7.5 text-sm text-red-600">{{ session('error') }}</div>
+    @endif
+
+
     <div class="px-4 py-1 mb-2 md:px-6 xl:px-7.5">
         <input wire:model="search_input" wire:keydown="search" type="text" name="search" placeholder="Tìm kiếm..." class="px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300">
     </div>
@@ -27,13 +32,15 @@
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-48 text-right">Tổng tiền</th>
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-48 text-right">Cấn nợ</th>
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-48 text-right">Hoàn tiền</th>
+                    <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-24 text-center">Trạng thái</th>
                     <th scope="col" class="px-2 py-4 text-sm font-medium text-gray-700 uppercase tracking-wider w-32 text-center">Thao tác</th>
+
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200 text-sm">
                 @if ($salesReturns->isEmpty())
                     <tr>
-                        <td class="px-2 py-2 whitespace-nowrap text-center" colspan="8">Không có dữ liệu</td>
+                        <td class="px-2 py-2 whitespace-nowrap text-center" colspan="9">Không có dữ liệu</td>
                     </tr>
                 @endif
                 @foreach ($salesReturns as $salesReturn)
@@ -50,12 +57,29 @@
                         <td class="px-2 py-2 whitespace-nowrap text-right">{{ number_format($salesReturn->debt_adjustment_amount, 0, ',', '.') }}</td>
                         <td class="px-2 py-2 whitespace-nowrap text-right">{{ number_format($salesReturn->refund_amount, 0, ',', '.') }}</td>
                         <td class="px-2 py-2 whitespace-nowrap text-center">
-                            <a href="{{ route('admin.sales-returns.pdf', ['id' => $salesReturn->id]) }}" class="text-blue-600 hover:text-blue-800">
+                            @if($salesReturn->status === 'canceled')
+                                <span class="inline-flex items-center px-2 py-1 bg-red-100 text-red-700 rounded-md text-xs font-semibold">Đã hủy</span>
+                            @else
+                                <span class="inline-flex items-center px-2 py-1 bg-green-100 text-green-700 rounded-md text-xs font-semibold">Hoàn thành</span>
+                            @endif
+                        </td>
+                        <td class="px-2 py-2 whitespace-nowrap text-center">
+                            <a href="{{ route('admin.sales-returns.pdf', ['id' => $salesReturn->id]) }}" class="text-blue-600 hover:text-blue-800 mr-2">
                                 In PDF
                             </a>
+                            @if($salesReturn->status !== 'canceled')
+                                <button type="button"
+                                    wire:click="cancelSalesReturn({{ $salesReturn->id }})"
+                                    wire:confirm="Bạn có chắc muốn hủy phiếu trả hàng này? Hành động này sẽ hoàn tác mọi ảnh hưởng về kế toán và tồn kho. Phiếu trả hàng sẽ được giữ lại trong hệ thống để phục vụ kiểm toán."
+                                    class="inline-flex items-center px-2 py-1 bg-red-500 border border-transparent rounded-md font-semibold text-xs text-white tracking-widest hover:bg-red-600 active:bg-red-700 focus:outline-none focus:border-red-900 focus:ring ring-red-300 disabled:opacity-25 transition ease-in-out duration-150">
+                                    Hủy trả hàng
+                                </button>
+                            @endif
+
                         </td>
                     </tr>
                 @endforeach
+
             </tbody>
         </table>
     </div>

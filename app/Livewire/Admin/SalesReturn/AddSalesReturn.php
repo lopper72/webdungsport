@@ -7,8 +7,10 @@ use App\Models\Order;
 use App\Models\SalesReturn;
 use App\Models\SalesReturnDetail;
 use App\Models\User;
+use App\Services\DebtService;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+
 
 class AddSalesReturn extends Component
 {
@@ -195,8 +197,12 @@ class AddSalesReturn extends Component
                 ]);
             }
 
-            $this->applyDebtAdjustment($debtAdjustmentAmount);
+            // Lưu ý: Việc trả hàng KHÔNG tự động thay đổi trạng thái thanh toán.
+            // Tiền trả hàng được ghi nhận qua debt_adjustment_amount (Return Offset)
+            // và sẽ được cấn trừ vào công nợ khi tính Payable Amount.
+            // Không tăng paid_amount của các đơn hàng ở đây.
         });
+
 
         session()->flash('message', 'Đã tạo phiếu trả hàng thành công.');
 
@@ -219,48 +225,9 @@ class AddSalesReturn extends Component
             return 0;
         }
 
-        return Order::where('user_id', $this->customer_id)
-            ->whereIn('payment_status', ['unpaid', 'partial', 'pending'])
-            ->where('status', '<>', 'rejected')
-            ->get()
-            ->sum(fn ($order) => max((float) $order->total_amount - (float) ($order->paid_amount ?? 0), 0));
+        return DebtService::currentTotalDebt((int) $this->customer_id);
     }
 
-    private function applyDebtAdjustment($amount)
-    {
-        $remaining = (float) $amount;
-
-        if ($remaining <= 0) {
-            return;
-        }
-
-        $orders = Order::where('user_id', $this->customer_id)
-            ->whereIn('payment_status', ['unpaid', 'partial', 'pending'])
-            ->where('status', '<>', 'rejected')
-            ->orderBy('order_date')
-            ->orderBy('id')
-            ->get();
-
-        foreach ($orders as $order) {
-            if ($remaining <= 0) {
-                break;
-            }
-
-            $currentPaid = (float) ($order->paid_amount ?? 0);
-            $debt = max((float) $order->total_amount - $currentPaid, 0);
-
-            if ($debt <= 0) {
-                continue;
-            }
-
-            $applied = min($remaining, $debt);
-            $newPaid = $currentPaid + $applied;
-
-            $order->paid_amount = $newPaid;
-            $order->payment_status = $newPaid >= (float) $order->total_amount ? 'paid' : 'partial';
-            $order->save();
-
-            $remaining -= $applied;
-        }
-    }
 }
+
+

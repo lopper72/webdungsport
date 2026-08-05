@@ -46,12 +46,37 @@
                     </div>
                     <div>
                         <div class="block text-sm font-medium leading-6 text-gray-900">Trạng thái</div>
-                        <div class="mt-2 text-sm text-gray-700">{{ $salesReturn->status }}</div>
+                        <div class="mt-2 text-sm text-gray-700">
+                            @if($salesReturn->status === 'canceled')
+                                <span class="inline-flex items-center px-2 py-1 bg-red-100 text-red-700 rounded-md text-xs font-semibold">Đã hủy</span>
+                            @else
+                                <span class="inline-flex items-center px-2 py-1 bg-green-100 text-green-700 rounded-md text-xs font-semibold">Hoàn thành</span>
+                            @endif
+                        </div>
                     </div>
+                    <div>
+                        <div class="block text-sm font-medium leading-6 text-gray-900">Người tạo</div>
+                        <div class="mt-2 text-sm text-gray-700">{{ $salesReturn->customer?->name }}</div>
+                    </div>
+                    <div>
+                        <div class="block text-sm font-medium leading-6 text-gray-900">Ngày tạo</div>
+                        <div class="mt-2 text-sm text-gray-700">{{ optional($salesReturn->created_at)->format('d/m/Y H:i') }}</div>
+                    </div>
+                    @if($salesReturn->status === 'canceled')
+                        <div>
+                            <div class="block text-sm font-medium leading-6 text-gray-900">Người hủy</div>
+                            <div class="mt-2 text-sm text-gray-700">{{ $salesReturn->cancelledBy?->name ?? '-' }}</div>
+                        </div>
+                        <div>
+                            <div class="block text-sm font-medium leading-6 text-gray-900">Ngày hủy</div>
+                            <div class="mt-2 text-sm text-gray-700">{{ optional($salesReturn->cancelled_date)->format('d/m/Y H:i') }}</div>
+                        </div>
+                    @endif
                     <div class="sm:col-span-2 md:col-span-3">
                         <div class="block text-sm font-medium leading-6 text-gray-900">Ghi chú</div>
                         <div class="mt-2 text-sm text-gray-700">{{ $salesReturn->note ?: '-' }}</div>
                     </div>
+
                 </div>
 
                 <div class="mt-8">

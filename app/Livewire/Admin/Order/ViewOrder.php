@@ -8,8 +8,10 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\SalesReturnDetail;
 use App\Models\User;
+use App\Services\DebtService;
 use Illuminate\Http\Request;
 use PDF;
+
 
 class ViewOrder extends Component
 {
@@ -44,10 +46,17 @@ class ViewOrder extends Component
     public $grandtotal_notpay = 0;
     public $grandtotal_all = 0;
     public $paid_amount = 0;
+    public $payable_amount = 0;
     public $debt_amount = 0;
     public $previous_debt = 0;
     public $total_customer_debt = 0;
     public $can_cancel_order = false;
+    public $returned_quantities = [];
+    public $total_return_adjusted = 0;
+    public $has_return_order = false;
+
+
+
 
     protected $listeners = ['updateOrderProduct'];
 
@@ -114,7 +123,26 @@ class ViewOrder extends Component
             return;
         }
 
+        // Chặn việc giảm paid_amount làm công nợ vượt quá giới hạn
+        // (bảo vệ khoản cấn trừ công nợ từ trả hàng).
+        $debtCheck = DebtService::validateDebtReduction(
+            (int) $this->customer_id,
+            (int) $this->order_id,
+            (float) ($this->order->paid_amount ?? 0)
+        );
+
+        if (!$debtCheck['allowed']) {
+            $this->dispatch('successOrder', [
+                'title' => 'Thất bại',
+                'message' => $debtCheck['message'],
+                'type' => 'error',
+                'timeout' => 3000
+            ]);
+            return;
+        }
+
         $this->order->update([
+
             'code' => $this->order_code,
             'user_id' => $this->customer_id,
             'payment_method_id' => $this->payment_method_id,
@@ -232,17 +260,33 @@ class ViewOrder extends Component
         $this->grandtotal_amount = $this->order->grandtotal_amount;
         $this->shipping_amount = $this->order->shipping_amount;
         $this->total_amount = $this->order->total_amount;
+        $this->total_return_adjusted = DebtService::returnAdjustedByOrder((int) $this->order_id);
+        $this->payable_amount = max((float) $this->total_amount - (float) $this->total_return_adjusted, 0);
+
         $this->paid_amount = $this->payment_status === 'paid'
-            ? $this->total_amount
+            ? $this->payable_amount
             : ($this->payment_status === 'unpaid' ? 0 : ($this->order->paid_amount ?? 0));
         $this->customers = $customers;
+
+
         $this->payment_methods = $payment_methods;
         $this->discount_percent = $this->order->discount_percent;
         $this->order_details = $this->order->order_detail()->with('product', 'product_size', 'warehouse', 'product_detail')->get()->toArray();
         $this->total_quantity = collect($this->order_details)->sum('quantity');
         $this->can_cancel_order = ! SalesReturnDetail::where('order_id', $this->order_id)->exists();
+        $this->returned_quantities = DebtService::returnedQuantitiesByOrder($this->order_id);
+        $this->total_return_adjusted = DebtService::returnAdjustedByOrder((int) $this->order_id);
+        // Có phiếu trả hàng (không bị hủy) hay không — dùng để ẩn/hiện cột trả hàng.
+        $this->has_return_order = SalesReturnDetail::where('order_id', $this->order_id)
+            ->whereHas('salesReturn', function ($q) {
+                $q->where('status', '<>', 'canceled');
+            })
+            ->exists();
+
+
 
         $grandtotal_notpay = Order::where('user_id', '=', $this->customer_id)
+
 
         ->where('id', '<>', $this->order_id)
         ->where('created_at', '<', $this->order->created_at)
@@ -250,14 +294,26 @@ class ViewOrder extends Component
         ->whereDoesntHave('orderStatus', function($query) {
             $query->where('status', '=', 'rejected');
         })->get();
+        // Công nợ trước đó = tổng (Payable Amount - Paid Amount) của các đơn khác.
+        // Payable Amount = Order Total - Return Offset (theo đơn).
         $this->grandtotal_notpay = $grandtotal_notpay->sum(function ($order) {
-            return max($order->total_amount - ($order->paid_amount ?? 0), 0);
+            return max(
+                max((float) $order->total_amount - DebtService::returnAdjustedByOrder((int) $order->id), 0)
+                - (float) ($order->paid_amount ?? 0),
+                0
+            );
         });
         $this->previous_debt = $this->grandtotal_notpay;
-        $this->debt_amount = max((float) $this->total_amount - (float) $this->paid_amount, 0);
+
+
+        // Payable Amount = Order Total - Return Offset.
+        // Outstanding Debt = Payable Amount - Paid Amount.
+        $this->payable_amount = max((float) $this->total_amount - (float) $this->total_return_adjusted, 0);
+        $this->debt_amount = max((float) $this->payable_amount - (float) $this->paid_amount, 0);
         $this->total_customer_debt = (float) $this->previous_debt + (float) $this->debt_amount;
         $this->grandtotal_all = $this->total_customer_debt; 
     }
+
 
     public function render()
     {

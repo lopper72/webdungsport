@@ -18,17 +18,29 @@
                     <option value="partial">Thanh toán một phần</option>
                     <option value="unpaid">Chưa thanh toán</option>
                 </select>
+                @error('payment_status') <div class="mt-1 text-sm text-red-600">{{ $message }}</div> @enderror
+            </div>
+
+            <div class="col-span-2">
+                <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Số tiền phải trả</label>
+                <div class="p-2.5 w-full text-sm text-gray-900 bg-gray-100 rounded-lg border border-gray-300 text-right">{{ number_format($payable_amount) }}</div>
             </div>
             <div class="col-span-2">
                 <label for="paid_amount" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Số tiền đã thanh toán</label>
-                @if($payment_status === 'partial')
-                    <input wire:model.live="paid_amount" type="number" min="0" max="{{ $total_amount }}" id="paid_amount" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 text-right">
-                    @error('paid_amount') <div class="mt-1 text-sm text-red-600">{{ $message }}</div> @enderror
-                @else
-                    <div class="p-2.5 w-full text-sm text-gray-900 bg-gray-100 rounded-lg border border-gray-300 text-right">{{ number_format($paid_amount) }}</div>
-                @endif
+                <input wire:model.live="paid_amount" type="number" min="0" max="{{ $payable_amount }}" id="paid_amount" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 text-right">
+                @error('paid_amount') <div class="mt-1 text-sm text-red-600">{{ $message }}</div> @enderror
             </div>
+
+            @if($total_return_adjusted > 0)
+            <div class="col-span-2">
+                <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tiền trả hàng đã cấn trừ công nợ</label>
+                <div class="p-2.5 w-full text-sm text-gray-900 bg-gray-100 rounded-lg border border-gray-300 text-right">{{ number_format($total_return_adjusted) }}</div>
+            </div>
+            @endif
+
+
         </div>
+
 
         <div class="grid gap-4 mb-4 grid-cols-2">
             <div class="col-span-2">

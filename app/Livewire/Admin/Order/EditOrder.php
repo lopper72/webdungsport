@@ -6,7 +6,9 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\SalesReturnDetail;
 use App\Models\Warehouse;
+use App\Services\DebtService;
 use Livewire\Component;
+
 
 class EditOrder extends Component
 {
@@ -32,6 +34,7 @@ class EditOrder extends Component
     public $shipping_amount = 0;
     public $total_amount = 0;
     public $paid_amount = 0;
+    public $payable_amount = 0;
     public $debt_amount = 0;
     public $previous_debt = 0;
     public $total_customer_debt = 0;
@@ -43,6 +46,12 @@ class EditOrder extends Component
     public $order_product_delete = [];
     public $action = '';
     public $can_cancel_order = false;
+    public $returned_quantities = [];
+    public $total_return_adjusted = 0;
+    public $has_return_order = false;
+
+
+
 
     protected $listeners = ['updateOrderProduct', 'updateOrderProductEdit', 'updateCustomerId'];
 
@@ -76,10 +85,19 @@ class EditOrder extends Component
             ->toArray();
         $this->total_quantity = collect($this->order_details)->sum('quantity');
         $this->can_cancel_order = ! SalesReturnDetail::where('order_id', $this->order_id)->exists();
+        $this->returned_quantities = DebtService::returnedQuantitiesByOrder($this->order_id);
+        // Có phiếu trả hàng (không bị hủy) hay không — dùng để ẩn/hiện cột trả hàng.
+        $this->has_return_order = SalesReturnDetail::where('order_id', $this->order_id)
+            ->whereHas('salesReturn', function ($q) {
+                $q->where('status', '<>', 'canceled');
+            })
+            ->exists();
 
         $this->recalculatePreviousDebt();
 
+
     }
+
 
     public function updateOrderProduct($order_product, $isMultiple = false)
     {
@@ -196,8 +214,24 @@ class EditOrder extends Component
             return;
         }
 
+        // Chặn việc giảm paid_amount làm công nợ vượt quá giới hạn
+        // (bảo vệ khoản cấn trừ công nợ từ trả hàng).
+        $debtCheck = DebtService::validateDebtReduction(
+            (int) $this->customer_id,
+            (int) $this->order_id,
+            (float) $this->paid_amount,
+            (float) $this->total_amount
+        );
+
+
+        if (!$debtCheck['allowed']) {
+            $this->dispatchSuccessMessage('That bai', $debtCheck['message'], 'error', $action);
+            return;
+        }
+
         $order = Order::findOrFail($this->order_id);
         $order->update([
+
             'code' => $this->order_code,
             'user_id' => $this->customer_id,
             'payment_method_id' => $this->payment_method_id,
@@ -252,14 +286,46 @@ class EditOrder extends Component
             'customer_id' => 'required',
             'payment_method_id' => 'required',
             'payment_status' => 'required|in:paid,partial,unpaid',
-            'paid_amount' => 'required|numeric|min:0|lte:total_amount',
+            'paid_amount' => 'required|numeric|min:0|lte:payable_amount',
             'order_date' => 'required',
             'order_status' => 'required',
             'order_code' => 'required',
         ], [
-            'paid_amount.lte' => 'Số tiền đã thanh toán không được lớn hơn tổng tiền.',
+            'paid_amount.lte' => 'Số tiền đã thanh toán không được lớn hơn số tiền phải trả ('
+                . number_format($this->payable_amount, 0, ',', '.') . ' đ).',
         ]);
+
+        // Trạng thái thanh toán phải khớp với số tiền đã thanh toán thực tế.
+        $this->validatePaymentStatusAgainstPaidAmount();
+        if ($this->getErrorBag()->has('paid_amount')) {
+            throw \Illuminate\Validation\ValidationException::withMessages($this->getErrorBag()->toArray());
+        }
     }
+
+
+    protected function validatePaymentStatusAgainstPaidAmount()
+    {
+        $paid    = (float) $this->paid_amount;
+        $payable = (float) $this->payable_amount;
+
+        if ($this->payment_status === 'unpaid' && $paid != 0) {
+            $this->addError('paid_amount', 'Khi trạng thái là Chưa thanh toán, số tiền đã thanh toán phải bằng 0.');
+            return;
+        }
+
+        if ($this->payment_status === 'partial' && !($paid > 0 && $paid < $payable)) {
+            $this->addError('paid_amount', 'Khi trạng thái là Thanh toán một phần, số tiền đã thanh toán phải lớn hơn 0 và nhỏ hơn số tiền phải trả ('
+                . number_format($payable, 0, ',', '.') . ' đ).');
+            return;
+        }
+
+        if ($this->payment_status === 'paid' && $paid != $payable) {
+            $this->addError('paid_amount', 'Khi trạng thái là Đã thanh toán, số tiền đã thanh toán phải bằng số tiền phải trả ('
+                . number_format($payable, 0, ',', '.') . ' đ).');
+        }
+    }
+
+
 
     public function updateAmount()
     {
@@ -314,8 +380,10 @@ class EditOrder extends Component
     public function setPaymentStatus($status)
     {
         $this->payment_status = $this->normalizeStatus($status);
+        $this->applyPaymentStatusToPaidAmount();
         $this->syncPaymentAmounts();
     }
+
 
     public function updatedCustomerId()
     {
@@ -325,22 +393,47 @@ class EditOrder extends Component
     public function updatedPaymentStatus()
     {
         $this->payment_status = $this->normalizeStatus($this->payment_status);
+        $this->applyPaymentStatusToPaidAmount();
         $this->syncPaymentAmounts();
     }
+
 
     public function updatedPaidAmount()
     {
         $this->syncPaymentAmounts();
     }
 
+    /**
+     * Khi người dùng đổi Payment Status, tự động cập nhật Paid Amount:
+     * - Unpaid  => Paid Amount = 0
+     * - Paid    => Paid Amount = Payable Amount
+     * - Partial => giữ nguyên Paid Amount hiện tại (người dùng tự nhập)
+     */
+    protected function applyPaymentStatusToPaidAmount()
+    {
+        $payable = (float) $this->payable_amount;
+
+        if ($this->payment_status === 'unpaid') {
+            $this->paid_amount = 0;
+        } elseif ($this->payment_status === 'paid') {
+            $this->paid_amount = $payable;
+        }
+        // 'partial' => giữ nguyên paid_amount hiện tại.
+    }
+
+
     protected function recalculatePreviousDebt()
     {
         if (!$this->customer_id) {
             $this->grandtotal_notpay = 0;
             $this->previous_debt = 0;
+            $this->total_return_adjusted = 0;
             $this->syncPaymentAmounts();
             return;
         }
+
+        $this->total_return_adjusted = DebtService::returnAdjustedByOrder((int) $this->order_id);
+
 
         $query = Order::where('user_id', $this->customer_id)
             ->where('id', '<>', $this->order_id)
@@ -351,30 +444,42 @@ class EditOrder extends Component
             $query->where('created_at', '<', $this->order_created_at);
         }
 
+        // Công nợ trước đó = tổng (Payable Amount - Paid Amount) của các đơn khác.
+        // Payable Amount = Order Total - Return Offset (theo đơn).
         $this->grandtotal_notpay = $query->get()
-            ->sum(fn ($order) => max($order->total_amount - ($order->paid_amount ?? 0), 0));
+            ->sum(fn ($order) => max(
+                max((float) $order->total_amount - DebtService::returnAdjustedByOrder((int) $order->id), 0)
+                - (float) ($order->paid_amount ?? 0),
+                0
+            ));
+
 
         $this->previous_debt = $this->grandtotal_notpay;
         $this->syncPaymentAmounts();
     }
 
+
     protected function syncPaymentAmounts()
     {
-        $this->payment_status = $this->normalizeStatus($this->payment_status);
+        // Payable Amount = Order Total - Return Offset.
+        $this->payable_amount = max((float) $this->total_amount - (float) $this->total_return_adjusted, 0);
 
-        if ($this->payment_status === 'paid') {
-            $this->paid_amount = $this->total_amount;
-        } elseif ($this->payment_status === 'unpaid') {
-            $this->paid_amount = 0;
-        } else {
-            $this->paid_amount = min((float) $this->paid_amount, (float) $this->total_amount);
-            $this->paid_amount = max((float) $this->paid_amount, 0);
-        }
+        $this->paid_amount = min((float) $this->paid_amount, (float) $this->payable_amount);
+        $this->paid_amount = max((float) $this->paid_amount, 0);
 
-        $this->debt_amount = max((float) $this->total_amount - (float) $this->paid_amount, 0);
+        // KHÔNG tự động đổi payment_status. Trạng thái do người dùng chọn,
+        // sẽ được kiểm tra khớp với Paid Amount khi lưu (validatePaymentStatusAgainstPaidAmount).
+
+        // Outstanding Debt = Payable Amount - Paid Amount.
+        $this->debt_amount = max((float) $this->payable_amount - (float) $this->paid_amount, 0);
         $this->total_customer_debt = (float) $this->previous_debt + (float) $this->debt_amount;
         $this->grandtotal_all = $this->total_customer_debt;
     }
+
+
+
+
+
 
     protected function syncOrderStatusForCounterSale()
     {

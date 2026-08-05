@@ -48,6 +48,8 @@
                             <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
                         @enderror
                     </div>
+
+
                     <div class="col-span-4 sm:col-span-1" wire:key="order-note-container">
                         <label class="block text-sm font-medium leading-6 text-gray-900">Ghi chú</label>
                         <div class="mt-2">
@@ -74,15 +76,21 @@
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-24 text-left">Size</th>
                                
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-32 text-right">Số lượng</th>
+                                @if($has_return_order)
+                                <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-32 text-right">Đã trả</th>
+                                <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-32 text-right">Còn lại</th>
+                                @endif
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-32 text-right">Đơn giá</th>
+
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-32 text-right">Thành tiền</th>
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-28 text-center"></th>
+
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200 text-sm	">
                             @if (count($order_details) == 0)
                                 <tr>
-                                    <td class="px-2 py-2 whitespace-nowrap text-center" colspan="9">Không có dữ liệu</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-center" colspan="10">Không có dữ liệu</td>
                                 </tr>
                             @endif
                             @foreach ($order_details as $index => $order_detail)
@@ -101,9 +109,19 @@
                                     <td class="px-2 py-2 whitespace-nowrap text-right">
                                         {{$order_detail['quantity']}}
                                     </td>
+                                    @if($has_return_order)
+                                    <td class="px-2 py-2 whitespace-nowrap text-right">
+                                        {{ $returned_quantities[$order_detail['id']] ?? 0 }}
+                                    </td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-right">
+                                        {{ max((int) $order_detail['quantity'] - (int) ($returned_quantities[$order_detail['id']] ?? 0), 0) }}
+                                    </td>
+                                    @endif
                                     <td class="px-2 py-2 whitespace-nowrap text-right">
                                         {{number_format($order_detail['unit_price'])}}
                                     </td>
+
+
                                     <td class="px-2 py-2 whitespace-nowrap text-right">
                                         {{number_format($order_detail['total_amount'])}}
                                     </td>
@@ -124,10 +142,16 @@
                                     <td class="px-2 py-2 whitespace-nowrap text-center"></td>
                                     <td class="px-2 py-2 whitespace-nowrap text-left" colspan="3"><b>Tổng cộng</b></td>
                                     <td class="px-2 py-2 whitespace-nowrap text-right"><b>{{ $total_quantity }}</b></td>
+                                    @if($has_return_order)
+                                    <td class="px-2 py-2 whitespace-nowrap text-right"><b>{{ array_sum($returned_quantities) }}</b></td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-right"><b>{{ max($total_quantity - array_sum($returned_quantities), 0) }}</b></td>
+                                    @endif
                                     <td class="px-2 py-2 whitespace-nowrap text-right"></td>
                                     <td class="px-2 py-2 whitespace-nowrap text-right"></td>
                                     <td class="px-2 py-2 whitespace-nowrap text-center"></td>
                                 </tr>
+
+
                             @endif
                         </tbody>
                     </table>
@@ -181,22 +205,38 @@
                             <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-sm">{{number_format($total_amount)}}</span>
                             <input wire:model="total_amount" type="hidden" name="total_amount" id="total_amount">
                         </td>
-                    </tr>                    
+                    </tr>
+                    <tr wire:key="edit-row-payable-amount">
+                        <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
+                        <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Số tiền phải trả</b></td>
+                        <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
+                            <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-sm">{{ number_format($payable_amount) }}</span>
+                        </td>
+                    </tr>
                     <tr wire:key="edit-row-paid-amount">
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
                         <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Đã thanh toán</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
-                            @if($payment_status === 'partial')
-                                <div wire:key="edit-paid-amount-input-container">
-                                    <input wire:model.change="paid_amount" type="number" min="0" max="{{ $total_amount }}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 sm:text-sm sm:leading-6 text-right">
-                                    @error('paid_amount') <div class="mt-1 text-sm text-red-600 normal-case">{{ $message }}</div> @enderror
-                                </div>
-                            @else
-                                <span wire:key="edit-paid-amount-text" class="px-3 py-2 whitespace-nowrap text-right font-bold text-sm">{{ number_format($paid_amount) }}</span>
-                            @endif
+                            <div wire:key="edit-paid-amount-input-container">
+                                <input wire:model.change="paid_amount" type="number" min="0" max="{{ $payable_amount }}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 sm:text-sm sm:leading-6 text-right">
+                                @error('paid_amount') <div class="mt-1 text-sm text-red-600 normal-case">{{ $message }}</div> @enderror
+                            </div>
                         </td>
                     </tr>
+
+
+                    @if($has_return_order)
+                    <tr wire:key="edit-row-return-adjusted">
+                        <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
+                        <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Tiền trả hàng đã cấn trừ công nợ</b></td>
+                        <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
+                            <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-sm">{{ number_format($total_return_adjusted) }}</span>
+                        </td>
+                    </tr>
+                    @endif
                     @if($payment_status === 'paid')
+
+
                     <tr wire:key="edit-row-remaining">
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
                         <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Còn lại</b></td>
@@ -290,14 +330,13 @@
                     btn.click(); 
                 }, 100);
                 if(event.detail[0].type == 'success'){
-                    if(typeof event.detail[0].action == 'string' && event.detail[0].action == 'update'){
-                        window.location.href = window.location.href.replace('/edit/', '/view/');
-                    }else{
-                        setTimeout(() => {
-                            window.location.href = "{{route('admin.orders')}}";
-                        }, 1000);
-                    }
+                    // Sau khi lưu thành công, quay về trang danh sách đơn hàng
+                    // để cập nhật ngay Công nợ, Trạng thái thanh toán, thông tin trả hàng.
+                    setTimeout(() => {
+                        window.location.href = "{{route('admin.orders')}}";
+                    }, 1000);
                 }
+
             })
             window.addEventListener('confirmOrderSave', event => {
                 const data = event.detail[0]
@@ -308,9 +347,3 @@
         </script>
     @endscript
 </div>
-
-
-
-
-
-

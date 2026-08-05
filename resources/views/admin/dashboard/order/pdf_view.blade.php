@@ -73,6 +73,10 @@
             <tr>
                 <th>TÊN HÀNG HÓA</th>
                 <th>SL</th>
+                @if($has_return_order)
+                <th>ĐÃ TRẢ</th>
+                <th>CÒN LẠI</th>
+                @endif
                 <th>ĐƠN GIÁ</th>
                 <th>THÀNH TIỀN</th>
             </tr>
@@ -82,6 +86,10 @@
             <tr>
                 <td>{{$detail['name']}}</td>
                 <td align='center'>{{$detail['quantity']}}</td>
+                @if($has_return_order)
+                <td align='center'>{{ $returned_quantities[$detail['id']] ?? 0 }}</td>
+                <td align='center'>{{ max((int) $detail['quantity'] - (int) ($returned_quantities[$detail['id']] ?? 0), 0) }}</td>
+                @endif
                 <td align='right'>{{number_format($detail['price'], 0, ',', '.')}}</td>
                 <td align='right'>{{number_format($detail['total'], 0, ',', '.')}}</td>
             </tr>
@@ -89,24 +97,46 @@
         </tbody>
     </table>
 
+
     <table class="summary">
         <tbody style="font-size: 9pt;">
             <tr>
                 <td>Tổng số lượng:</td>
                 <td>{{$total_quantity}}</td>
             </tr>
+            @if($has_return_order)
+            <tr>
+                <td>Số lượng đã trả:</td>
+                <td>{{$total_returned_quantity}}</td>
+            </tr>
+            <tr>
+                <td>Số lượng còn lại:</td>
+                <td>{{$total_remaining_quantity}}</td>
+            </tr>
+            @endif
             <tr>
                 <td>Tổng tiền hàng:</td>
-                <td>{{number_format($total_price, 0, ',', '.')}}</td>
+                <td>{{number_format($subtotal_amount, 0, ',', '.')}}</td>
             </tr>
+
             <tr>
                 <td>Chiết khấu ({{$discount_percent}}%):</td>
                 <td>{{number_format($discount, 0, ',', '.')}}</td>
             </tr>
             <tr>
                 <td>Thành tiền:</td>
-                <td>{{number_format($total_price - $discount, 0, ',', '.')}}</td>
+                <td>{{number_format($total_amount, 0, ',', '.')}}</td>
             </tr>
+            @if($has_return_order)
+            <tr>
+                <td>Tiền trả hàng đã cấn trừ công nợ:</td>
+                <td>{{number_format($return_adjusted, 0, ',', '.')}}</td>
+            </tr>
+            <tr>
+                <td>Số tiền phải trả:</td>
+                <td>{{number_format($payable_amount, 0, ',', '.')}}</td>
+            </tr>
+            @endif
             <tr>
                 <td>Đã thanh toán:</td>
                 <td>{{number_format($paid_amount, 0, ',', '.')}}</td>
@@ -128,6 +158,7 @@
             @endif
         </tbody>
     </table>
+
 
 </body>
 </html>

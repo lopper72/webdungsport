@@ -23,6 +23,7 @@ class SalesReturnController extends Controller
     {
         $salesReturn = SalesReturn::with([
             'customer',
+            'cancelledBy',
             'details.order',
             'details.product',
             'details.productDetail',
@@ -32,6 +33,7 @@ class SalesReturnController extends Controller
 
         return view('admin.dashboard.sales-return.view', compact('salesReturn'));
     }
+
 
     public function pdf($id)
     {

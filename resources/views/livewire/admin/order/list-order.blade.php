@@ -145,9 +145,16 @@
 
                         </td>
                         <td class="px-2 py-2 whitespace-nowrap text-center">
-                            @php $debtAmount = max($order->total_amount - ($order->paid_amount ?? 0), 0); @endphp
+                            @php
+                                // Outstanding Debt = Payable Amount - Paid Amount
+                                // Payable Amount = Order Total - Return Offset (theo đơn, không tính phiếu trả bị hủy)
+                                $payableAmount = max($order->total_amount - \App\Services\DebtService::returnAdjustedByOrder((int) $order->id), 0);
+                                $debtAmount = max($payableAmount - ($order->paid_amount ?? 0), 0);
+                            @endphp
+
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $debtAmount > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-700' }}">{{ number_format($debtAmount, 0, ',', '.') }}</span>
                         </td>
+
                         <td class="px-2 py-2 whitespace-nowrap text-right">
                             {{ number_format($order->total_amount, 0, ',', '.') }}
                         </td>

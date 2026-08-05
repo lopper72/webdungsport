@@ -4,9 +4,11 @@ namespace App\Livewire\Admin\Arap;
 
 use Livewire\Component;
 use App\Models\Order;
+use App\Services\DebtService;
 use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
 use App\Models\User;
+
 
 class ViewArap extends Component
 {
@@ -60,8 +62,13 @@ class ViewArap extends Component
             ->orderBy('id')
             ->get();
 
-        // Tổng công nợ hiện tại
-        $this->total_debt = $orders->sum(fn($o) => max((float)$o->total_amount - (float)($o->paid_amount ?? 0), 0));
+        // Tổng công nợ hiện tại = tổng (Payable Amount - Paid Amount)
+        // Payable Amount = Order Total - Return Offset (theo đơn).
+        $this->total_debt = $orders->sum(function ($o) {
+            $payable = max((float) $o->total_amount - DebtService::returnAdjustedByOrder((int) $o->id), 0);
+            return max($payable - (float) ($o->paid_amount ?? 0), 0);
+        });
+
 
         // Không cho phép nhập vượt quá tổng công nợ
         if ($inputAmount > $this->total_debt) {
@@ -81,7 +88,11 @@ class ViewArap extends Component
 
         foreach ($orders as $order) {
             $currentPaid   = (float) ($order->paid_amount ?? 0);
-            $remainingDebt = max((float) $order->total_amount - $currentPaid, 0);
+            // Payable Amount = Order Total - Return Offset (theo đơn).
+            // Không cho phép thanh toán vượt quá Payable Amount.
+            $payableAmount = max((float) $order->total_amount - DebtService::returnAdjustedByOrder((int) $order->id), 0);
+            $remainingDebt = max($payableAmount - $currentPaid, 0);
+
 
             if ($remainingDebt <= 0) continue;
 
@@ -92,6 +103,7 @@ class ViewArap extends Component
                 'code'           => $order->code,
                 'order_date'     => $order->order_date,
                 'total_amount'   => (float) $order->total_amount,
+                'payable_amount' => $payableAmount,
                 'before_paid'    => $currentPaid,
                 'max_applicable' => $remainingDebt,        // trần tối đa có thể nhập
                 'applied_amount' => $applied,              // người dùng có thể sửa field này
@@ -99,6 +111,7 @@ class ViewArap extends Component
 
             $remaining -= $applied;
         }
+
 
         $this->allocation_preview = $preview;
         $this->show_preview       = true;
@@ -151,10 +164,12 @@ class ViewArap extends Component
             if (!$order) continue;
 
             $newPaid = (float) ($order->paid_amount ?? 0) + (float) $item['applied_amount'];
-            $order->paid_amount    = $newPaid;
-            $order->payment_status = ($newPaid >= (float) $order->total_amount) ? 'paid' : 'partial';
+            $order->paid_amount = $newPaid;
+            // Payment Status chỉ phụ thuộc vào Paid Amount thực tế so với Payable Amount.
+            $order->payment_status = DebtService::paymentStatus($newPaid, (float) ($item['payable_amount'] ?? $order->total_amount));
             $order->save();
             $count++;
+
         }
 
         $this->payment_amount     = '';

@@ -44,9 +44,15 @@ class OrderSummaries extends Component
                 ->where('status','<>','rejected')
                 ->get();
             if ($unpaid_order->isNotEmpty()) {
-                $unpaid = (int) $unpaid_order->sum(fn ($order) => max($order->total_amount - ($order->paid_amount ?? 0), 0));
+                // Công nợ = tổng (Payable Amount - Paid Amount). Payable = Order Total - Return Offset (theo đơn).
+                $unpaid = (int) $unpaid_order->sum(fn ($order) => max(
+                    max((float) $order->total_amount - \App\Services\DebtService::returnAdjustedByOrder((int) $order->id), 0)
+                    - (float) ($order->paid_amount ?? 0),
+                    0
+                ));
             }
         }else{
+
             $orders = Order::where('user_id',Auth::user()->id)
                 ->whereBetween('order_date', [$this->from_date, $this->to_date])
                 ->orderBy('order_date', 'desc')
@@ -66,11 +72,17 @@ class OrderSummaries extends Component
                 ->whereBetween('order_date', [$this->from_date, $this->to_date])
                 ->get();
             if ($unpaid_order->isNotEmpty()) {
-                $unpaid = (int) $unpaid_order->sum(fn ($order) => max($order->total_amount - ($order->paid_amount ?? 0), 0));
+                // Công nợ = tổng (Payable Amount - Paid Amount). Payable = Order Total - Return Offset (theo đơn).
+                $unpaid = (int) $unpaid_order->sum(fn ($order) => max(
+                    max((float) $order->total_amount - \App\Services\DebtService::returnAdjustedByOrder((int) $order->id), 0)
+                    - (float) ($order->paid_amount ?? 0),
+                    0
+                ));
             }
         }
         
         $sum_paid = $paid + $unpaid;
+
         return view('livewire.client.order-summaries',['orders' => $orders,'paid' => $paid, 'unpaid' => $unpaid, 'sum_paid' => $sum_paid]);
     }
 }

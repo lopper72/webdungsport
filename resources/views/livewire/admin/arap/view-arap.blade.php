@@ -137,9 +137,11 @@
                                 @foreach ($allocation_preview as $i => $item)
                                     @php
                                         $afterPaid    = $item['before_paid'] + (float)$item['applied_amount'];
-                                        $afterDebt    = max($item['total_amount'] - $afterPaid, 0);
-                                        $newStatus    = ($afterPaid >= $item['total_amount']) ? 'paid' : (($item['applied_amount'] > 0) ? 'partial' : 'unpaid');
+                                        // Outstanding Debt = Payable Amount - Paid Amount
+                                        $afterDebt    = max($item['payable_amount'] - $afterPaid, 0);
+                                        $newStatus    = ($afterPaid >= $item['payable_amount']) ? 'paid' : (($item['applied_amount'] > 0) ? 'partial' : 'unpaid');
                                     @endphp
+
                                     <tr class="hover:bg-gray-50 align-middle">
                                         <td class="px-3 py-2 font-medium text-indigo-600 whitespace-nowrap">
                                             {{ $item['code'] }}
@@ -247,9 +249,13 @@
 
                 @foreach ($orders as $order)
                     @php
-                        $paidAmount = ($order->payment_status === 'paid') ? $order->total_amount : ($order->paid_amount ?? 0);
-                        $debtAmount = max($order->total_amount - $paidAmount, 0);
+                        // Payable Amount = Order Total - Return Offset (theo đơn).
+                        $payableAmount = max($order->total_amount - \App\Services\DebtService::returnAdjustedByOrder((int) $order->id), 0);
+                        $paidAmount = ($order->payment_status === 'paid') ? $payableAmount : ($order->paid_amount ?? 0);
+                        // Outstanding Debt = Payable Amount - Paid Amount.
+                        $debtAmount = max($payableAmount - $paidAmount, 0);
                     @endphp
+
                     <tr class="hover:bg-gray-50">
                         <td class="px-2 py-2 whitespace-nowrap text-center">
                             {{ $orders->perPage() * ($orders->currentPage() - 1) + $loop->iteration }}
@@ -281,8 +287,13 @@
                 @php
                     $totalAmount = $orders->sum('total_amount');
                     $totalPaid   = $orders->sum('paid_amount');
-                    $totalUnpaid = $orders->sum(fn($o) => max($o->total_amount - ($o->paid_amount ?? 0), 0));
+                    // Tổng công nợ = tổng (Payable Amount - Paid Amount).
+                    $totalUnpaid = $orders->sum(function ($o) {
+                        $payable = max($o->total_amount - \App\Services\DebtService::returnAdjustedByOrder((int) $o->id), 0);
+                        return max($payable - ($o->paid_amount ?? 0), 0);
+                    });
                 @endphp
+
                 <tr class="bg-gray-100 font-semibold">
                     <td class="px-2 py-2 text-right" colspan="4">Tổng</td>
                     <td class="px-2 py-2 text-right">{{ number_format($totalAmount, 0, ',', '.') }}</td>

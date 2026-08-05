@@ -62,9 +62,12 @@
 
                         $totalAmountUser = $debtOrders->sum('total_amount');
                         $totalPaidUser = $debtOrders->sum('paid_amount');
+                        // Công nợ = tổng (Payable Amount - Paid Amount). Payable = Order Total - Return Offset (theo đơn).
                         $totalUnpaidUser = $debtOrders->sum(function ($order) {
-                            return max($order->total_amount - ($order->paid_amount ?? 0), 0);
+                            $payable = max((float) $order->total_amount - \App\Services\DebtService::returnAdjustedByOrder((int) $order->id), 0);
+                            return max($payable - (float) ($order->paid_amount ?? 0), 0);
                         });
+
 
                         $totalPaid += $totalPaidUser;
                         $totalUnpaid += $totalUnpaidUser;

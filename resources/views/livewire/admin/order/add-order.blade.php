@@ -48,6 +48,8 @@
                             <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
                         @enderror
                     </div>
+
+
                     <div class="col-span-4 sm:col-span-1" wire:key="order-note-container">
                         <label class="block text-sm font-medium leading-6 text-gray-900">Ghi chú</label>
                         <div class="mt-2">
@@ -72,9 +74,13 @@
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider text-left">Sản phẩm</th>
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-left">Mẫu</th>
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-24 text-left">Size</th>
-                               
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-32 text-right">Số lượng</th>
+                                @if($has_return_order)
+                                <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-32 text-right">Đã trả</th>
+                                <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-32 text-right">Còn lại</th>
+                                @endif
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-32 text-right">Đơn giá</th>
+
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-32 text-right">Thành tiền</th>
                                 <th scope="col" class="px-2 py-4 text-xs font-medium text-gray-700 uppercase tracking-wider w-28 text-center"></th>
                             </tr>
@@ -82,7 +88,7 @@
                         <tbody class="bg-white divide-y divide-gray-200 text-sm	">
                             @if (count($order_details) == 0)
                                 <tr>
-                                    <td class="px-2 py-2 whitespace-nowrap text-center" colspan="9">Không có dữ liệu</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-center" colspan="10">Không có dữ liệu</td>
                                 </tr>
                             @endif
                             @foreach ($order_details as $index => $order_detail)
@@ -97,13 +103,21 @@
                                     <td class="px-2 py-2 whitespace-nowrap text-left">
                                         {{ is_object($order_detail) ? ($order_detail->size_name ?? '') : ($order_detail['size_name'] ?? $order_detail['product_size']['size'] ?? '') }}
                                     </td>
-                                
                                     <td class="px-2 py-2 whitespace-nowrap text-right">
                                         {{$order_detail['quantity']}}
                                     </td>
+                                    @if($has_return_order)
+                                    <td class="px-2 py-2 whitespace-nowrap text-right">
+                                        0
+                                    </td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-right">
+                                        {{$order_detail['quantity']}}
+                                    </td>
+                                    @endif
                                     <td class="px-2 py-2 whitespace-nowrap text-right">
                                         {{number_format($order_detail['unit_price'])}}
                                     </td>
+
                                     <td class="px-2 py-2 whitespace-nowrap text-right">
                                         {{number_format($order_detail['total_amount'])}}
                                     </td>
@@ -124,18 +138,22 @@
                                     <td class="px-2 py-2 whitespace-nowrap text-center"></td>
                                     <td class="px-2 py-2 whitespace-nowrap text-left" colspan="3"><b>Tổng cộng</b></td>
                                     <td class="px-2 py-2 whitespace-nowrap text-right"><b>{{ $total_quantity }}</b></td>
+                                    @if($has_return_order)
+                                    <td class="px-2 py-2 whitespace-nowrap text-right"><b>0</b></td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-right"><b>{{ $total_quantity }}</b></td>
+                                    @endif
                                     <td class="px-2 py-2 whitespace-nowrap text-right"></td>
                                     <td class="px-2 py-2 whitespace-nowrap text-right"></td>
                                     <td class="px-2 py-2 whitespace-nowrap text-center"></td>
                                 </tr>
+
                             @endif
                         </tbody>
                     </table>
                 </div>
                 <table class="min-w-full divide-y divide-gray-200">
                     <tbody>
-                    <tr wire:key="edit-row-subtotal">
-
+                    <tr wire:key="add-row-subtotal">
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
                         <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider text-left" colspan="2"><b>Tổng tiền hàng</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
@@ -143,10 +161,9 @@
                             <input wire:model="subtotal_amount" type="hidden" name="subtotal_amount" id="subtotal_amount" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-right">
                         </td>
                     </tr>
-                    <tr wire:key="edit-row-discount">
+                    <tr wire:key="add-row-discount">
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
                         <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left"><b>Giảm giá</b></td>
-                        
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
                             <div class="flex items-center">
                                 <input wire:model.change="discount_percentage" type="number" name="discount_percentage" id="discount_percentage" class="block w-24 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-right">
@@ -158,46 +175,60 @@
                             <input wire:model="discount_amount" type="hidden" name="discount_amount" id="discount_amount">
                         </td>
                     </tr>
-                   
-                    <tr style="display: none;" wire:key="edit-row-subtotal-temp">
+                    <tr style="display: none;" wire:key="add-row-subtotal-temp">
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
-                        <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" ><b>Tạm tính</b></td>
+                        <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left"><b>Tạm tính</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
                             <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-sm">{{number_format($grandtotal_amount)}}</span>
                             <input wire:model="grandtotal_amount" type="hidden" name="grandtotal_amount" id="grandtotal_amount">
                         </td>
                     </tr>
-                    <tr style="display: none;" wire:key="edit-row-shipping">
+                    <tr style="display: none;" wire:key="add-row-shipping">
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
                         <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left"><b>Phí ship</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
                             <input wire:model.change="shipping_amount" type="text" name="shipping_amount" id="shipping_amount" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-right">
                         </td>
                     </tr>
-                    <tr wire:key="edit-row-total-amount">
+                    <tr wire:key="add-row-total-amount">
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
                         <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Thành tiền</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
                             <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-sm">{{number_format($total_amount)}}</span>
                             <input wire:model="total_amount" type="hidden" name="total_amount" id="total_amount">
                         </td>
-                    </tr>                    
-                    <tr wire:key="edit-row-paid-amount">
+                    </tr>
+                    <tr wire:key="add-row-payable-amount">
+                        <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
+                        <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Số tiền phải trả</b></td>
+                        <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
+                            <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-sm">{{ number_format($payable_amount) }}</span>
+                        </td>
+                    </tr>
+                    <tr wire:key="add-row-paid-amount">
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
                         <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Đã thanh toán</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
-                            @if($payment_status === 'partial')
-                                <div wire:key="edit-paid-amount-input-container">
-                                    <input wire:model.change="paid_amount" type="number" min="0" max="{{ $total_amount }}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 sm:text-sm sm:leading-6 text-right">
-                                    @error('paid_amount') <div class="mt-1 text-sm text-red-600 normal-case">{{ $message }}</div> @enderror
-                                </div>
-                            @else
-                                <span wire:key="edit-paid-amount-text" class="px-3 py-2 whitespace-nowrap text-right font-bold text-sm">{{ number_format($paid_amount) }}</span>
-                            @endif
+                            <div wire:key="add-paid-amount-input-container">
+                                <input wire:model.change="paid_amount" type="number" min="0" max="{{ $payable_amount }}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 sm:text-sm sm:leading-6 text-right">
+                                @error('paid_amount') <div class="mt-1 text-sm text-red-600 normal-case">{{ $message }}</div> @enderror
+                            </div>
                         </td>
                     </tr>
+
+
+                    @if($has_return_order)
+                    <tr wire:key="add-row-return-adjusted">
+                        <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
+                        <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Tiền trả hàng đã cấn trừ công nợ</b></td>
+                        <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
+                            <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-sm">{{ number_format($total_return_adjusted) }}</span>
+                        </td>
+                    </tr>
+                    @endif
                     @if($payment_status === 'paid')
-                    <tr wire:key="edit-row-remaining">
+
+                    <tr wire:key="add-row-remaining">
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
                         <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Còn lại</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
@@ -205,14 +236,14 @@
                         </td>
                     </tr>
                     @elseif(in_array($payment_status, ['partial', 'unpaid']))
-                    <tr wire:key="edit-row-debt-amount">
+                    <tr wire:key="add-row-debt-amount">
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
                         <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Nợ phát sinh</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
                             <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-sm">{{ number_format($debt_amount) }}</span>
                         </td>
                     </tr>
-                    <tr wire:key="edit-row-total-debt">
+                    <tr wire:key="add-row-total-debt">
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
                         <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left" colspan="2"><b>Tổng nợ khách hàng</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
@@ -234,11 +265,10 @@
         @endif
     </form>
 
-    
     <div wire:ignore>
         <button id="modal_success" data-modal-target="popup-modal" data-modal-toggle="popup-modal" class="hidden block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="button">
         </button>
-        
+
         <div id="popup-modal" tabindex="-1" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
             <div class="relative p-4 w-full max-w-md max-h-full">
                 <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
@@ -258,7 +288,6 @@
             </div>
         </div>
     </div>
-    
 
     @script
         <script>
@@ -268,8 +297,7 @@
                 const title = document.getElementById('title-message')
                 const message = document.getElementById('message')
                 const svgIcon = document.getElementById('svg-icon')
-               
-                
+
                 setTimeout(() => {
                     message.innerHTML = event.detail[0].message
                     title.innerHTML = event.detail[0].title
@@ -278,17 +306,15 @@
                     }else{
                         svgIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
                     }
-                    btn.click(); 
+                    btn.click();
                 }, 100);
                 if(event.detail[0].type == 'success'){
-                    if(typeof event.detail[0].action == 'string' && event.detail[0].action == 'update'){
-                        window.location.href = window.location.href.replace('/edit/', '/view/');
-                    }else{
-                        setTimeout(() => {
-                            window.location.href = "{{route('admin.orders')}}";
-                        }, 1000);
-                    }
+                    // Sau khi lưu thành công, quay về trang danh sách đơn hàng.
+                    setTimeout(() => {
+                        window.location.href = "{{route('admin.orders')}}";
+                    }, 1000);
                 }
+
             })
             window.addEventListener('confirmOrderSave', event => {
                 const data = event.detail[0]
@@ -299,9 +325,3 @@
         </script>
     @endscript
 </div>
-
-
-
-
-
-

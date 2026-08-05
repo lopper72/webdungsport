@@ -18,6 +18,8 @@ class SalesReturn extends Model
         'refund_amount',
         'status',
         'note',
+        'cancelled_by',
+        'cancelled_date',
     ];
 
     protected $casts = [
@@ -25,15 +27,23 @@ class SalesReturn extends Model
         'total_amount' => 'decimal:2',
         'debt_adjustment_amount' => 'decimal:2',
         'refund_amount' => 'decimal:2',
+        'cancelled_date' => 'datetime',
     ];
+
 
     public function customer()
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
+    public function cancelledBy()
+    {
+        return $this->belongsTo(User::class, 'cancelled_by', 'id');
+    }
+
     public function details()
     {
         return $this->hasMany(SalesReturnDetail::class, 'sales_return_id', 'id');
     }
+
 }
