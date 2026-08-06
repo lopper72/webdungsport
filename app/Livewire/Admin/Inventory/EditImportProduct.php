@@ -9,6 +9,7 @@ use App\Models\OrderDetail;
 use App\Models\Product;
 use App\Models\ProductDetail;
 use App\Models\ProductSize;
+use App\Models\SalesReturnDetail;
 
 class EditImportProduct extends Component
 {
@@ -92,42 +93,41 @@ class EditImportProduct extends Component
     }
 
     public function copyImportProductDetail($index){
+        // Thêm dòng mới vào cuối mảng, copy giá trị từ dòng được click
+        $new_index = $this->import_product_detail_count;
         $this->import_product_detail_count++;
-        if(isset($this->product_id[$index])){
-            $firstProductId = array_slice($this->product_id, 0, $index+1);
-            $secondProductId = array_slice($this->product_id, $index+1);
-            $this->product_id = array_merge($firstProductId, [$this->product_id[$index]], $secondProductId);
 
-            $firstProductDetailList = array_slice($this->product_detail_list, 0, $index+1);
-            $secondProductDetailList = array_slice($this->product_detail_list, $index+1);
-            $this->product_detail_list = array_merge($firstProductDetailList, [$this->product_detail_list[$index]], $secondProductDetailList);
-            
-            $firstProductDetailId = array_slice($this->product_detail_id, 0, $index+1);
-            $secondProductDetailId = array_slice($this->product_detail_id, $index+1);
-            $this->product_detail_id = array_merge($firstProductDetailId, [$this->product_detail_id[$index]], $secondProductDetailId);
+        // Copy product_id từ dòng được click
+        $this->product_id[$new_index] = isset($this->product_id[$index]) ? $this->product_id[$index] : "";
 
-            $firstSizeList = array_slice($this->product_size_list, 0, $index+1);
-            $secondSizeList = array_slice($this->product_size_list, $index+1);
-            $this->product_size_list = array_merge($firstSizeList, [$this->product_size_list[$index]], $secondSizeList);
+        // Copy product_detail_id từ dòng được click
+        $this->product_detail_id[$new_index] = isset($this->product_detail_id[$index]) ? $this->product_detail_id[$index] : "";
 
-            // Set size to empty when copying
-            $firstSizeId = array_slice($this->size_id, 0, $index+1);
-            $secondSizeId = array_slice($this->size_id, $index+1);
-            $this->size_id = array_merge($firstSizeId, [""], $secondSizeId);
-
-            // Set quantity to empty when copying
-            $firstQnty = array_slice($this->import_product_detail_qnty, 0, $index+1);
-            $secondQnty = array_slice($this->import_product_detail_qnty, $index+1);
-            $this->import_product_detail_qnty = array_merge($firstQnty, [""], $secondQnty);
-
-            $firstDisabled = array_slice($this->disabled_select_yn, 0, $index+1);
-            $secondDisabled = array_slice($this->disabled_select_yn, $index+1);
-            $this->disabled_select_yn = array_merge($firstDisabled, ["n"], $secondDisabled);
-
-            $firstIds = array_slice($this->import_product_detail_ids, 0, $index+1);
-            $secondIds = array_slice($this->import_product_detail_ids, $index+1);
-            $this->import_product_detail_ids = array_merge($firstIds, [null], $secondIds);
+        // Copy danh sách product_detail từ dòng được click
+        if (isset($this->product_detail_list[$index])) {
+            $this->product_detail_list[$new_index] = $this->product_detail_list[$index];
+        } else {
+            $this->product_detail_list[$new_index] = [];
         }
+
+        // Copy danh sách size từ dòng được click
+        if (isset($this->product_size_list[$index])) {
+            $this->product_size_list[$new_index] = $this->product_size_list[$index];
+        } else {
+            $this->product_size_list[$new_index] = [];
+        }
+
+        // Reset size về rỗng (người dùng phải chọn lại)
+        $this->size_id[$new_index] = "";
+
+        // Reset quantity về rỗng (người dùng phải nhập lại)
+        $this->import_product_detail_qnty[$new_index] = "";
+
+        // Dòng mới không bị disabled
+        $this->disabled_select_yn[$new_index] = "n";
+
+        // Dòng mới chưa có id trong DB
+        $this->import_product_detail_ids[$new_index] = null;
     }
 
     public function pullDropdown($index){
@@ -205,14 +205,16 @@ class EditImportProduct extends Component
             }
         }
 
-        // Bước 2: Tổng hợp số lượng nhập theo product/size TỪ TẤT CẢ IMPORT PRODUCTS
+        // Bước 2: Tổng hợp số lượng nhập theo product/size
+        // Gộp tổng nhập từ TẤT CẢ các phiếu nhập khác (không đổi) + phiếu hiện tại (sau khi sửa)
+        // Chỉ validate các sản phẩm/size đang có trong phiếu hiện tại
         $import_quantities_by_product = [];
-        
-        // Lấy tất cả import product details từ database (trừ các item đã bị xóa và trừ transaction hiện tại)
+
+        // Lấy tổng nhập từ các phiếu khác (trừ phiếu hiện tại và các item đã xóa)
         $all_import_details = ImportProductDetail::whereNotIn('id', $this->deleted_detail_ids)
             ->where('import_product_id', '!=', $this->id)
             ->get();
-        
+
         foreach ($all_import_details as $detail) {
             $key = $detail->product_id.'_'.$detail->product_detail_id.'_'.($detail->size_id ?? 'null');
             if (!isset($import_quantities_by_product[$key])) {
@@ -226,8 +228,8 @@ class EditImportProduct extends Component
             }
             $import_quantities_by_product[$key]['total_import_quantity'] += $detail->quantity;
         }
-        
-        // Cộng thêm số lượng từ transaction hiện tại (từ form)
+
+        // Cộng thêm số lượng từ phiếu hiện tại (từ form, sau khi sửa)
         for ($i = 0; $i < $this->import_product_detail_count; $i++) {
             $product_id = isset($this->product_id[$i]) ? $this->product_id[$i] : null;
             $product_detail_id = isset($this->product_detail_id[$i]) ? $this->product_detail_id[$i] : null;
@@ -250,18 +252,41 @@ class EditImportProduct extends Component
             }
         }
 
-        // Bước 3: So sánh tổng số lượng nhập với số lượng đơn hàng đã đặt
+        // Bước 3: Kiểm tra tồn kho không âm sau khi sửa phiếu nhập
+        // Tồn kho = Tổng nhập (tất cả phiếu) + Tổng trả hàng - Tổng đã bán (đơn completed)
+        // Điều kiện: Tổng nhập + Tổng trả >= Tổng đã bán (không để tồn kho âm)
         foreach ($import_quantities_by_product as $key => $import_data) {
-            $ordered_quantity = OrderDetail::where('product_id', $import_data['product_id'])
-                ->where('product_detail_id', $import_data['product_detail_id'])
-                ->when($import_data['size_id'], function($query) use ($import_data) {
-                    return $query->where('size_id', $import_data['size_id']);
-                })
-                ->sum('quantity');
+            // Chỉ validate các sản phẩm/size đang có trong phiếu hiện tại
+            if (empty($import_data['rows'])) {
+                continue;
+            }
 
-            if ($import_data['total_import_quantity'] < $ordered_quantity) {
+            // Tổng đã bán: chỉ tính đơn completed (không tính đơn hủy)
+            $total_sold = OrderDetail::join('orders', 'order_detail.order_id', '=', 'orders.id')
+                ->where('orders.status', 'completed')
+                ->where('order_detail.product_id', $import_data['product_id'])
+                ->where('order_detail.product_detail_id', $import_data['product_detail_id'])
+                ->when($import_data['size_id'], function($query) use ($import_data) {
+                    return $query->where('order_detail.size_id', $import_data['size_id']);
+                })
+                ->sum('order_detail.quantity');
+
+            // Tổng trả hàng: chỉ tính phiếu trả không hủy
+            $total_returned = SalesReturnDetail::join('sales_returns', 'sales_return_details.sales_return_id', '=', 'sales_returns.id')
+                ->where('sales_returns.status', '<>', 'canceled')
+                ->where('sales_return_details.product_id', $import_data['product_id'])
+                ->where('sales_return_details.product_detail_id', $import_data['product_detail_id'])
+                ->when($import_data['size_id'], function($query) use ($import_data) {
+                    return $query->where('sales_return_details.size_id', $import_data['size_id']);
+                })
+                ->sum('sales_return_details.quantity');
+
+            // Tồn kho sau khi sửa = Tổng nhập (tất cả phiếu) + Tổng trả - Tổng đã bán
+            $available_after = $import_data['total_import_quantity'] + $total_returned - $total_sold;
+
+            if ($available_after < 0) {
                 $rows_text = !empty($import_data['rows']) ? 'Dòng '.implode(', ', $import_data['rows']).': ' : '';
-                $validation_errors[] = $rows_text.'Tổng số lượng nhập ('.$import_data['total_import_quantity'].') không được nhỏ hơn số lượng đơn hàng đã đặt ('.$ordered_quantity.').';
+                $validation_errors[] = $rows_text.'Tồn kho sẽ bị âm sau khi sửa. Tổng nhập ('.$import_data['total_import_quantity'].') + trả hàng ('.$total_returned.') không đủ cho số lượng đã bán ('.$total_sold.').';
             }
         }
 
