@@ -1,5 +1,5 @@
 <div>
-    <form wire:submit="store">
+    <form wire:submit="confirmBeforeStore">
         <div class="space-y-8">
             <div class="grid gap-x-6 gap-y-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
                 <div>
@@ -124,4 +124,19 @@
             <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white tracking-widest hover:bg-blue-600 active:bg-blue-700 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">Trả hàng</button>
         </div>
     </form>
+
+    @script
+    <script>
+        window.addEventListener('confirmSalesReturnSave', event => {
+            const data = event.detail[0]
+            const message = 'Bạn có chắc muốn trả hàng/hoàn tiền?\n\n'
+                + 'Tổng tiền trả: ' + data.totalAmount + ' đ\n'
+                + 'Cấn trừ công nợ: ' + data.debtAdjustmentAmount + ' đ\n'
+                + 'Cần hoàn tiền: ' + data.refundAmount + ' đ'
+            if (window.confirm(message)) {
+                $wire.confirmStore()
+            }
+        })
+    </script>
+    @endscript
 </div>

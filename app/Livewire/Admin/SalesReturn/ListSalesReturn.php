@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Admin\SalesReturn;
 
+use App\Models\Order;
 use App\Models\SalesReturn;
+use App\Models\SalesReturnDetail;
 use App\Services\DebtService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -50,6 +52,29 @@ class ListSalesReturn extends Component
             $salesReturn->cancelled_by = Auth::id();
             $salesReturn->cancelled_date = now();
             $salesReturn->save();
+
+            // Cập nhật lại trạng thái thanh toán của các đơn hàng bị ảnh hưởng.
+            // Hủy phiếu trả làm tăng Payable Amount (Return Offset giảm), nên
+            // trạng thái thanh toán phải được tính lại từ Paid Amount và
+            // Payable Amount mới để phản ánh đúng thực tế.
+            $affectedOrderIds = SalesReturnDetail::where('sales_return_id', $salesReturn->id)
+                ->pluck('order_id')
+                ->unique();
+
+            foreach ($affectedOrderIds as $affectedOrderId) {
+                $order = Order::find($affectedOrderId);
+                if (!$order) {
+                    continue;
+                }
+
+                $payable = max((float) $order->total_amount - DebtService::returnAdjustedByOrder((int) $order->id), 0);
+                $paid = (float) ($order->paid_amount ?? 0);
+                $newStatus = DebtService::paymentStatus($paid, $payable);
+
+                if ($order->payment_status !== $newStatus) {
+                    $order->update(['payment_status' => $newStatus]);
+                }
+            }
         });
 
         session()->flash('message', 'Đã hủy phiếu trả hàng. Mọi ảnh hưởng đến công nợ, tồn kho và đơn hàng đã được hoàn tác.');

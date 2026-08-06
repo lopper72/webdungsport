@@ -77,9 +77,10 @@ class DebtService
     /**
      * Trạng thái thanh toán chỉ phụ thuộc vào số tiền đã thanh toán thực tế.
      *
-     * - Paid Amount == 0                       => UNPAID
-     * - 0 < Paid Amount < Payable Amount       => PARTIALLY PAID
-     * - Paid Amount >= Payable Amount          => PAID
+     * - Payable Amount <= 0 (đã trả hết hàng)  => PAID (không còn gì phải trả)
+     * - Paid Amount == 0                        => UNPAID
+     * - 0 < Paid Amount < Payable Amount        => PARTIALLY PAID
+     * - Paid Amount >= Payable Amount           => PAID
      *
      * @param float $paidAmount    Số tiền đã thanh toán thực tế
      * @param float $payableAmount Số tiền phải trả (Order Total - Return Offset)
@@ -87,6 +88,12 @@ class DebtService
      */
     public static function paymentStatus(float $paidAmount, float $payableAmount): string
     {
+        // Nếu không còn gì phải trả (ví dụ trả hết hàng làm Payable = 0),
+        // đơn hàng coi như đã thanh toán xong, không còn công nợ.
+        if ($payableAmount <= 0) {
+            return 'paid';
+        }
+
         if ($paidAmount <= 0) {
             return 'unpaid';
         }

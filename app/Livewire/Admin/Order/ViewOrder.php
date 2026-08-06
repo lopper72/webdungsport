@@ -263,9 +263,11 @@ class ViewOrder extends Component
         $this->total_return_adjusted = DebtService::returnAdjustedByOrder((int) $this->order_id);
         $this->payable_amount = max((float) $this->total_amount - (float) $this->total_return_adjusted, 0);
 
-        $this->paid_amount = $this->payment_status === 'paid'
-            ? $this->payable_amount
-            : ($this->payment_status === 'unpaid' ? 0 : ($this->order->paid_amount ?? 0));
+        // Paid Amount là số tiền khách đã trả thực tế (không đổi khi trả hàng).
+        $this->paid_amount = (float) ($this->order->paid_amount ?? 0);
+        // Trạng thái thanh toán được tính động từ số tiền thực tế
+        // (Paid Amount và Payable Amount) để phản ánh đúng sau khi trả hàng.
+        $this->payment_status = DebtService::paymentStatus($this->paid_amount, $this->payable_amount);
         $this->customers = $customers;
 
 

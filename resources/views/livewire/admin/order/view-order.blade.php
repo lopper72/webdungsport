@@ -134,10 +134,10 @@
                                     </td>
                                     @if($has_return_order)
                                     <td class="px-2 py-2 whitespace-nowrap text-right">
-                                        {{ $returned_quantities[$order_detail['id']] ?? 0 }}
+                                        {{ $returned_quantities[$order_detail['id'] ?? 0] ?? 0 }}
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-right">
-                                        {{ max((int) $order_detail['quantity'] - (int) ($returned_quantities[$order_detail['id']] ?? 0), 0) }}
+                                        {{ max((int) $order_detail['quantity'] - (int) ($returned_quantities[$order_detail['id'] ?? 0] ?? 0), 0) }}
                                     </td>
                                     @endif
                                     <td class="px-2 py-2 whitespace-nowrap text-right">
