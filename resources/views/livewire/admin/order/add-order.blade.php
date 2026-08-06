@@ -166,15 +166,18 @@
                         <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left"><b>Giảm giá</b></td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
                             <div class="flex items-center">
-                                <input wire:model.change="discount_percentage" type="number" name="discount_percentage" id="discount_percentage" class="block w-24 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-right">
+                                <input wire:model.change="discount_percentage" type="number" min="0" max="100" name="discount_percentage" id="discount_percentage" class="block w-24 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-right">
                                 <span class="text-sm font-medium text-gray-700 ml-2">%</span>
                             </div>
                         </td>
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-right">
-                            <span class="px-3 py-2 whitespace-nowrap text-right font-bold text-sm">{{number_format($discount_amount)}}</span>
-                            <input wire:model="discount_amount" type="hidden" name="discount_amount" id="discount_amount">
+                            <div class="flex items-center justify-end">
+                                <input wire:model.change="discount_amount" type="number" min="0" max="{{ $subtotal_amount }}" name="discount_amount" id="discount_amount" class="block w-40 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-right">
+                                <span class="text-sm font-medium text-gray-700 ml-2"></span>
+                            </div>
                         </td>
                     </tr>
+
                     <tr style="display: none;" wire:key="add-row-subtotal-temp">
                         <td scope="col" class="px-2 py-2 text-xs font-medium text-gray-700 uppercase tracking-wider text-center"></td>
                         <td scope="col" class="px-2 py-2 text-sm font-medium text-gray-700 uppercase tracking-wider w-40 text-left"><b>Tạm tính</b></td>

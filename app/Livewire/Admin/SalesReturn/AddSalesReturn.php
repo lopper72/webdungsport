@@ -125,7 +125,63 @@ class AddSalesReturn extends Component
         return max((float) $this->totalAmount - (float) $this->debtAdjustmentAmount, 0);
     }
 
-    public function store()
+    /**
+     * Bước 1: Kiểm tra dữ liệu và hiển thị hộp thoại xác nhận trước khi lưu.
+     * Vì trả hàng/hoàn tiền là thao tác tài chính quan trọng, cần người dùng
+     * xác nhận rõ ràng trước khi thực hiện.
+     */
+    public function confirmBeforeStore()
+    {
+        $this->validate([
+            'code' => 'required|unique:sales_returns,code',
+            'customer_id' => 'required|exists:users,id',
+            'return_date' => 'required|date',
+        ], [
+            'customer_id.required' => 'Vui lòng chọn khách hàng.',
+            'return_date.required' => 'Vui lòng chọn ngày trả hàng.',
+            'code.unique' => 'Mã phiếu trả đã tồn tại.',
+        ]);
+
+        $selectedRows = [];
+
+        foreach ($this->rows as $row) {
+            $detailId = $row['order_detail_id'];
+            $quantity = (int) ($this->return_quantities[$detailId] ?? 0);
+            $price = (float) ($this->return_prices[$detailId] ?? 0);
+
+            if ($quantity <= 0) {
+                continue;
+            }
+
+            if ($quantity > $row['remaining_quantity']) {
+                $this->addError("return_quantities.$detailId", 'Số lượng trả không được lớn hơn số lượng còn được trả.');
+                return;
+            }
+
+            if ($price < 0) {
+                $this->addError("return_prices.$detailId", 'Giá trả không được âm.');
+                return;
+            }
+
+            $selectedRows[] = [$row, $quantity, $price];
+        }
+
+        if (empty($selectedRows)) {
+            $this->addError('rows', 'Vui lòng nhập ít nhất một sản phẩm trả hàng.');
+            return;
+        }
+
+        $this->dispatch('confirmSalesReturnSave', [
+            'totalAmount' => number_format($this->totalAmount, 0, ',', '.'),
+            'debtAdjustmentAmount' => number_format($this->debtAdjustmentAmount, 0, ',', '.'),
+            'refundAmount' => number_format($this->refundAmount, 0, ',', '.'),
+        ]);
+    }
+
+    /**
+     * Bước 2: Người dùng đã xác nhận → thực hiện lưu phiếu trả hàng.
+     */
+    public function confirmStore()
     {
         $this->validate([
             'code' => 'required|unique:sales_returns,code',
@@ -197,10 +253,27 @@ class AddSalesReturn extends Component
                 ]);
             }
 
-            // Lưu ý: Việc trả hàng KHÔNG tự động thay đổi trạng thái thanh toán.
-            // Tiền trả hàng được ghi nhận qua debt_adjustment_amount (Return Offset)
-            // và sẽ được cấn trừ vào công nợ khi tính Payable Amount.
-            // Không tăng paid_amount của các đơn hàng ở đây.
+            // Cập nhật lại trạng thái thanh toán của các đơn hàng bị ảnh hưởng.
+            // Trả hàng làm giảm Payable Amount (Return Offset), nên trạng thái
+            // thanh toán phải được tính lại từ Paid Amount và Payable Amount mới.
+            // Ví dụ: trả hết hàng → Payable = 0 → nếu khách đã trả tiền thì trạng thái
+            // trở thành "Đã thanh toán", nếu chưa trả tiền thì "Chưa thanh toán"
+            // (nhưng không còn công nợ vì Payable = 0).
+            $affectedOrderIds = collect($selectedRows)->pluck('0.order_id')->unique();
+            foreach ($affectedOrderIds as $affectedOrderId) {
+                $order = Order::find($affectedOrderId);
+                if (!$order) {
+                    continue;
+                }
+
+                $payable = max((float) $order->total_amount - DebtService::returnAdjustedByOrder((int) $order->id), 0);
+                $paid = (float) ($order->paid_amount ?? 0);
+                $newStatus = DebtService::paymentStatus($paid, $payable);
+
+                if ($order->payment_status !== $newStatus) {
+                    $order->update(['payment_status' => $newStatus]);
+                }
+            }
         });
 
 

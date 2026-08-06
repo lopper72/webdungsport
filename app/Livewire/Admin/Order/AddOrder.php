@@ -35,7 +35,9 @@ class AddOrder extends Component
     public $grandtotal_notpay  = 0;
     public $grandtotal_all     = 0;
     public $discount_percentage = 0;
+    public $discount_input_mode = 'percent';
     public $paid_amount        = 0;
+
     public $payable_amount     = 0;
     public $debt_amount        = 0;
     public $previous_debt      = 0;
@@ -107,13 +109,21 @@ class AddOrder extends Component
 
     public function updatedDiscountPercentage()
     {
+        $this->discount_input_mode = 'percent';
         $this->calTotalAmountDiscount();
+    }
+
+    public function updatedDiscountAmount()
+    {
+        $this->discount_input_mode = 'amount';
+        $this->calTotalAmount();
     }
 
     public function updatedShippingAmount()
     {
         $this->calTotalAmount();
     }
+
 
     // -------------------------------------------------------------------------
     // Product list
@@ -402,18 +412,31 @@ class AddOrder extends Component
                 'timeout' => 3000,
             ]);
             $this->discount_percentage = 0;
-            return;
         }
         $this->calTotalAmount();
     }
 
     public function calTotalAmount()
     {
-        $this->discount_amount   = round($this->subtotal_amount * $this->discount_percentage / 100, 3);
-        $this->grandtotal_amount = $this->subtotal_amount - $this->discount_amount;
+        $subtotal = (float) $this->subtotal_amount;
+
+        if ($this->discount_input_mode === 'amount') {
+            // Người dùng nhập trực tiếp số tiền giảm → tính lại %.
+            $this->discount_amount = min(max((float) $this->discount_amount, 0), $subtotal);
+            $this->discount_percentage = $subtotal > 0
+                ? round($this->discount_amount / $subtotal * 100, 2)
+                : 0;
+        } else {
+            // Người dùng nhập % → tính lại số tiền giảm.
+            $this->discount_percentage = min(max((float) $this->discount_percentage, 0), 100);
+            $this->discount_amount = round($subtotal * $this->discount_percentage / 100, 3);
+        }
+
+        $this->grandtotal_amount = $subtotal - $this->discount_amount;
         $this->total_amount      = $this->grandtotal_amount + $this->shipping_amount;
         $this->syncPaymentAmounts();
     }
+
 
     // -------------------------------------------------------------------------
     // Debt & payment — ported từ EditOrder
@@ -454,6 +477,13 @@ class AddOrder extends Component
     {
         // Payable Amount = Order Total - Return Offset.
         $this->payable_amount = max((float) $this->total_amount - (float) $this->total_return_adjusted, 0);
+
+        // Nếu trạng thái là "Đã thanh toán", tự động đồng bộ Paid Amount = Payable Amount.
+        // Điều này đảm bảo khi thêm/sửa/xóa item (làm thay đổi Payable Amount),
+        // Paid Amount luôn khớp với Payable Amount khi đã thanh toán toàn bộ.
+        if ($this->payment_status === 'paid') {
+            $this->paid_amount = $this->payable_amount;
+        }
 
         $this->paid_amount = min((float) $this->paid_amount, (float) $this->payable_amount);
         $this->paid_amount = max((float) $this->paid_amount, 0);

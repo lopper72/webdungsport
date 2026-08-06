@@ -72,19 +72,19 @@
                                                 <div>
                                                     @php
                                                         if (array_key_exists($index,$disabled_select_yn) && $disabled_select_yn[$index] == "y") {
-                                                            $convert = "";
                                                             $show_button_copy_yn = "n";
                                                         }else {
-                                                            $convert = "convert-to-dropdown";
                                                             $show_button_copy_yn = "y";
                                                         }
                                                     @endphp
-                                                    <select @if (array_key_exists($index,$disabled_select_yn) && $disabled_select_yn[$index] == "y") disabled @endif wire:model="product_id.{{$index}}" wire:change="pullDropdown({{$index}})" id="product_id{{$index}}" name="product_id{{$index}}" class="{{$convert}} block w-full rounded-md border-0 px-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                                                        <option value="">-</option>
-                                                        @foreach ($products as $product)
-                                                            <option value="{{ $product->id }}">{{ $product->name }}</option>
-                                                        @endforeach
-                                                    </select>
+                                                    @include('livewire.admin.inventory.partials.product-search-select', [
+                                                        'products' => $products,
+                                                        'selectedId' => $product_id[$index] ?? '',
+                                                        'selectId' => 'product_id'.$index,
+                                                        'wireModel' => 'product_id.'.$index,
+                                                        'index' => $index,
+                                                        'disabled' => (array_key_exists($index, $disabled_select_yn) && $disabled_select_yn[$index] == "y"),
+                                                    ])
                                                 </div>
                                                 @error('product_id.' .$index)
                                                     <div class="mt-1 text-sm text-red-600">{{ $message }}</div>

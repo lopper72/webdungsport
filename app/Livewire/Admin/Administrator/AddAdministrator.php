@@ -129,7 +129,9 @@ class AddAdministrator extends Component
                     ['id' => 12, 'name' => 'Báo Cáo Bán Hàng Theo Khách Hàng', 'code' => 'TMDTBCKH', 'active_yn' => 'y', 'active_mac_yn' => 'n'],
                 ]],
                 ['id' => 12, 'name' => 'Đơn Hàng', 'code' => 'TMDTDH', 'active_yn' => 'y', 'active_mac_yn' => 'n'],
+                ['id' => 12, 'name' => 'Trả Hàng', 'code' => 'return_order', 'active_yn' => 'y', 'active_mac_yn' => 'n'],
                 ['id' => 12, 'name' => 'Danh Mục', 'code' => 'TMDTDM', 'active_yn' => 'y', 'active_mac_yn' => 'n'],
+
                 ['id' => 12, 'name' => 'Nhãn Hàng', 'code' => 'TMDTNH', 'active_yn' => 'y', 'active_mac_yn' => 'n'],
                 ['id' => 12, 'name' => 'Sản Phẩm', 'code' => 'TMDTSP', 'active_yn' => 'y', 'active_mac_yn' => 'n'],
                 ['id' => 12, 'name' => 'Tồn Kho', 'code' => 'TMDTTK', 'active_yn' => 'y', 'active_mac_yn' => 'n'],
