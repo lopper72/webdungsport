@@ -478,6 +478,13 @@ class AddOrder extends Component
         // Payable Amount = Order Total - Return Offset.
         $this->payable_amount = max((float) $this->total_amount - (float) $this->total_return_adjusted, 0);
 
+        // Nếu trạng thái là "Đã thanh toán", tự động đồng bộ Paid Amount = Payable Amount.
+        // Điều này đảm bảo khi thêm/sửa/xóa item (làm thay đổi Payable Amount),
+        // Paid Amount luôn khớp với Payable Amount khi đã thanh toán toàn bộ.
+        if ($this->payment_status === 'paid') {
+            $this->paid_amount = $this->payable_amount;
+        }
+
         $this->paid_amount = min((float) $this->paid_amount, (float) $this->payable_amount);
         $this->paid_amount = max((float) $this->paid_amount, 0);
 
