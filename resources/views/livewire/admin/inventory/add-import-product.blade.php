@@ -56,19 +56,19 @@
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th scope="col" class="px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider w-20 text-left">STT</th>
-                                        <th scope="col" class="px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[250px] text-left">Sản phẩm</th>
-                                        <th scope="col" class="px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider w-80 text-left">Mẫu sản phẩm</th>
-                                        <th scope="col" class="px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider w-64 text-left">Size</th>
-                                        <th scope="col" class="px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider w-64 text-left">Số lượng</th>
-                                        <th scope="col" class="px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider w-20 text-left"></th>
+                                        <th scope="col" class="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-20 text-left">STT</th>
+                                        <th scope="col" class="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[250px] text-left">Sản phẩm</th>
+                                        <th scope="col" class="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-96 text-left">Mẫu sản phẩm</th>
+                                        <th scope="col" class="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-64 text-left">Size</th>
+                                        <th scope="col" class="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-64 text-left">Số lượng</th>
+                                        <th scope="col" class="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-20 text-left"></th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200 text-sm">
                                     @for ($index = 0; $index < $import_product_detail_count; $index++)
                                         <tr>
-                                            <td class="px-6 py-2 whitespace-nowrap text-left" valign="top">{{{$index+1}}}</td>
-                                            <td class="px-6 py-2 whitespace-nowrap text-left" valign="top">
+                                            <td class="px-3 py-1.5 whitespace-nowrap text-left" valign="top">{{{$index+1}}}</td>
+                                            <td class="px-3 py-1.5 whitespace-nowrap text-left" valign="top">
                                                 <div>
                                                     @php
                                                         if (array_key_exists($index,$disabled_select_yn) && $disabled_select_yn[$index] == "y") {
@@ -90,7 +90,7 @@
                                                     <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
                                                 @enderror
                                             </td>
-                                            <td class="px-6 py-2 whitespace-nowrap text-left" valign="top">
+                                            <td class="px-3 py-1.5 whitespace-nowrap text-left" valign="top">
                                                 <div>
                                                     <select wire:model="product_detail_id.{{$index}}" id="product_detail_id{{$index}}" name="product_detail_id{{$index}}" autocomplete="product_detail_id{{$index}}" class="convert-to-dropdown block w-full rounded-md border-0 px-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
                                                         <option value="">-</option>
@@ -105,7 +105,7 @@
                                                     <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
                                                 @enderror
                                             </td>
-                                            <td class="px-6 py-2 whitespace-nowrap text-left" valign="top">
+                                            <td class="px-3 py-1.5 whitespace-nowrap text-left" valign="top">
                                                 <div>
                                                     <select wire:model="size_id.{{$index}}" id="size_id{{$index}}" name="size_id{{$index}}" autocomplete="size_id{{$index}}" class="convert-to-dropdown block w-full rounded-md border-0 px-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
                                                         <option value="">-</option>
@@ -120,13 +120,13 @@
                                                     <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
                                                 @enderror
                                             </td>
-                                            <td class="px-6 py-2 whitespace-nowrap text-left" valign="top">
+                                            <td class="px-3 py-1.5 whitespace-nowrap text-left" valign="top">
                                                 <input wire:model.live="import_product_detail_qnty.{{$index}}" type="number" min="0" name="import_product_detail_qnty{{$index}}" id="import_product_detail_qnty{{$index}}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
                                                 @error('import_product_detail_qnty.' .$index)
                                                     <div class="mt-1 text-sm text-red-600">{{ $message }}</div>
                                                 @enderror
                                             </td>
-                                            <td class="px-6 py-2 whitespace-nowrap text-center" valign="top">
+                                            <td class="px-3 py-1.5 whitespace-nowrap text-center" valign="top">
                                                 <div class="flex items-center justify-center gap-2">
                                                     @if ($show_button_copy_yn == "y")
                                                         <button type="button" wire:click="copyImportProductDetail({{$index}})" class="inline-flex items-center px-2 py-2 bg-green-500 border border-transparent rounded-md font-semibold text-xs text-white tracking-widest hover:bg-green-600 active:bg-green-700 focus:outline-none focus:border-green-900 focus:ring ring-green-300 disabled:opacity-25 transition ease-in-out duration-150">
@@ -149,11 +149,11 @@
                                 </tbody>
                                 <tfoot class="bg-gray-50">
                                     <tr>
-                                        <td colspan="4" class="px-6 py-4 text-sm font-semibold text-gray-700 text-right">T&#7893;ng s&#7889; l&#432;&#7907;ng</td>
-                                        <td class="px-6 py-4 text-sm font-semibold text-gray-900 text-left">
+                                        <td colspan="4" class="px-3 py-2 text-sm font-semibold text-gray-700 text-right">T&#7893;ng s&#7889; l&#432;&#7907;ng</td>
+                                        <td class="px-3 py-2 text-sm font-semibold text-gray-900 text-left">
                                             {{ collect($import_product_detail_qnty)->take($import_product_detail_count)->sum(fn($quantity) => is_numeric($quantity) ? (int) $quantity : 0) }}
                                         </td>
-                                        <td class="px-6 py-4"></td>
+                                        <td class="px-3 py-2"></td>
                                     </tr>
                                 </tfoot>
                             </table>
