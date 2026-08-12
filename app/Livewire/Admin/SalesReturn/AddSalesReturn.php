@@ -313,7 +313,7 @@ class AddSalesReturn extends Component
                 ];
             }
 
-            $productLabel = trim(($detail->product?->code ? $detail->product->code . ' - ' : '') . ($detail->product?->name ?? ''));
+            $productLabel = trim($detail->product?->name ?? '');
             $orders[$orderId]['matched_products'][$detail->product_id] = $productLabel !== '' ? $productLabel : 'SP #' . $detail->product_id;
             $orders[$orderId]['remaining_quantity'] += $remainingQuantity;
 
@@ -433,6 +433,10 @@ class AddSalesReturn extends Component
             return $date->format('d/m/Y');
         }
 
-        return (string) $date;
+        try {
+            return \Carbon\Carbon::parse($date)->format('d/m/Y');
+        } catch (\Throwable $exception) {
+            return (string) $date;
+        }
     }
 }

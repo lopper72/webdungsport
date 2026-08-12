@@ -78,22 +78,21 @@
                     <thead class="bg-gray-200">
                         <tr>
                             <th scope="col" class="px-2 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider w-12 text-center">Chọn</th>
-                            <th scope="col" class="px-2 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-left">Đơn hàng</th>
-                            <th scope="col" class="px-2 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider w-32 text-left">Ngày đơn</th>
+                            <th scope="col" class="px-2 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider w-48 text-left">Đơn hàng</th>
+                            <th scope="col" class="px-2 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider w-28 text-left">Ngày đơn</th>
                             <th scope="col" class="px-2 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider w-40 text-left">Trạng thái thanh toán</th>
-                            <th scope="col" class="px-2 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left">Sản phẩm có thể trả</th>
-                            <th scope="col" class="px-2 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider w-28 text-right">Còn trả</th>
+                            <th scope="col" class="px-2 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider min-w-96 text-left">Sản phẩm có thể trả</th>
                             <th scope="col" class="px-2 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider w-36 text-right">Tổng đơn</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200 text-sm">
                         @if ($customer_id === '')
                             <tr>
-                                <td class="px-2 py-3 text-center text-gray-500" colspan="7">Vui lòng chọn khách hàng</td>
+                                <td class="px-2 py-3 text-center text-gray-500" colspan="6">Vui lòng chọn khách hàng</td>
                             </tr>
                         @elseif ($orders->isEmpty())
                             <tr>
-                                <td class="px-2 py-3 text-center text-gray-500" colspan="7">Không có đơn còn hàng được trả</td>
+                                <td class="px-2 py-3 text-center text-gray-500" colspan="6">Không có đơn còn hàng được trả</td>
                             </tr>
                         @endif
 
@@ -143,7 +142,6 @@
                                     @endswitch
                                 </td>
                                 <td class="px-2 py-2 text-left">{{ implode(', ', $order['matched_products']) }}</td>
-                                <td class="px-2 py-2 whitespace-nowrap text-right">{{ number_format($order['remaining_quantity'], 0, ',', '.') }}</td>
                                 <td class="px-2 py-2 whitespace-nowrap text-right">{{ number_format($order['total_amount'], 0, ',', '.') }}</td>
                             </tr>
                         @endforeach
