@@ -92,7 +92,7 @@
                                             </td>
                                             <td class="px-3 py-1.5 whitespace-nowrap text-left" valign="top">
                                                 <div>
-                                                    <select wire:model="product_detail_id.{{$index}}" id="product_detail_id{{$index}}" name="product_detail_id{{$index}}" autocomplete="product_detail_id{{$index}}" class="convert-to-dropdown block w-full rounded-md border-0 px-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                                                    <select wire:model.live="product_detail_id.{{$index}}" id="product_detail_id{{$index}}" name="product_detail_id{{$index}}" autocomplete="product_detail_id{{$index}}" class="convert-to-dropdown block w-full rounded-md border-0 px-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
                                                         <option value="">-</option>
                                                         @if ($product_detail_list && array_key_exists($index,$product_detail_list))
                                                             @foreach($product_detail_list[$index] as $product_detail)
@@ -107,7 +107,7 @@
                                             </td>
                                             <td class="px-3 py-1.5 whitespace-nowrap text-left" valign="top">
                                                 <div>
-                                                    <select wire:model="size_id.{{$index}}" id="size_id{{$index}}" name="size_id{{$index}}" autocomplete="size_id{{$index}}" class="convert-to-dropdown block w-full rounded-md border-0 px-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                                                    <select wire:model.live="size_id.{{$index}}" id="size_id{{$index}}" name="size_id{{$index}}" autocomplete="size_id{{$index}}" class="convert-to-dropdown block w-full rounded-md border-0 px-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
                                                         <option value="">-</option>
                                                         @if ($product_size_list && array_key_exists($index,$product_size_list))
                                                             @foreach($product_size_list[$index] as $product_size)

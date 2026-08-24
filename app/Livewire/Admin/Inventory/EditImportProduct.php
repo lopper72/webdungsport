@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Admin\Inventory;
 
-use Livewire\Component;
 use App\Models\ImportProduct;
 use App\Models\ImportProductDetail;
 use App\Models\OrderDetail;
@@ -10,6 +9,7 @@ use App\Models\Product;
 use App\Models\ProductDetail;
 use App\Models\ProductSize;
 use App\Models\SalesReturnDetail;
+use Livewire\Component;
 
 class EditImportProduct extends Component
 {
@@ -32,130 +32,97 @@ class EditImportProduct extends Component
     public function mount($id)
     {
         $this->id = $id;
-        $import_product = ImportProduct::find($id);
-        $import_product_details = ImportProductDetail::where('import_product_id', $id)->get();
-        
-        $this->import_product_code = $import_product->code;
-        $this->import_product_name = $import_product->name;
-        $this->existing_detail_count = count($import_product_details);
-        
-        foreach ($import_product_details as $index => $detail) {
+        $importProduct = ImportProduct::findOrFail($id);
+        $details = ImportProductDetail::where('import_product_id', $id)->get();
+
+        $this->import_product_code = $importProduct->code;
+        $this->import_product_name = $importProduct->name;
+        $this->existing_detail_count = count($details);
+
+        foreach ($details as $index => $detail) {
             $this->import_product_detail_ids[$index] = $detail->id;
             $this->import_product_detail_qnty[$index] = $detail->quantity;
             $this->product_id[$index] = $detail->product_id;
             $this->product_detail_id[$index] = $detail->product_detail_id;
             $this->size_id[$index] = $detail->size_id;
             $this->disabled_select_yn[$index] = "n";
-            
             $this->product_detail_list[$index] = ProductDetail::where('product_id', $detail->product_id)->get();
-            $this->product_size_list[$index] = ProductSize::where('product_id', $detail->product_id)->get();
+            $this->product_size_list[$index] = $this->loadSizeOptions($detail->product_id, $detail->size_id);
         }
-        
-        $this->import_product_detail_count = count($import_product_details);
+
+        $this->import_product_detail_count = count($details);
     }
 
-    public function addImportProductDetail(){
-        $new_index = $this->import_product_detail_count;
-        $this->import_product_detail_count++;
-        
-        // Khởi tạo tất cả các trường là rỗng khi thêm mới
-        $this->product_id[$new_index] = "";
-        $this->product_detail_id[$new_index] = "";
-        $this->size_id[$new_index] = "";
-        $this->import_product_detail_qnty[$new_index] = "";
-        $this->disabled_select_yn[$new_index] = "n";
-        $this->import_product_detail_ids[$new_index] = null;
-        $this->product_detail_list[$new_index] = [];
-        $this->product_size_list[$new_index] = [];
-    }
-
-    public function removeImportProductDetail($index){
-        // Chỉ cho phép xóa item mới (không phải item cũ)
-        if($index >= $this->existing_detail_count && $this->import_product_detail_count > 0){
-            // Remove item from arrays
-            array_splice($this->product_id, $index, 1);
-            array_splice($this->product_detail_id, $index, 1);
-            array_splice($this->size_id, $index, 1);
-            array_splice($this->import_product_detail_qnty, $index, 1);
-            array_splice($this->disabled_select_yn, $index, 1);
-            array_splice($this->import_product_detail_ids, $index, 1);
-            
-            // Remove from detail lists
-            if(isset($this->product_detail_list) && is_array($this->product_detail_list)){
-                array_splice($this->product_detail_list, $index, 1);
-            }
-            if(isset($this->product_size_list) && is_array($this->product_size_list)){
-                array_splice($this->product_size_list, $index, 1);
-            }
-            
-            $this->import_product_detail_count--;
-        }
-    }
-
-    public function copyImportProductDetail($index){
-        // Thêm dòng mới vào cuối mảng, copy giá trị từ dòng được click
-        $new_index = $this->import_product_detail_count;
+    public function addImportProductDetail()
+    {
+        $newIndex = $this->import_product_detail_count;
         $this->import_product_detail_count++;
 
-        // Copy product_id từ dòng được click
-        $this->product_id[$new_index] = isset($this->product_id[$index]) ? $this->product_id[$index] : "";
-
-        // Copy product_detail_id từ dòng được click
-        $this->product_detail_id[$new_index] = isset($this->product_detail_id[$index]) ? $this->product_detail_id[$index] : "";
-
-        // Copy danh sách product_detail từ dòng được click
-        if (isset($this->product_detail_list[$index])) {
-            $this->product_detail_list[$new_index] = $this->product_detail_list[$index];
-        } else {
-            $this->product_detail_list[$new_index] = [];
-        }
-
-        // Copy danh sách size từ dòng được click
-        if (isset($this->product_size_list[$index])) {
-            $this->product_size_list[$new_index] = $this->product_size_list[$index];
-        } else {
-            $this->product_size_list[$new_index] = [];
-        }
-
-        // Reset size về rỗng (người dùng phải chọn lại)
-        $this->size_id[$new_index] = "";
-
-        // Reset quantity về rỗng (người dùng phải nhập lại)
-        $this->import_product_detail_qnty[$new_index] = "";
-
-        // Dòng mới không bị disabled
-        $this->disabled_select_yn[$new_index] = "n";
-
-        // Dòng mới chưa có id trong DB
-        $this->import_product_detail_ids[$new_index] = null;
+        $this->product_id[$newIndex] = "";
+        $this->product_detail_id[$newIndex] = "";
+        $this->size_id[$newIndex] = "";
+        $this->import_product_detail_qnty[$newIndex] = "";
+        $this->disabled_select_yn[$newIndex] = "n";
+        $this->import_product_detail_ids[$newIndex] = null;
+        $this->product_detail_list[$newIndex] = [];
+        $this->product_size_list[$newIndex] = [];
     }
 
-    public function pullDropdown($index){
-        $product_id = $this->product_id[$index];
+    public function removeImportProductDetail($index)
+    {
+        if ($index < $this->existing_detail_count || $this->import_product_detail_count <= 0) {
+            return;
+        }
+
+        array_splice($this->product_id, $index, 1);
+        array_splice($this->product_detail_id, $index, 1);
+        array_splice($this->size_id, $index, 1);
+        array_splice($this->import_product_detail_qnty, $index, 1);
+        array_splice($this->disabled_select_yn, $index, 1);
+        array_splice($this->import_product_detail_ids, $index, 1);
+
+        if (is_array($this->product_detail_list)) {
+            array_splice($this->product_detail_list, $index, 1);
+        }
+
+        if (is_array($this->product_size_list)) {
+            array_splice($this->product_size_list, $index, 1);
+        }
+
+        $this->import_product_detail_count--;
+    }
+
+    public function copyImportProductDetail($index)
+    {
+        $newIndex = $this->import_product_detail_count;
+        $this->import_product_detail_count++;
+
+        $this->product_id[$newIndex] = $this->product_id[$index] ?? "";
+        $this->product_detail_id[$newIndex] = $this->product_detail_id[$index] ?? "";
+        $this->product_detail_list[$newIndex] = $this->product_detail_list[$index] ?? [];
+        $this->product_size_list[$newIndex] = $this->product_size_list[$index] ?? [];
+        $this->size_id[$newIndex] = "";
+        $this->import_product_detail_qnty[$newIndex] = "";
+        $this->disabled_select_yn[$newIndex] = "n";
+        $this->import_product_detail_ids[$newIndex] = null;
+    }
+
+    public function pullDropdown($index)
+    {
+        $productId = $this->product_id[$index] ?? '';
         $this->product_detail_id[$index] = "";
         $this->size_id[$index] = "";
-        $product_detail = ProductDetail::where('product_id',$product_id)->get();
-        $product_size = ProductSize::where('product_id',$product_id)->get();
-        $this->product_detail_list[$index] = $product_detail;
-        $this->product_size_list[$index] = $product_size;
+        $this->product_detail_list[$index] = $productId ? ProductDetail::where('product_id', $productId)->get() : collect();
+        $this->product_size_list[$index] = $productId ? ProductSize::where('product_id', $productId)->get() : collect();
     }
 
     public function update2ImportProduct()
     {
-        // DEBUG: Log để kiểm tra method被 gọi多少次
-        \Log::info('update2ImportProduct called', [
-            'isProcessing' => $this->isProcessing,
-            'import_product_detail_count' => $this->import_product_detail_count,
-            'timestamp' => now()->toDateTimeString()
-        ]);
-        
-        // Ngăn chặn việc xử lý多次 nếu đang trong quá trình xử lý
         if ($this->isProcessing) {
-            \Log::info('update2ImportProduct blocked - already processing');
             return;
         }
+
         $this->isProcessing = true;
-        \Log::info('update2ImportProduct - set isProcessing to true');
 
         $this->validate([
             'import_product_name' => 'required',
@@ -164,203 +131,252 @@ class EditImportProduct extends Component
         ]);
 
         if ($this->import_product_detail_count == 0) {
-            $this->dispatch('successImportProduct', [
-                'title' => 'Thất bại',
-                'message' => 'Bạn chưa chọn sản phẩm, vui lòng nhập lại.',
-                'type' => 'error',
-                'timeout' => 3000
-            ]);
+            $this->dispatchImportMessage('Thất bại', 'Bạn chưa chọn sản phẩm, vui lòng nhập lại.', 'error');
+            $this->isProcessing = false;
             return;
         }
 
-        // Validate tất cả các item (cả cũ và mới)
-        $validation_errors = [];
-        
-        // Bước 1: Validate số lượng và sản phẩm cho từng dòng
+        $validationErrors = array_merge(
+            $this->validateImportDetails(),
+            $this->validateInventoryAfterUpdate()
+        );
+
+        if (!empty($validationErrors)) {
+            $this->dispatchImportMessage('Thất bại', implode('<br>', $validationErrors), 'error');
+            $this->isProcessing = false;
+            return;
+        }
+
+        if (!empty($this->deleted_detail_ids)) {
+            ImportProductDetail::whereIn('id', $this->deleted_detail_ids)->delete();
+        }
+
+        $importProduct = ImportProduct::findOrFail($this->id);
+        $importProduct->name = $this->import_product_name;
+        $importProduct->save();
+
         for ($i = 0; $i < $this->import_product_detail_count; $i++) {
-            
-            // Validate số lượng thủ công - cho phép số lượng bằng 0
-            if (!isset($this->import_product_detail_qnty[$i]) || $this->import_product_detail_qnty[$i] === '' || $this->import_product_detail_qnty[$i] === null) {
-                $validation_errors[] = 'Dòng '.($i+1).': Vui lòng nhập số lượng.';
-            } elseif (!is_numeric($this->import_product_detail_qnty[$i])) {
-                $validation_errors[] = 'Dòng '.($i+1).': Số lượng phải là số.';
-            } elseif ($this->import_product_detail_qnty[$i] < 0) {
-                $validation_errors[] = 'Dòng '.($i+1).': Số lượng không được nhỏ hơn 0.';
-            }
-            
+            $detailId = $this->import_product_detail_ids[$i] ?? null;
+            $detail = $detailId ? ImportProductDetail::find($detailId) : new ImportProductDetail();
 
-            // Validate size cho tất cả các item
-            if (!isset($this->size_id[$i]) || empty($this->size_id[$i])) {
-                $validation_errors[] = 'Dòng '.($i+1).': Vui lòng chọn size.';
-            }
-
-            // Validate sản phẩm cho item mới
-            if ($i >= $this->existing_detail_count) {
-                if (!isset($this->product_id[$i]) || empty($this->product_id[$i])) {
-                    $validation_errors[] = 'Dòng '.($i+1).': Vui lòng chọn sản phẩm.';
-                }
-                if (!isset($this->product_detail_id[$i]) || empty($this->product_detail_id[$i])) {
-                    $validation_errors[] = 'Dòng '.($i+1).': Vui lòng chọn mẫu sản phẩm.';
-                }
-            }
-        }
-
-        // Bước 2: Tổng hợp số lượng nhập theo product/size
-        // Gộp tổng nhập từ TẤT CẢ các phiếu nhập khác (không đổi) + phiếu hiện tại (sau khi sửa)
-        // Chỉ validate các sản phẩm/size đang có trong phiếu hiện tại
-        $import_quantities_by_product = [];
-
-        // Lấy tổng nhập từ các phiếu khác (trừ phiếu hiện tại và các item đã xóa)
-        $all_import_details = ImportProductDetail::whereNotIn('id', $this->deleted_detail_ids)
-            ->where('import_product_id', '!=', $this->id)
-            ->get();
-
-        foreach ($all_import_details as $detail) {
-            $key = $detail->product_id.'_'.$detail->product_detail_id.'_'.($detail->size_id ?? 'null');
-            if (!isset($import_quantities_by_product[$key])) {
-                $import_quantities_by_product[$key] = [
-                    'product_id' => $detail->product_id,
-                    'product_detail_id' => $detail->product_detail_id,
-                    'size_id' => $detail->size_id,
-                    'total_import_quantity' => 0,
-                    'rows' => []
-                ];
-            }
-            $import_quantities_by_product[$key]['total_import_quantity'] += $detail->quantity;
-        }
-
-        // Cộng thêm số lượng từ phiếu hiện tại (từ form, sau khi sửa)
-        for ($i = 0; $i < $this->import_product_detail_count; $i++) {
-            $product_id = isset($this->product_id[$i]) ? $this->product_id[$i] : null;
-            $product_detail_id = isset($this->product_detail_id[$i]) ? $this->product_detail_id[$i] : null;
-            $size_id = isset($this->size_id[$i]) ? $this->size_id[$i] : null;
-            $quantity = isset($this->import_product_detail_qnty[$i]) ? (int)$this->import_product_detail_qnty[$i] : 0;
-
-            if ($product_id && $product_detail_id) {
-                $key = $product_id.'_'.$product_detail_id.'_'.($size_id ?? 'null');
-                if (!isset($import_quantities_by_product[$key])) {
-                    $import_quantities_by_product[$key] = [
-                        'product_id' => $product_id,
-                        'product_detail_id' => $product_detail_id,
-                        'size_id' => $size_id,
-                        'total_import_quantity' => 0,
-                        'rows' => []
-                    ];
-                }
-                $import_quantities_by_product[$key]['total_import_quantity'] += $quantity;
-                $import_quantities_by_product[$key]['rows'][] = $i + 1;
-            }
-        }
-
-        // Bước 3: Kiểm tra tồn kho không âm sau khi sửa phiếu nhập
-        // Tồn kho = Tổng nhập (tất cả phiếu) + Tổng trả hàng - Tổng đã bán (đơn completed)
-        // Điều kiện: Tổng nhập + Tổng trả >= Tổng đã bán (không để tồn kho âm)
-        foreach ($import_quantities_by_product as $key => $import_data) {
-            // Chỉ validate các sản phẩm/size đang có trong phiếu hiện tại
-            if (empty($import_data['rows'])) {
+            if (!$detail) {
                 continue;
             }
 
-            // Tổng đã bán: chỉ tính đơn completed (không tính đơn hủy)
-            $total_sold = OrderDetail::join('orders', 'order_detail.order_id', '=', 'orders.id')
-                ->where('orders.status', 'completed')
-                ->where('order_detail.product_id', $import_data['product_id'])
-                ->where('order_detail.product_detail_id', $import_data['product_detail_id'])
-                ->when($import_data['size_id'], function($query) use ($import_data) {
-                    return $query->where('order_detail.size_id', $import_data['size_id']);
-                })
-                ->sum('order_detail.quantity');
-
-            // Tổng trả hàng: chỉ tính phiếu trả không hủy
-            $total_returned = SalesReturnDetail::join('sales_returns', 'sales_return_details.sales_return_id', '=', 'sales_returns.id')
-                ->where('sales_returns.status', '<>', 'canceled')
-                ->where('sales_return_details.product_id', $import_data['product_id'])
-                ->where('sales_return_details.product_detail_id', $import_data['product_detail_id'])
-                ->when($import_data['size_id'], function($query) use ($import_data) {
-                    return $query->where('sales_return_details.size_id', $import_data['size_id']);
-                })
-                ->sum('sales_return_details.quantity');
-
-            // Tồn kho sau khi sửa = Tổng nhập (tất cả phiếu) + Tổng trả - Tổng đã bán
-            $available_after = $import_data['total_import_quantity'] + $total_returned - $total_sold;
-
-            if ($available_after < 0) {
-                $rows_text = !empty($import_data['rows']) ? 'Dòng '.implode(', ', $import_data['rows']).': ' : '';
-                $validation_errors[] = $rows_text.'Tồn kho sẽ bị âm sau khi sửa. Tổng nhập ('.$import_data['total_import_quantity'].') + trả hàng ('.$total_returned.') không đủ cho số lượng đã bán ('.$total_sold.').';
-            }
+            $detail->import_product_id = $this->id;
+            $detail->product_id = $this->product_id[$i];
+            $detail->product_detail_id = $this->product_detail_id[$i];
+            $detail->size_id = $this->size_id[$i] ?? null;
+            $detail->quantity = $this->import_product_detail_qnty[$i];
+            $detail->save();
         }
 
+        $this->dispatchImportMessage('Thành công', 'Cập nhật nhập hàng thành công.', 'success');
+        $this->isProcessing = false;
 
-        if (!empty($validation_errors)) {
-            $this->dispatch('successImportProduct', [
-                'title' => 'Thất bại',
-                'message' => implode('<br>', $validation_errors),
-                'type' => 'error',
-                'timeout' => 3000
-            ]);
-            $this->isProcessing = false;
-            return;
-        }
-        else {
-             // Xóa các item đã đánh dấu xóa
-            if(!empty($this->deleted_detail_ids)){
-                ImportProductDetail::whereIn('id', $this->deleted_detail_ids)->delete();
-            }
-
-            // Cập nhật thông tin import product
-            $import_product = ImportProduct::find($this->id);
-            $import_product->name = $this->import_product_name;
-            $import_product->save();
-
-            // Cập nhật chi tiết hiện có (chỉ những item còn lại)
-            $existing_details = ImportProductDetail::where('import_product_id', $this->id)->get();
-            foreach ($existing_details as $detail) {
-                // Tìm index của detail này trong mảng hiện tại
-                $current_index = array_search($detail->id, $this->import_product_detail_ids);
-                if($current_index !== false && isset($this->import_product_detail_qnty[$current_index])){
-                    $detail->quantity = $this->import_product_detail_qnty[$current_index];
-                    $detail->save();
-                }
-            }
-
-            // Thêm mới các item
-            for ($i = $this->existing_detail_count; $i < $this->import_product_detail_count; $i++) {
-                $new_detail = new ImportProductDetail();
-                $new_detail->import_product_id = $this->id;
-                $new_detail->product_id = $this->product_id[$i];
-                $new_detail->product_detail_id = $this->product_detail_id[$i];
-                if(isset($this->size_id[$i])){
-                    $new_detail->size_id = $this->size_id[$i];
-                }
-                $new_detail->quantity = $this->import_product_detail_qnty[$i];
-                $new_detail->save();
-            }
-
-            $this->dispatch('successImportProduct', [
-                'title' => 'Thành công',
-                'message' => 'Cập nhật nhập hàng thành công.',
-                'type' => 'success',
-                'timeout' => 3000
-            ]);
-            $this->isProcessing = false;
-            return redirect()->route('admin.import-product');
-        }
-
-       
+        return redirect()->route('admin.import-product');
     }
 
     public function render()
     {
-        $import_product = ImportProduct::find($this->id);
-        $import_product_details = ImportProductDetail::where('import_product_id', $this->id)->get();
-        $products = Product::all();
         return view('livewire.admin.inventory.edit-import-product', [
-            'import_product' => $import_product, 
-            'import_product_details' => $import_product_details,
-            'products' => $products,
+            'import_product' => ImportProduct::find($this->id),
+            'import_product_details' => ImportProductDetail::where('import_product_id', $this->id)->get(),
+            'products' => Product::all(),
             'product_detail_list' => $this->product_detail_list,
             'product_size_list' => $this->product_size_list,
-            'disabled_select_yn' => $this->disabled_select_yn
+            'disabled_select_yn' => $this->disabled_select_yn,
+        ]);
+    }
+
+    /**
+     * Load size options for a row. When the stored size_id references a
+     * product_size that no longer belongs to the row's product (orphaned /
+     * mismatched data), still prepend it so the dropdown keeps showing the
+     * currently saved value instead of appearing empty.
+     */
+    private function loadSizeOptions($productId, $sizeId)
+    {
+        $sizes = ProductSize::where('product_id', $productId)->get();
+
+        if ($sizeId !== null && $sizeId !== '' && !$sizes->contains('id', $sizeId)) {
+            $orphan = ProductSize::find($sizeId);
+            if ($orphan) {
+                $sizes->prepend($orphan);
+            }
+        }
+
+        return $sizes;
+    }
+
+    private function validateImportDetails(): array
+    {
+        $errors = [];
+
+        for ($i = 0; $i < $this->import_product_detail_count; $i++) {
+            $row = $i + 1;
+            $productId = $this->product_id[$i] ?? null;
+            $productDetailId = $this->product_detail_id[$i] ?? null;
+            $sizeId = $this->size_id[$i] ?? null;
+            $quantity = $this->import_product_detail_qnty[$i] ?? null;
+
+            if (!$productId || !Product::whereKey($productId)->exists()) {
+                $errors[] = "Dòng {$row}: Vui lòng chọn sản phẩm hợp lệ.";
+                continue;
+            }
+
+            if (!$productDetailId || !ProductDetail::where('id', $productDetailId)->where('product_id', $productId)->exists()) {
+                $errors[] = "Dòng {$row}: Vui lòng chọn mẫu sản phẩm hợp lệ.";
+            }
+
+            if ($quantity === '' || $quantity === null) {
+                $errors[] = "Dòng {$row}: Vui lòng nhập số lượng.";
+                $this->addError('import_product_detail_qnty.' . $i, 'Vui lòng nhập số lượng.');
+            } elseif (!is_numeric($quantity)) {
+                $errors[] = "Dòng {$row}: Số lượng phải là số.";
+                $this->addError('import_product_detail_qnty.' . $i, 'Số lượng phải là số.');
+            } elseif ((float) $quantity < 0) {
+                $errors[] = "Dòng {$row}: Số lượng không được nhỏ hơn 0.";
+                $this->addError('import_product_detail_qnty.' . $i, 'Số lượng không được nhỏ hơn 0.');
+            }
+
+            if (ProductSize::where('product_id', $productId)->exists()) {
+                if (!$sizeId || !ProductSize::where('id', $sizeId)->where('product_id', $productId)->exists()) {
+                    $errors[] = "Dòng {$row}: Vui lòng chọn size hợp lệ.";
+                    $this->addError('size_id.' . $i, 'Vui lòng chọn size.');
+                }
+            }
+        }
+
+        return $errors;
+    }
+
+    private function validateInventoryAfterUpdate(): array
+    {
+        $errors = [];
+        $importsByKey = [];
+        $affectedKeys = [];
+
+        $originalDetails = ImportProductDetail::where('import_product_id', $this->id)->get();
+        foreach ($originalDetails as $detail) {
+            $affectedKeys[$this->inventoryKey($detail->product_id, $detail->product_detail_id, $detail->size_id)] = [
+                'product_id' => $detail->product_id,
+                'product_detail_id' => $detail->product_detail_id,
+                'size_id' => $detail->size_id,
+                'rows' => [],
+            ];
+        }
+
+        $otherImportDetails = ImportProductDetail::whereNotIn('id', $this->deleted_detail_ids)
+            ->where('import_product_id', '!=', $this->id)
+            ->get();
+
+        foreach ($otherImportDetails as $detail) {
+            $this->addImportQuantity($importsByKey, $detail->product_id, $detail->product_detail_id, $detail->size_id, (int) $detail->quantity);
+        }
+
+        for ($i = 0; $i < $this->import_product_detail_count; $i++) {
+            $productId = $this->product_id[$i] ?? null;
+            $productDetailId = $this->product_detail_id[$i] ?? null;
+            $sizeId = $this->size_id[$i] ?? null;
+            $quantity = $this->import_product_detail_qnty[$i] ?? 0;
+
+            if (!$productId || !$productDetailId || !is_numeric($quantity)) {
+                continue;
+            }
+
+            $key = $this->inventoryKey($productId, $productDetailId, $sizeId);
+            $this->addImportQuantity($importsByKey, $productId, $productDetailId, $sizeId, (int) $quantity);
+
+            if (!isset($affectedKeys[$key])) {
+                $affectedKeys[$key] = [
+                    'product_id' => $productId,
+                    'product_detail_id' => $productDetailId,
+                    'size_id' => $sizeId,
+                    'rows' => [],
+                ];
+            }
+
+            $affectedKeys[$key]['rows'][] = $i + 1;
+        }
+
+        foreach ($affectedKeys as $key => $item) {
+            $totalImported = $importsByKey[$key]['quantity'] ?? 0;
+            $totalSold = $this->soldQuantity($item['product_id'], $item['product_detail_id'], $item['size_id']);
+            $totalReturned = $this->returnedQuantity($item['product_id'], $item['product_detail_id'], $item['size_id']);
+            $availableAfter = $totalImported + $totalReturned - $totalSold;
+
+            if ($availableAfter < 0) {
+                $rowsText = !empty($item['rows']) ? 'Dòng ' . implode(', ', $item['rows']) . ': ' : '';
+                $errors[] = $rowsText . 'Tồn kho sẽ bị âm sau khi sửa. Tổng nhập (' . $totalImported . ') + trả hàng (' . $totalReturned . ') không đủ cho số lượng đã bán (' . $totalSold . ').';
+            }
+        }
+
+        return $errors;
+    }
+
+    private function addImportQuantity(array &$importsByKey, $productId, $productDetailId, $sizeId, int $quantity): void
+    {
+        $key = $this->inventoryKey($productId, $productDetailId, $sizeId);
+
+        if (!isset($importsByKey[$key])) {
+            $importsByKey[$key] = [
+                'product_id' => $productId,
+                'product_detail_id' => $productDetailId,
+                'size_id' => $sizeId,
+                'quantity' => 0,
+            ];
+        }
+
+        $importsByKey[$key]['quantity'] += $quantity;
+    }
+
+    private function soldQuantity($productId, $productDetailId, $sizeId): int
+    {
+        $query = OrderDetail::join('orders', 'order_detail.order_id', '=', 'orders.id')
+            ->where('orders.status', 'completed')
+            ->where('order_detail.product_id', $productId)
+            ->where('order_detail.product_detail_id', $productDetailId);
+
+        $this->applySizeFilter($query, 'order_detail.size_id', $sizeId);
+
+        return (int) $query->sum('order_detail.quantity');
+    }
+
+    private function returnedQuantity($productId, $productDetailId, $sizeId): int
+    {
+        $query = SalesReturnDetail::join('sales_returns', 'sales_return_details.sales_return_id', '=', 'sales_returns.id')
+            ->where('sales_returns.status', '<>', 'canceled')
+            ->where('sales_return_details.product_id', $productId)
+            ->where('sales_return_details.product_detail_id', $productDetailId);
+
+        $this->applySizeFilter($query, 'sales_return_details.size_id', $sizeId);
+
+        return (int) $query->sum('sales_return_details.quantity');
+    }
+
+    private function applySizeFilter($query, string $column, $sizeId): void
+    {
+        if ($sizeId === null || $sizeId === '') {
+            $query->whereNull($column);
+            return;
+        }
+
+        $query->where($column, $sizeId);
+    }
+
+    private function inventoryKey($productId, $productDetailId, $sizeId): string
+    {
+        return $productId . '_' . $productDetailId . '_' . ($sizeId ?: 'null');
+    }
+
+    private function dispatchImportMessage(string $title, string $message, string $type): void
+    {
+        $this->dispatch('successImportProduct', [
+            'title' => $title,
+            'message' => $message,
+            'type' => $type,
+            'timeout' => 3000,
         ]);
     }
 }
