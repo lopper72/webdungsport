@@ -42,14 +42,14 @@
                     
                     <div class="mb-2 md:mb-4">
                         <span class="text-sm md:text-md font-bold text-gray-700 dark:text-gray-300 uppercase">Mẫu: <span class="text-red-600">{{$product_detail_selected->title}}</span></span>
-                        <div class="flex items-center mt-2">
+                        <div class="mt-2 grid grid-cols-5 gap-2 sm:flex sm:items-center sm:gap-0">
                             @foreach ($product_details as $product_detail)
                                 @if($product_detail->image != null)
                                     @php
                                         $imageThumbnailCheck = json_decode($product_detail->image);   
                                         $imageThumbnail = $imageThumbnailCheck[0];
                                     @endphp
-                                    <img wire:click="updateProductDetail({{$product_detail->id}})" class="image-detail mr-2 w-12 h-12 object-cover rounded-sm bg-gray-300 dark:bg-gray-700 cursor-pointer border lazyload {{ $product_detail->id == $product_detail_id_selected ? 'border-blue-700 border-2' : 'border-gray-500 border-0' }}" src="{{ asset('storage/images/products/' . $imageThumbnail) }}" alt="Product Image">
+                                    <img wire:click="updateProductDetail({{$product_detail->id}})" class="image-detail w-full h-14 sm:w-12 sm:h-12 sm:mr-2 object-cover rounded-sm bg-gray-300 dark:bg-gray-700 cursor-pointer border lazyload {{ $product_detail->id == $product_detail_id_selected ? 'border-blue-700 border-2' : 'border-gray-500 border-0' }}" src="{{ asset('storage/images/products/' . $imageThumbnail) }}" alt="Product Image">
                                 @endif
                             @endforeach
                         </div>
