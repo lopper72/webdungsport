@@ -69,13 +69,13 @@
     </div>
 </header>
 @unless (request()->routeIs('index'))
-<div id="menuMobi" class="absolute top-0 left-0 w-4/5 bg-white shadow-lg z-40 h-full ease-in-out duration-300 -translate-x-full lg:hidden">
-    <div class="flex justify-end w-full text-red-600 pr-2 pt-1">
+<div id="menuMobi" class="fixed inset-y-0 left-0 z-40 flex w-4/5 -translate-x-full flex-col bg-white shadow-lg duration-300 ease-in-out lg:hidden">
+    <div class="flex shrink-0 justify-end w-full text-red-600 pr-2 pt-1">
         <svg id="closeMenu" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-8">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
         </svg>
     </div>
-    <div class="pb-4 flex justify-center">
+    <div class="pb-4 flex shrink-0 justify-center">
         <a href="{{ route('index') }}">
             @if ($system_info->logo)
                 <img src="{{ asset('storage/images/systems/' . $system_info->logo) }}"class="h-16 w-auto lazyload" alt="Logo">
@@ -84,7 +84,7 @@
             @endif
         </a>
     </div>
-    <div class="px-4">
+    <div class="flex-1 overflow-y-auto px-4 pb-4" style="min-height: 0; overscroll-behavior: contain;">
         @foreach($categories as $category)
             <a href="{{route('collection',['slug'=>$category->slug])}}" class="flex items-center gap-2 p-2 text-gray-900 border-b">
                 <div class="size-8 rounded-full overflow-hidden">
