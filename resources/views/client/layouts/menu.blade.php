@@ -4,11 +4,13 @@
     </div>
     <div class="mx-auto max-w-full md:max-w-7xl px-2 lg:px-8">
         <div class="w-full flex flex-wrap lg:flex-nowrap justify-between items-center py-2">
+            @unless (request()->routeIs('index'))
             <a id="showMenu" href="javascript:void(0)" class="lg:hidden text-red-600">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                 </svg>
             </a>
+            @endunless
             <a href="{{ route('index') }}">
                 <span class="sr-only">Your Company</span>
                 @if ($system_info->logo)
@@ -66,6 +68,7 @@
         </div>
     </div>
 </header>
+@unless (request()->routeIs('index'))
 <div id="menuMobi" class="absolute top-0 left-0 w-4/5 bg-white shadow-lg z-40 h-full ease-in-out duration-300 -translate-x-full lg:hidden">
     <div class="flex justify-end w-full text-red-600 pr-2 pt-1">
         <svg id="closeMenu" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-8">
@@ -96,3 +99,4 @@
         @endforeach
     </div>
 </div>
+@endunless

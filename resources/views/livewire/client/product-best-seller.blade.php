@@ -21,7 +21,7 @@
                     <p class="pt-1 text-gray-900 font-medium text-xs uppercase">{{$product->product->code}}</p>
                     <p class="text-gray-900 font-medium">
                         @if(Auth::check())
-                            <span class="text-xs md:text-sm text-green-500">{{number_format($product->product->retail_price)}} VNĐ</span>
+                            <span class="text-xs md:text-sm text-green-500">{{number_format($product->product->storefrontPrice())}} VNĐ</span>
                         @else
                             <span class="text-xs text-red-500">Đăng nhập để xem giá</span>
                         @endif

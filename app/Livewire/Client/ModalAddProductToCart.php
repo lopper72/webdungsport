@@ -55,7 +55,7 @@ class ModalAddProductToCart extends ModalComponent
             $this->listProductAddedError[$size->id] = "";
         }
         if($this->mode == 'edit'){
-            $this->totalAmount =  $this->totalQuantity*$this->product->product->retail_price;
+            $this->totalAmount =  $this->totalQuantity*$this->product->product->storefrontPrice();
         }
     }
     public function addQuantity($product_size_id)
@@ -101,7 +101,7 @@ class ModalAddProductToCart extends ModalComponent
         foreach ($this->listProductAdded as $key => $value) {
             $this->totalQuantity += $value;
         }
-        $this->totalAmount =  $this->totalQuantity*$this->product->product->retail_price;
+        $this->totalAmount =  $this->totalQuantity*$this->product->product->storefrontPrice();
     }
 
     public function addToCart(){
@@ -134,6 +134,7 @@ class ModalAddProductToCart extends ModalComponent
                         $this->dispatch('alertError', [$available_quantity]);
                         return;
                     }
+                    $cart_item->unit_price_at_time = $this->product->product->storefrontPrice();
                     $cart_item->total_amount = $cart_item->unit_price_at_time * $cart_item->quantity;
                     $cart_item->save();
                 }else{
@@ -143,9 +144,9 @@ class ModalAddProductToCart extends ModalComponent
                     $cart_item->product_detail_id = $this->product_detail_id;
                     $cart_item->warehouse_id = $this->warehouse_id;
                     $cart_item->size_id = $key;
-                    $cart_item->unit_price_at_time = $this->product->product->retail_price;
+                    $cart_item->unit_price_at_time = $this->product->product->storefrontPrice();
                     $cart_item->quantity = $value;
-                    $cart_item->total_amount = $this->product->product->retail_price * $value;
+                    $cart_item->total_amount = $cart_item->unit_price_at_time * $value;
                     $cart_item->save();  
                 }
             }

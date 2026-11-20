@@ -5,6 +5,23 @@
 @section('content')
     @include('client.slider')
     @include('client.layouts.brand')
+    @if (count($categories) > 0)
+        <section class="mt-4 bg-white lg:hidden" aria-labelledby="mobile-category-heading">
+            <h2 id="mobile-category-heading" class="bg-red-600 px-2 py-3 text-sm font-bold text-white md:px-4">
+                Danh Mục Sản Phẩm
+            </h2>
+            <div class="grid grid-cols-2 gap-4 px-2 py-4 md:px-4">
+                @foreach ($categories as $category)
+                    <a href="{{ route('collection', ['slug' => $category->slug]) }}"
+                       class="flex flex-col items-start gap-2 text-left text-xs font-medium uppercase text-gray-900 hover:text-red-600">
+                        <img src="{{ $category->image ? asset('storage/images/categories/' . $category->image) : asset('library/images/image-not-found.jpg') }}"
+                             alt="" class="size-12 object-cover" loading="lazy">
+                        <span>{{ $category->name }}</span>
+                    </a>
+                @endforeach
+            </div>
+        </section>
+    @endif
     @if($best_seller_products->count() > 0)
         <section class="bg-white">
             <div class="container mx-auto flex items-center flex-wrap">
@@ -44,7 +61,7 @@
                             <p class="pt-1 text-gray-900 font-medium text-xs uppercase">{{$product->product->code}}</p>
                             <p class="text-gray-900 font-medium">
                                 @if(Auth::check())
-                                    <span class="text-xs md:text-sm text-green-500">{{number_format($product->product->retail_price)}} VNĐ</span>
+                                    <span class="text-xs md:text-sm text-green-500">{{number_format($product->product->storefrontPrice())}} VNĐ</span>
                                 @else
                                     <span class="text-xs text-red-500">Đăng nhập để xem giá</span>
                                 @endif

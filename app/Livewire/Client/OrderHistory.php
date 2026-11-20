@@ -31,6 +31,7 @@ class OrderHistory extends Component
             'order_detail.order_id',
             'order_detail.product_id',
             'order_detail.product_detail_id',
+            OrderDetail::raw('CASE WHEN MIN(order_detail.unit_price) = MAX(order_detail.unit_price) THEN MIN(order_detail.unit_price) END AS unit_price'),
             OrderDetail::raw('SUM(order_detail.quantity) as quantity'),
             OrderDetail::raw('SUM(order_detail.total_amount) as total_amount')
         )

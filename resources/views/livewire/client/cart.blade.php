@@ -43,7 +43,13 @@
                                     <div class="w-full">
                                         <a  href="{{route('product-detail',['id'=>$item->product_id,'slug'=>$item->slug])}}" class="block text-xs md:text-sm text-gray-800 hover:text-green-500">{{$item->name}} ({{$item->dt_name}})</a>
                                         <div class="text-xs md:text-sm text-gray-400 mt-1 md:mt-2 flex jusitfy-start items-center relative">
-                                            <p>{{number_format($item->retail_price)}} x {{$item->qty}}</p>
+                                            <p>
+                                                @if ($item->unit_price !== null)
+                                                    {{ number_format($item->unit_price) }} x {{ $item->qty }}
+                                                @else
+                                                    Số lượng: {{ $item->qty }}
+                                                @endif
+                                            </p>
                                             <p class="ml-1 hover:text-black cursor-pointer" wire:click="show_size({{$index}},{{$item->cart_id}},{{$item->product_id}},{{$item->product_detail_id}})">
                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />

@@ -54,7 +54,7 @@ class AddProductModal extends ModalComponent
         
         $this->product_details = ProductDetail::where('product_id', $this->product_id)->get();
         $product = Product::where('id', $this->product_id)->first();
-        $this->base_price = $product ? $product->retail_price : 0;
+        $this->base_price = $product?->storefrontPrice() ?? 0;
         $this->product_detail_id = '';
         $this->size_items = [];
     }

@@ -61,9 +61,10 @@ class EditProductModal extends ModalComponent
     {
         $this->product_details = ProductDetail::where('product_id', $this->product_id)->get();
         $this->product_sizes = ProductSize::where('product_id', $this->product_id)->get();
-        $this->product_unit_price = Product::where('id', $this->product_id)->first()->retail_price;
+        $this->product_unit_price = Product::find($this->product_id)?->storefrontPrice() ?? 0;
         $this->product_detail_id = '';
         $this->product_size_id = '';
+        $this->updateAmount();
     }
 
     public function updateAmount()

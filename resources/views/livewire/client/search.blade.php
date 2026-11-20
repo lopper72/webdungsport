@@ -21,7 +21,7 @@
                         </div>
                         <div class="w-full flex justify-between text-sm">
                             <h4 class="text-xs md:text-sm text-gray-900 uppercase">{{$item->name}} <br> <p class="text-gray-900 font-normal text-xs uppercase">{{$item->code}}</p> </h4>
-                            <span class="text-xs md:text-sm text-green-500">@if(Auth::check()){{number_format($item->retail_price)}} VND @else - @endif</span>
+                            <span class="text-xs md:text-sm text-green-500">@if(Auth::check()){{number_format($item->storefrontPrice())}} VND @else - @endif</span>
                         </div>
                     </div>
                 </a>

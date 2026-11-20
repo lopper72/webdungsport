@@ -69,9 +69,16 @@ class Cart extends Component
                 $this->total_amount = $this->Carts->cart_item->sum("total_amount");
             }
             $this->CartItems = DB::select('
-            SELECT prd.retail_price,prd_dt.id as product_detail_id,crt.product_id,prd_dt.title as dt_name,crt.product_id as id,prd.slug,crt.cart_id, prd.name, crt.warehouse_id ,sum(crt.quantity) as qty ,SUM(crt.total_amount) as total FROM cart_item crt INNER JOIN product_detail prd_dt on crt.product_detail_id = prd_dt.id INNER JOIN products prd on prd_dt.product_id = prd.id 
+            SELECT CASE WHEN MIN(crt.unit_price_at_time) = MAX(crt.unit_price_at_time)
+                        THEN MIN(crt.unit_price_at_time) END AS unit_price,
+                   prd_dt.id AS product_detail_id, crt.product_id, prd_dt.title AS dt_name,
+                   crt.product_id AS id, prd.slug, crt.cart_id, prd.name, crt.warehouse_id,
+                   SUM(crt.quantity) AS qty, SUM(crt.total_amount) AS total
+            FROM cart_item crt
+            INNER JOIN product_detail prd_dt ON crt.product_detail_id = prd_dt.id
+            INNER JOIN products prd ON prd_dt.product_id = prd.id
             WHERE crt.cart_id = '.$this->Carts->id.' 
-            GROUP BY prd.retail_price,prd_dt.id,crt.product_id,prd_dt.title,prd.slug,crt.cart_id, prd.name,crt.warehouse_id,prd_dt.title;');
+            GROUP BY prd_dt.id,crt.product_id,prd_dt.title,prd.slug,crt.cart_id, prd.name,crt.warehouse_id,prd_dt.title;');
             
             $this->CartItems_detail = DB::select('
             SELECT crt.size_id, crt.product_id,crt.product_detail_id,SUM(crt.total_amount) as total,prd_dt.title as dt_name,crt.product_id as id,prd.slug,crt.cart_id, prd.name,sum(crt.quantity) as qty,prd_dt.retail_price, crt.warehouse_id

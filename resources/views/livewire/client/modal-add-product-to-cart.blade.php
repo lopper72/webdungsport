@@ -64,7 +64,7 @@
         <div class="mt-4 text-sm font-medium">
             <div class="flex">
                 <div class="text-gray-700 dark:text-white w-32">Giá:</div>
-                <div class="text-gray-900 dark:text-white w-40">{{ number_format($product->retail_price, 0, ',', '.') }} VNĐ</div>
+                <div class="text-gray-900 dark:text-white w-40">{{ number_format($product->storefrontPrice(), 0, ',', '.') }} VNĐ</div>
             </div>
             <div class="flex">
                 <div class="text-gray-700 dark:text-white w-32">Tổng số lượng:</div>

@@ -123,7 +123,7 @@
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-center">
                                         <button type="button" 
-                                                wire:click="$dispatch('openModal', { component: 'admin.order.edit-product-modal', arguments: { order_detail : {{json_encode($order_detail)}}, index : {{$index}}, mode : 'Edit' } })"
+                                                wire:click="$dispatch('openModal', { component: 'admin.order.edit-product-modal', arguments: { order_detail : {{json_encode($order_detail)}}, index : {{$index}}, mode : 'New' } })"
                                                 class="inline-flex items-center px-2 py-1 bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white tracking-widest hover:bg-blue-600 active:bg-blue-700 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150"
                                                 >Sửa</button>
                                         <button type="button" 

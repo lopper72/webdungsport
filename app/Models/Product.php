@@ -11,6 +11,19 @@ class Product extends Model implements Auditable
     use \OwenIt\Auditing\Auditable;
     use HasFactory;
     protected $fillable = ['id'];
+
+    public function hasSalePrice(): bool
+    {
+        return (bool) $this->is_sales
+            && $this->sales_price > 0
+            && $this->sales_price < $this->retail_price;
+    }
+
+    public function storefrontPrice(): string
+    {
+        return (string) ($this->hasSalePrice() ? $this->sales_price : $this->retail_price);
+    }
+
     public function productDetails()
     {
         return $this->hasMany(ProductDetail::class);

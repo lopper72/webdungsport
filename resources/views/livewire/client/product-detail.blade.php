@@ -20,8 +20,8 @@
                         <div class="mr-4">
                             <span class="text-sm md:text-md font-bold text-gray-700 dark:text-gray-300 uppercase">Giá:</span>
                             @if(Auth::check())
-                                <span class="text-sm md:text-md text-green-500">{{number_format($product->retail_price)}} VNĐ</span>
-                                @if (($product->is_sales ?? 0) == 1)
+                                <span class="text-sm md:text-md text-green-500">{{number_format($product->storefrontPrice())}} VNĐ</span>
+                                @if ($product->hasSalePrice())
                                     <span class="bg-red-600 rounded-md text-white text-xs md:text-sm font-bold ml-2 px-2 py-1">SALE</span>
                                 @endif
                             @else
